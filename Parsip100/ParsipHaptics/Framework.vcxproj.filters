@@ -1,0 +1,289 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\_GlobalFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CBlobTreeNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CCubeTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CLayerManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CompactBlobTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CParallelAdaptiveSubdivision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CPolyParsipOptimized.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FastQuadricPointSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GalinMedusaGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glwidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PS_PerfTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PS_SketchConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_CBlobTreeNetwork.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_glwidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="release\moc_glwidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_mainwindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="release\moc_mainwindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_ParsipIcons.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgFieldFunctionEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_DlgFieldFunctionEditor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConversionToActions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CBlobTreeAnimation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CParallelCollisionDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\_GlobalFunctions.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\_GlobalSettings.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\_LookupTables.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\_PolygonizerStructs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CBlobTreeShapes.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CCubeTable.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CEdgeTable.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CLayerManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CompactBlobTree.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CParallelAdaptiveSubdivision.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CPolyHashGridEdgeTables.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CPolyParsipOptimized.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CUIWidgets.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FastQuadricPointSet.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GalinMedusaGenerator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PS_PerfTest.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PS_SketchConfig.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_mainwindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CEaseInEaseOut.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CBlobTreeAnimation.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ConversionToActions.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CParallelCollisionDetector.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Distrib\Resources\Shaders\fphong.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\FragmentShader.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\parsip.cg">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\TPhongFS.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\TPhongVS.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\VertexShader.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\vphong.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="DlgMtrlEditor.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\TPhongSelectionFS.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\Distrib\Resources\Shaders\TPhongSelectionVS.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="icons\bend.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\close.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\load.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\op_blend.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\op_blendricci.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\op_dif.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\op_difsmooth.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\op_intersect.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\op_union.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\prim_cube.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\prim_cylinder.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\prim_disk.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\prim_polygon.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\prim_ring.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\prim_sphere.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\reset.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\save.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\taper.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\triangle.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="icons\twist.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="CBlobTreeNetwork.h">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="glwidget.h">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mainwindow.h">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mainwindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ParsipIcons.qrc">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DlgFieldFunction.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DlgFieldFunctionEditor.h">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

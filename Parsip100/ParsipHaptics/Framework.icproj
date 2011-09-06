@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Intel C++ Project"
+	Version="11.1"
+	Name="ParsipHaptics"
+	ProjectGUID="{3C76A449-AC8F-4276-B799-A65698FFFC99}"
+	VCNestedProjectGUID="{E5DDDF1A-E00E-317F-BD1E-EEE95690C717}"
+	VCNestedProjectFileName="Framework.vcproj">
+	<Configurations>
+		<Configuration
+			Name="Release|Win32">
+			<Tool
+				Name="CppCmplrTool"
+				Optimization="1000"
+				OptimizeForWindowsApplication="true"
+				Parallelization="false"/>
+		</Configuration>
+	</Configurations>
+	<Files/>
+</VisualStudioProject>

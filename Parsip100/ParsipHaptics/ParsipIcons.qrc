@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/prim_sphere.png</file>
+        <file>icons/prim_cylinder.png</file>
+        <file>icons/prim_disk.png</file>
+        <file>icons/prim_polygon.png</file>
+        <file>icons/op_blend.png</file>
+        <file>icons/op_dif.png</file>
+        <file>icons/op_intersect.png</file>
+        <file>icons/op_union.png</file>
+        <file>icons/op_blendricci.png</file>
+        <file>icons/op_difsmooth.png</file>
+        <file>icons/prim_cube.png</file>
+        <file>icons/load.png</file>
+        <file>icons/save.png</file>
+        <file>icons/close.png</file>
+        <file>icons/reset.png</file>
+        <file>icons/twist.png</file>
+        <file>icons/prim_ring.png</file>
+        <file>icons/triangle.png</file>
+        <file>icons/taper.png</file>
+        <file>icons/bend.png</file>
+    </qresource>
+</RCC>

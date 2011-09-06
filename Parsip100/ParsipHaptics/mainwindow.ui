@@ -1,0 +1,2027 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1111</width>
+    <height>905</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Implicit Haptics Renderer V1.0</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QScrollArea" name="scrollAreaOpenGL">
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>100</height>
+       </size>
+      </property>
+      <property name="mouseTracking">
+       <bool>false</bool>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>805</width>
+         <height>712</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QTabWidget" name="tsSceneStructure">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>280</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tsTools">
+       <attribute name="title">
+        <string>General</string>
+       </attribute>
+       <widget class="QSlider" name="sliderCubeSize">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>63</y>
+          <width>161</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>42</y>
+          <width>141</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Polygonization Cell Size:</string>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="udCubeSize">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>60</y>
+          <width>51</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>130</y>
+          <width>121</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Threads Count:</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkComputeShaders">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>327</y>
+          <width>151</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Compute Shaders</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkTBB">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>347</y>
+          <width>70</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>TBB</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>267</y>
+          <width>221</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Cell Shape</string>
+        </property>
+        <widget class="QRadioButton" name="rbCube">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>82</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cube</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="rbTetraHedra">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>20</y>
+           <width>82</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Tetrahedra</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QSlider" name="sliderThreadsCount">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>150</y>
+          <width>160</width>
+          <height>19</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>64</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QSlider" name="sliderMouseDragScale">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>199</y>
+          <width>160</width>
+          <height>19</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="udMouseDragsScale">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>199</y>
+          <width>51</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>179</y>
+          <width>121</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Mouse Drag Scale:</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="udThreadsCount">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>150</y>
+          <width>50</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>64</number>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkForceMC">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>367</y>
+          <width>201</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Perform Marching Cubes in All MPUs</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="udTestRuns">
+        <property name="geometry">
+         <rect>
+          <x>140</x>
+          <y>417</y>
+          <width>81</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000000</number>
+        </property>
+        <property name="value">
+         <number>1000</number>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnRunTests">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>417</y>
+          <width>121</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>run tests</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_4">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>231</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Geodesic Threshold Angle (Adaptive):</string>
+        </property>
+       </widget>
+       <widget class="QSlider" name="sliderNormalsAngle">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>110</y>
+          <width>161</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>180</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="udNormalsAngle">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>110</y>
+          <width>51</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>180.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>5.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkEnableAdaptive">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>387</y>
+          <width>201</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Perform Adaptive Subdivision</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_5">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>0</y>
+          <width>121</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Grid Dim:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="cboGridDim">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>20</y>
+          <width>221</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>32</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QLabel" name="label_9">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>223</y>
+          <width>121</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Animation Speed:</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="udAnimationSpeed">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>243</y>
+          <width>51</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+       <widget class="QSlider" name="sliderAnimationSpeed">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>243</y>
+          <width>160</width>
+          <height>19</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tsDisplay">
+       <attribute name="title">
+        <string>Display</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>10</y>
+          <width>211</width>
+          <height>411</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Display</string>
+        </property>
+        <widget class="QComboBox" name="cboMaterial">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>380</y>
+           <width>161</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>360</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Default Material:</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkShowNormals">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>119</y>
+           <width>141</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Show Normals</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkShowChessBoard">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>139</y>
+           <width>141</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Draw Chess Board</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QSlider" name="sliderNormalLength">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>332</y>
+           <width>160</width>
+           <height>19</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="value">
+          <number>5</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_8">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>314</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Normal Length:</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkShowBoxLayer">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>159</y>
+           <width>161</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Show Layer Bounding Box</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkShowSeedPoints">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>220</y>
+           <width>141</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Show Seed Points</string>
+         </property>
+        </widget>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>181</width>
+           <height>91</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Mesh</string>
+         </property>
+         <widget class="QRadioButton" name="rbShowMeshWireFrame">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>131</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Show WireFrame</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="rbShowMeshSurface">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>111</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Show Surface</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="rbShowMeshNone">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>16</y>
+            <width>111</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>None [Debug]</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QCheckBox" name="chkShowBoxPrimitive">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>180</y>
+           <width>161</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Show Primitive Bounding Box</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkShowBoxPoly">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>200</y>
+           <width>171</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Show Polygonization Box</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkShowGraph">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>240</y>
+           <width>91</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Show Graph</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkColorCodeMPUMesh">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>260</y>
+           <width>161</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Color Code MPU Meshes</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkShowAnimationCurves">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>280</y>
+           <width>161</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Draw Animation Curves</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Layers</string>
+       </attribute>
+       <widget class="QTableView" name="tblBlobProperty">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>380</y>
+          <width>241</width>
+          <height>161</height>
+         </rect>
+        </property>
+        <property name="cursor" stdset="0">
+         <cursorShape>ArrowCursor</cursorShape>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="showGrid">
+         <bool>true</bool>
+        </property>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>15</number>
+        </attribute>
+       </widget>
+       <widget class="QTreeView" name="treeBlob">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>210</y>
+          <width>241</width>
+          <height>161</height>
+         </rect>
+        </property>
+        <property name="midLineWidth">
+         <number>1</number>
+        </property>
+       </widget>
+       <widget class="QTableView" name="tblLayers">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>50</y>
+          <width>241</width>
+          <height>151</height>
+         </rect>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="btnLayerAdd">
+        <property name="geometry">
+         <rect>
+          <x>5</x>
+          <y>10</y>
+          <width>51</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>Adds a new empty layer</string>
+        </property>
+        <property name="text">
+         <string>+</string>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="btnLayerDelete">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>63</x>
+          <y>10</y>
+          <width>51</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>Removes current active layer</string>
+        </property>
+        <property name="text">
+         <string>-</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnPrimitiveColor">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>550</y>
+          <width>241</width>
+          <height>30</height>
+         </rect>
+        </property>
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Press to set Material</string>
+        </property>
+        <property name="shortcut">
+         <string>Space</string>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="btnLayerDuplicate">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>123</x>
+          <y>10</y>
+          <width>51</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>Duplicates active layer as a new one.</string>
+        </property>
+        <property name="text">
+         <string>Dup</string>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="btnLayerSelectAll">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>185</x>
+          <y>10</y>
+          <width>51</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>Selects all primitives within current layer</string>
+        </property>
+        <property name="text">
+         <string>SEL ALL</string>
+        </property>
+       </widget>
+       <widget class="QTableView" name="tblColors">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>590</y>
+          <width>241</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <attribute name="horizontalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+       </widget>
+       <widget class="QPushButton" name="btnEditMaterial">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>660</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Edit Material</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Stats</string>
+       </attribute>
+       <widget class="QTableView" name="tblStats">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>241</width>
+          <height>451</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="title">
+        <string>NET</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>261</width>
+          <height>251</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Settings</string>
+        </property>
+        <widget class="QSpinBox" name="udServerPort">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>20</y>
+           <width>111</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1000000</number>
+         </property>
+         <property name="value">
+          <number>1000</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_7">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>21</y>
+           <width>71</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Port:</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnNetAddParticipant">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>80</y>
+           <width>51</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>+</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnNetStart">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>52</y>
+           <width>111</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Start</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="cboNetAddParticipant">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>80</y>
+           <width>121</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QListWidget" name="lstNetParticipants">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>140</y>
+           <width>241</width>
+           <height>71</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnNetStop">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>51</y>
+           <width>121</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Stop</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="edtNetSendText">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>220</y>
+           <width>241</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnNetDelParticipant">
+         <property name="geometry">
+          <rect>
+           <x>200</x>
+           <y>80</y>
+           <width>51</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>-</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkNetAll">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>151</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Synchronize with All</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnNetLock">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>110</y>
+           <width>111</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Lock</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>270</y>
+          <width>261</width>
+          <height>211</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>LOG</string>
+        </property>
+        <widget class="QPushButton" name="btnNetClearLog">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>180</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Clear Log</string>
+         </property>
+        </widget>
+        <widget class="QListWidget" name="lstNetLog">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>241</width>
+           <height>151</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1111</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actFileOpen"/>
+    <addaction name="actFileOpenLoadBenchmark"/>
+    <addaction name="separator"/>
+    <addaction name="actFileSave"/>
+    <addaction name="actFileExportMesh"/>
+    <addaction name="separator"/>
+    <addaction name="actFileClose"/>
+    <addaction name="separator"/>
+    <addaction name="actFileExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Add</string>
+    </property>
+    <addaction name="actAddSphere"/>
+    <addaction name="actAddCylinder"/>
+    <addaction name="actAddRing"/>
+    <addaction name="actAddDisc"/>
+    <addaction name="actAddCube"/>
+    <addaction name="actAddTriangle"/>
+    <addaction name="actAddPolygonPlane"/>
+    <addaction name="separator"/>
+    <addaction name="actAddUnion"/>
+    <addaction name="actAddIntersection"/>
+    <addaction name="actAddDifference"/>
+    <addaction name="actAddBlend"/>
+    <addaction name="actAddRicciBlend"/>
+    <addaction name="actAddSmoothDif"/>
+    <addaction name="actAddCache"/>
+    <addaction name="separator"/>
+    <addaction name="actAddTwist"/>
+    <addaction name="actAddTaper"/>
+    <addaction name="actAddBend"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actViewResetCamera"/>
+    <addaction name="actViewPanCamera"/>
+    <addaction name="actViewFullScreen"/>
+   </widget>
+   <widget class="QMenu" name="menuMesh">
+    <property name="title">
+     <string>Mesh</string>
+    </property>
+    <addaction name="actMeshSubDivide"/>
+    <addaction name="actMeshPolygonize"/>
+    <addaction name="separator"/>
+    <addaction name="actMeshInsert"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actHelpAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuAnimation">
+    <property name="title">
+     <string>Animation</string>
+    </property>
+    <addaction name="actAnimDrawGuide"/>
+    <addaction name="separator"/>
+    <addaction name="actAnimStart"/>
+    <addaction name="actAnimStop"/>
+    <addaction name="separator"/>
+    <addaction name="actAnimSetStartLoc"/>
+    <addaction name="actAnimSetEndLoc"/>
+    <addaction name="separator"/>
+    <addaction name="actAnimSetStartScale"/>
+    <addaction name="actAnimSetEndScale"/>
+    <addaction name="separator"/>
+    <addaction name="actAnimRemoveAll"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit_2">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actEditSelect"/>
+    <addaction name="actEditMultiSelect"/>
+    <addaction name="separator"/>
+    <addaction name="actEditTranslate"/>
+    <addaction name="actEditRotate"/>
+    <addaction name="actEditScale"/>
+    <addaction name="separator"/>
+    <addaction name="actEditAlongX"/>
+    <addaction name="actEditAlongY"/>
+    <addaction name="actEditAlongZ"/>
+    <addaction name="separator"/>
+    <addaction name="actEditDeletePrimitive"/>
+    <addaction name="separator"/>
+    <addaction name="actEditUndo"/>
+    <addaction name="actEditRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actEditTransformSkeleton"/>
+    <addaction name="separator"/>
+    <addaction name="actEditCopy"/>
+    <addaction name="actEditField"/>
+    <addaction name="actEditConvert"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuEdit_2"/>
+   <addaction name="menuView"/>
+   <addaction name="menuMesh"/>
+   <addaction name="menuAnimation"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="toolbarControl">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>48</width>
+     <height>48</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actFileOpen"/>
+   <addaction name="actFileSave"/>
+   <addaction name="actFileClose"/>
+   <addaction name="separator"/>
+   <addaction name="actMeshPolygonize"/>
+   <addaction name="separator"/>
+   <addaction name="actViewPanCamera"/>
+   <addaction name="actEditMultiSelect"/>
+   <addaction name="actEditTransformSkeleton"/>
+   <addaction name="separator"/>
+   <addaction name="actEditUndo"/>
+   <addaction name="actEditRedo"/>
+   <addaction name="actEditCopy"/>
+   <addaction name="separator"/>
+   <addaction name="actEditField"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBarBlobTree">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>true</bool>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>64</width>
+     <height>64</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>true</bool>
+   </attribute>
+   <addaction name="actAddSphere"/>
+   <addaction name="actAddCylinder"/>
+   <addaction name="actAddRing"/>
+   <addaction name="actAddDisc"/>
+   <addaction name="actAddCube"/>
+   <addaction name="actAddTriangle"/>
+   <addaction name="separator"/>
+   <addaction name="actAddUnion"/>
+   <addaction name="actAddIntersection"/>
+   <addaction name="actAddDifference"/>
+   <addaction name="actAddSmoothDif"/>
+   <addaction name="actAddBlend"/>
+   <addaction name="actAddRicciBlend"/>
+   <addaction name="actAddTwist"/>
+   <addaction name="actAddTaper"/>
+   <addaction name="actAddBend"/>
+  </widget>
+  <action name="actFileOpen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/load.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actFileExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actFileSave">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/save.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actFileClose">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/close.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actViewResetCamera">
+   <property name="text">
+    <string>Reset Camera</string>
+   </property>
+  </action>
+  <action name="actMeshSubDivide">
+   <property name="text">
+    <string>SubDivide</string>
+   </property>
+  </action>
+  <action name="actMeshPolygonize">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/reset.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Polygonize</string>
+   </property>
+   <property name="shortcut">
+    <string extracomment="Press F5 to repolygonizer implicit models">F5</string>
+   </property>
+  </action>
+  <action name="actHelpAbout">
+   <property name="text">
+    <string>About...</string>
+   </property>
+  </action>
+  <action name="actAddSphere">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/prim_sphere.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Sphere</string>
+   </property>
+  </action>
+  <action name="actAddCylinder">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/prim_cylinder.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Cylinder</string>
+   </property>
+  </action>
+  <action name="actAddRing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/prim_ring.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Ring</string>
+   </property>
+  </action>
+  <action name="actAddDisc">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/prim_disk.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Disc</string>
+   </property>
+  </action>
+  <action name="actAddUnion">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/op_union.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Union</string>
+   </property>
+  </action>
+  <action name="actAddIntersection">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/op_intersect.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Intersection</string>
+   </property>
+  </action>
+  <action name="actAddDifference">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/op_dif.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Difference</string>
+   </property>
+  </action>
+  <action name="actAddBlend">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/op_blend.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Blend</string>
+   </property>
+  </action>
+  <action name="actAddRicciBlend">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/op_blendricci.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Ricci Blend</string>
+   </property>
+  </action>
+  <action name="actAddSmoothDif">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/op_difsmooth.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Smooth Difference</string>
+   </property>
+  </action>
+  <action name="actAddCache">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Cache Node</string>
+   </property>
+  </action>
+  <action name="actAnimStart">
+   <property name="text">
+    <string>Start</string>
+   </property>
+  </action>
+  <action name="actAnimStop">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actAddPolygonPlane">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/prim_polygon.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Polygon Plane</string>
+   </property>
+  </action>
+  <action name="actViewFullScreen">
+   <property name="text">
+    <string>Full Screen</string>
+   </property>
+  </action>
+  <action name="actEditTranslate">
+   <property name="text">
+    <string>Translate</string>
+   </property>
+   <property name="shortcut">
+    <string>G</string>
+   </property>
+  </action>
+  <action name="actEditRotate">
+   <property name="text">
+    <string>Rotate</string>
+   </property>
+   <property name="shortcut">
+    <string>R</string>
+   </property>
+  </action>
+  <action name="actEditScale">
+   <property name="text">
+    <string>Scale</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
+  </action>
+  <action name="actEditAlongX">
+   <property name="text">
+    <string>Along X</string>
+   </property>
+   <property name="shortcut">
+    <string>X</string>
+   </property>
+  </action>
+  <action name="actEditAlongY">
+   <property name="text">
+    <string>Along Y</string>
+   </property>
+   <property name="shortcut">
+    <string>Y</string>
+   </property>
+  </action>
+  <action name="actEditAlongZ">
+   <property name="text">
+    <string>Along Z</string>
+   </property>
+   <property name="shortcut">
+    <string>Z</string>
+   </property>
+  </action>
+  <action name="actEditSelect">
+   <property name="text">
+    <string>Select</string>
+   </property>
+  </action>
+  <action name="actEditDeletePrimitive">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Delete Primitive</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actAddCube">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/prim_cube.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Cube</string>
+   </property>
+   <property name="toolTip">
+    <string>Cube</string>
+   </property>
+  </action>
+  <action name="actAddTriangle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ParsipIcons.qrc">
+     <normaloff>:/icons/triangle.png</normaloff>:/icons/triangle.png</iconset>
+   </property>
+   <property name="text">
+    <string>Triangle</string>
+   </property>
+  </action>
+  <action name="actAddTwist">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ParsipIcons.qrc">
+     <normaloff>:/icons/twist.png</normaloff>:/icons/twist.png</iconset>
+   </property>
+   <property name="text">
+    <string>Twist</string>
+   </property>
+  </action>
+  <action name="actAddTaper">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ParsipIcons.qrc">
+     <normaloff>:/icons/taper.png</normaloff>:/icons/taper.png</iconset>
+   </property>
+   <property name="text">
+    <string>Taper</string>
+   </property>
+  </action>
+  <action name="actAddBend">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ParsipIcons.qrc">
+     <normaloff>:/icons/bend.png</normaloff>:/icons/bend.png</iconset>
+   </property>
+   <property name="text">
+    <string>Bend</string>
+   </property>
+  </action>
+  <action name="actViewPanCamera">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Pan Camera</string>
+   </property>
+   <property name="toolTip">
+    <string>Pan camera by holding mouse middle button.</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
+  </action>
+  <action name="actEditMultiSelect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Multiple Select</string>
+   </property>
+   <property name="toolTip">
+    <string>When enabled multiple primitives can be selected</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
+  </action>
+  <action name="actFileExportMesh">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Export Mesh...</string>
+   </property>
+  </action>
+  <action name="actEditUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actEditRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actEditTransformSkeleton">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Transform Skeleton</string>
+   </property>
+   <property name="shortcut">
+    <string>T</string>
+   </property>
+  </action>
+  <action name="actFileOpenLoadBenchmark">
+   <property name="text">
+    <string>Load Benchmark Model</string>
+   </property>
+  </action>
+  <action name="actAnimDrawGuide">
+   <property name="text">
+    <string>Draw Guide Curve</string>
+   </property>
+  </action>
+  <action name="actEditCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actEditField">
+   <property name="text">
+    <string>Field Function...</string>
+   </property>
+  </action>
+  <action name="actEditConvert">
+   <property name="text">
+    <string>Convert to Binary Tree</string>
+   </property>
+  </action>
+  <action name="actAnimSetStartLoc">
+   <property name="text">
+    <string>Move to Start Location</string>
+   </property>
+  </action>
+  <action name="actAnimSetEndLoc">
+   <property name="text">
+    <string>Move to End Location</string>
+   </property>
+  </action>
+  <action name="actAnimSetStartScale">
+   <property name="text">
+    <string>Set Start Scale</string>
+   </property>
+  </action>
+  <action name="actAnimSetEndScale">
+   <property name="text">
+    <string>Set End Scale</string>
+   </property>
+  </action>
+  <action name="actAnimRemoveAll">
+   <property name="text">
+    <string>Remove All Paths</string>
+   </property>
+  </action>
+  <action name="actMeshInsert">
+   <property name="text">
+    <string>Insert Mesh...</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="ParsipIcons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>sliderMouseDragScale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>udMouseDragsScale</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>993</x>
+     <y>401</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1054</x>
+     <y>404</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>udMouseDragsScale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sliderMouseDragScale</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1054</x>
+     <y>404</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>993</x>
+     <y>401</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>udMouseDragsScale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sliderMouseDragScale</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1054</x>
+     <y>404</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>993</x>
+     <y>401</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sliderThreadsCount</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>udThreadsCount</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>993</x>
+     <y>352</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1053</x>
+     <y>355</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>udThreadsCount</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sliderThreadsCount</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1053</x>
+     <y>355</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>993</x>
+     <y>352</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnNetClearLog</sender>
+   <signal>clicked()</signal>
+   <receiver>lstNetLog</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1052</x>
+     <y>642</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1045</x>
+     <y>622</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sliderAnimationSpeed</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>udAnimationSpeed</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>956</x>
+     <y>441</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1008</x>
+     <y>439</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>udAnimationSpeed</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sliderAnimationSpeed</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1018</x>
+     <y>446</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>976</x>
+     <y>436</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

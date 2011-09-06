@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Intel C++ Project"
+	Version="11.1"
+	Name="PS_SubDivision"
+	ProjectGUID="{F7DEDFFB-66EA-4D2F-845D-BFBA77F1F159}"
+	VCNestedProjectGUID="{14423A05-5A2B-418E-B0E8-7B624F8184E1}"
+	VCNestedProjectFileName="PS_SubDivision.vcproj">
+	<Configurations/>
+	<Files/>
+</VisualStudioProject>
