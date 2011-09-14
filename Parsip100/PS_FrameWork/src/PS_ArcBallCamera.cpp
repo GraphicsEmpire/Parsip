@@ -33,14 +33,14 @@ void CArcBallCamera::setHorizontalAngle(float o)
 //Set our vertical angle. This is clamped between 0 and 180
 void CArcBallCamera::setVerticalAngle(float p)
 {
-	clampf(p, verticalAngleMin, verticalAngleMax);
+	Clampf(p, verticalAngleMin, verticalAngleMax);
 	m_phi = p;
 }
 
 //Zoom or CCamera distance from scene is clamped.
 void CArcBallCamera::setZoom(float r)
 {
-	clampf(r, zoomMin, zoomMax);
+	Clampf(r, zoomMin, zoomMax);
 	m_rho = r;
 }
 

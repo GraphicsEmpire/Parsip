@@ -12,38 +12,47 @@
 #ifndef CSPLINECATMULLROM_H
 #define CSPLINECATMULLROM_H
 
-#include "DSystem/include/DContainers.h"
-#include "PS_FrameWork/include/PS_Octree.h"
+#include <vector>
+#include <istream>
 #include "PS_Vector.h"
+#include "PS_Octree.h"
 
-using namespace PS;
+#define DEFAULT_NUM_POINTS_PER_SEGMENT 400
+
 using namespace PS::MATH;
 
-typedef unsigned int UINT;
-
-struct ARCLENGTHPARAM{
-	float u;//Parameter
-	float g;//ArcLength Accumulated
-	vec3f pt;
-};
+namespace PS{
 
 class CSplineCatmullRom
 {
+public:
+	struct ARCLENGTHPARAM{
+		float u;//Parameter
+		float g;//ArcLength Accumulated
+		vec3f pt;
+	};
+
 
 public:
 	CSplineCatmullRom();
 	CSplineCatmullRom(const CSplineCatmullRom& cspline);
 	~CSplineCatmullRom();
 
-	bool isValid() const { return ((vCtrlPoints.size() >= 4) && (vArcTable.size() > 0)); }
-	DVec<vec3>& getControlPoints() {return vCtrlPoints;}
-	DVec<ARCLENGTHPARAM>& getArcTable() {return vArcTable;}
-	void getArcPoints(DVec<vec3f>& lstPoints) const;
-	vec3f  getPoint(size_t i);
-	COctree getOctree() const {return m_octree;}
+	void set(const CSplineCatmullRom& rhs);
 
-	void setPoint(int index, vec3f& pt);
-	void addPoint(vec3f& p);
+	bool isValid() const { return ((m_vCtrlPoints.size() >= 4) && (m_vArcTable.size() > 0)); }
+	bool isCtrlPointIndex(U32 index) const {return (index >=0 && index < m_vCtrlPoints.size());}
+	std::vector<vec3>& getControlPoints() {return m_vCtrlPoints;}
+	std::vector<ARCLENGTHPARAM>& getArcTable() {return m_vArcTable;}
+	void getArcPoints(std::vector<vec3f>& lstPoints) const;
+	COctree getOctree() const;
+
+
+	size_t getCtrlPointsCount() const {return m_vCtrlPoints.size();}
+	vec3f  getPoint(size_t i);
+
+	void setPoint(int index, const vec3f& pt);
+	void addPoint(const vec3f& p);
 	void removePoint(size_t i);
 	void removeAll();
 
@@ -69,8 +78,8 @@ public:
 	float parameterViaTable(float arcLength);
 	bool isTableEmpty();
 
-	ARCLENGTHPARAM GetArcTableEntry(size_t i);
-	int GetArcTableCount();
+	ARCLENGTHPARAM getArcTableEntry(size_t i);
+	int getArcTableCount();
 
 	void drawCtrlLine(unsigned int gl_draw_mode = 0);
 	void drawCurve(unsigned int gl_draw_mode = 3);
@@ -79,17 +88,16 @@ public:
 	friend std::ostream& operator <<(std::ostream& outs, const CSplineCatmullRom& curve);
 	friend std::istream& operator >>(std::istream& ins, const CSplineCatmullRom& curve);
 private:	
-	void computeOctree();
+	bool isPointIndexCorrect(size_t i);    
 	bool getLocalSpline(float t, float &local_t, int *indices);
 
 
 private:	
-	COctree	m_octree;
 	size_t  m_nSegments;	
-public:
-	DVec<vec3f> vCtrlPoints;
-	DVec<ARCLENGTHPARAM> vArcTable;
+	std::vector<vec3f> m_vCtrlPoints;
+	std::vector<ARCLENGTHPARAM> m_vArcTable;
 };
 
+}
 
 #endif

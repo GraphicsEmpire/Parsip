@@ -15,7 +15,6 @@
 
 #include "PS_FrameWork/include/PS_ArcBallCamera.h"
 #include "PS_FrameWork/include/PS_Vector.h"
-#include "PS_FrameWork/include/GL_Shader.h"
 #include "PS_FrameWork/include/TaskManager.h"
 #include "PS_FrameWork/include/PS_SplineCatmullRom.h"
 #include "CLayerManager.h"
@@ -294,7 +293,7 @@ private:
 	};
 	
 	QTimer*			m_timer;	
-	TaskManager*	m_pTaskManager;
+	
 	PS::CArcBallCamera m_camera;
 	PS::CArcBallCamera::MOUSEBUTTONSTATE m_mouseButton;	
 	int		m_mouseDragScale;
@@ -305,8 +304,7 @@ private:
 	CLayerManager	m_layerManager;
 	//CParsipServer	m_parsip;
 	//CParsipOptimized m_optParsip;
-
-	CGLShaderProgram	m_shader;
+		
 	int				m_uniformTime;
 	CMaterial		m_materials[8];
 	int				m_idxRibbonSelection;

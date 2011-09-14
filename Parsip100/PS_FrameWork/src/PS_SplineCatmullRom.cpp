@@ -10,76 +10,89 @@
 //-------------------------------------------------------------------------------------------
 
 #include "PS_SplineCatmullRom.h"
-#include "GL/glew.h"
+//#include "GL/glew.h"
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <istream>
-
-#define DEFAULT_NUM_POINTS_PER_SEGMENT 400
+#include "mathHelper.h"
 
 using namespace std;
 
+namespace PS{
+
 CSplineCatmullRom::CSplineCatmullRom(const CSplineCatmullRom& cspline)
 {
-	for (unsigned int i=0; i < cspline.vCtrlPoints.size(); i++)
-	{
-		vCtrlPoints.push_back(cspline.vCtrlPoints[i]);
-	}	
+    set(cspline);
 }
 
-CSplineCatmullRom::CSplineCatmullRom():vCtrlPoints(), m_nSegments(DEFAULT_NUM_POINTS_PER_SEGMENT)
+
+CSplineCatmullRom::CSplineCatmullRom():m_vCtrlPoints(), m_nSegments(DEFAULT_NUM_POINTS_PER_SEGMENT)
 {}
+
+void CSplineCatmullRom::set(const CSplineCatmullRom& rhs)
+{
+    removeAll();
+    for (unsigned int i=0; i < rhs.m_vCtrlPoints.size(); i++)
+        m_vCtrlPoints.push_back(rhs.m_vCtrlPoints[i]);
+    populateTable();
+}
 
 CSplineCatmullRom::~CSplineCatmullRom()
 {
-	vCtrlPoints.clear();
-	vArcTable.clear();
+    removeAll();
 }
 
-void CSplineCatmullRom::setSegmentsCount(UINT nSegments)
+
+void CSplineCatmullRom::setSegmentsCount(U32 nSegments)
 {
 	if(nSegments > 0)		
 		m_nSegments = nSegments;
 }
 
-int CSplineCatmullRom::GetArcTableCount()
+int CSplineCatmullRom::getArcTableCount()
 {
-	return vArcTable.size();
+	return m_vArcTable.size();
 }
 
-ARCLENGTHPARAM CSplineCatmullRom::GetArcTableEntry(size_t i)
+CSplineCatmullRom::ARCLENGTHPARAM CSplineCatmullRom::getArcTableEntry(size_t i)
 {
 	ARCLENGTHPARAM dummyEntry;
-	if((i >=0)&&(i < vArcTable.size()))
-		return vArcTable[i];
+	if((i >=0)&&(i < m_vArcTable.size()))
+		return m_vArcTable[i];
 	else
 		return dummyEntry;
 }
 
-void CSplineCatmullRom::getArcPoints(DVec<vec3f>& lstPoints) const
+void CSplineCatmullRom::getArcPoints(std::vector<vec3f>& lstPoints) const
 {
-	if(vArcTable.size() < 2) return;
-	lstPoints.resize(vArcTable.size());	
-	for(size_t i=0; i<vArcTable.size(); i++)
+	if(m_vArcTable.size() < 2) return;
+	lstPoints.resize(m_vArcTable.size());	
+	for(size_t i=0; i<m_vArcTable.size(); i++)
 	{
-		lstPoints[i] = vArcTable[i].pt;
+		lstPoints[i] = m_vArcTable[i].pt;
 	}
+}
+
+COctree CSplineCatmullRom::getOctree() const
+{
+	COctree oct;
+	oct.set(m_vCtrlPoints);
+	return oct;
 }
 
 bool CSplineCatmullRom::populateTable()
 {
-	int nCtrlPoints = vCtrlPoints.size();
+	int nCtrlPoints = m_vCtrlPoints.size();
 	if(nCtrlPoints < 4)
 		return false;
 
-	computeOctree();
 
 	int n = m_nSegments;
 	float u = (float)(1.0f /(float)(n-1));
 
 	//Erase Table
-	vArcTable.resize(n);
+	m_vArcTable.resize(n);
 
 	for(int i=0; i < n; i++)
 	{
@@ -91,31 +104,29 @@ bool CSplineCatmullRom::populateTable()
 		arcLenParam.g = 0.0f;
 		if(i > 0)
 		{
-			arcLenParam.g = vArcTable[i - 1].g + vArcTable[i-1].pt.distance(arcLenParam.pt);
+			arcLenParam.g = m_vArcTable[i - 1].g + m_vArcTable[i-1].pt.distance(arcLenParam.pt);
 		}
-		vArcTable[i] = arcLenParam;
+		m_vArcTable[i] = arcLenParam;
 	}
 
 	//Normalize ArcLength Parameter
-	float TotalArcLen = vArcTable[n-1].g;
+	float TotalArcLen = m_vArcTable[n-1].g;
 	for(int i=0; i < n; i++)
 	{
-		vArcTable[i].g = vArcTable[i].g / TotalArcLen;
+		m_vArcTable[i].g = m_vArcTable[i].g / TotalArcLen;
 	}
 
-	return (vArcTable.size() > 0);
+	return (m_vArcTable.size() > 0);
 }
 
 bool CSplineCatmullRom::populateTableAdaptive()
 {
-	int nCtrlPoints = vCtrlPoints.size();
+	int nCtrlPoints = m_vCtrlPoints.size();
 	if(nCtrlPoints < 4)
 		return false;
 
-	computeOctree();
-	
 	//Erase Table
-	vArcTable.clear();
+	m_vArcTable.clear();
 
 	float delta = 0.001f;
 	float cu = 0.0f;
@@ -133,9 +144,9 @@ bool CSplineCatmullRom::populateTableAdaptive()
 		arcLenParam.g = 0.0f;
 		if(i > 0)
 		{
-			arcLenParam.g = vArcTable[i - 1].g + vArcTable[i - 1].pt.distance(arcLenParam.pt);
+			arcLenParam.g = m_vArcTable[i - 1].g + m_vArcTable[i - 1].pt.distance(arcLenParam.pt);
 		}
-		vArcTable.push_back(arcLenParam);
+		m_vArcTable.push_back(arcLenParam);
 		i++;
 		
 		//update Steps
@@ -155,22 +166,22 @@ bool CSplineCatmullRom::populateTableAdaptive()
 
 	if(i>0)
 	{
-		if(vArcTable[i-1].u < 1.0f)
+		if(m_vArcTable[i-1].u < 1.0f)
 		{
 			ARCLENGTHPARAM arcLenParam;
 			arcLenParam.pt = position(1.0f);
 			arcLenParam.u = 1.0f;
-			arcLenParam.g = vArcTable[i - 1].g + vArcTable[i - 1].pt.distance(arcLenParam.pt);
-			vArcTable.push_back(arcLenParam);
+			arcLenParam.g = m_vArcTable[i - 1].g + m_vArcTable[i - 1].pt.distance(arcLenParam.pt);
+			m_vArcTable.push_back(arcLenParam);
 		}
 	}
 
 	//Normalize ArcLength Parameter
-	int n = vArcTable.size();
-	float TotalArcLen = vArcTable[n - 1].g;
+	int n = m_vArcTable.size();
+	float TotalArcLen = m_vArcTable[n - 1].g;
 	for(i=0; i < n; i++)
 	{
-		vArcTable[i].g = vArcTable[i].g / TotalArcLen;
+		m_vArcTable[i].g = m_vArcTable[i].g / TotalArcLen;
 	}
 
 	return (n > 0);
@@ -178,14 +189,14 @@ bool CSplineCatmullRom::populateTableAdaptive()
 
 bool CSplineCatmullRom::isTableEmpty()
 {
-	return (vArcTable.size() == 0);
+	return (m_vArcTable.size() == 0);
 }
 
 float CSplineCatmullRom::getArcLength() const
 {
-	size_t n = vArcTable.size();
+	size_t n = m_vArcTable.size();
 	if(n > 0)
-		return vArcTable[n-1].g;
+		return m_vArcTable[n-1].g;
 	else
 		return 0.0f;
 }
@@ -200,19 +211,19 @@ float CSplineCatmullRom::arcLengthViaTable(float u)
 	if(u > 1.0f)
 		u = 1.0f;
 
-	int n = vArcTable.size();
+	int n = m_vArcTable.size();
 	float d = (float)(1.0f /(float)n);
 
 	int i = static_cast<int>(floor(u / d));
 
 	float arcLen;
 	if((i >=0)&&(i < n - 1))
-		arcLen = vArcTable[i].g + float((u - vArcTable[i].u)/(vArcTable[i + 1].u - vArcTable[i].u)) * (vArcTable[i+1].g - vArcTable[i].g);
+		arcLen = m_vArcTable[i].g + float((u - m_vArcTable[i].u)/(m_vArcTable[i + 1].u - m_vArcTable[i].u)) * (m_vArcTable[i+1].g - m_vArcTable[i].g);
 	else 
 		//	if(i == n - 1)
 		//	arcLen = varcTable[i].g + float((u - varcTable[i].u)/(1.00f - varcTable[i].u)) * (1.00f - varcTable[i].g);
 		//	else
-		arcLen = vArcTable[n-1].g;
+		arcLen = m_vArcTable[n-1].g;
 
 	return arcLen;
 }
@@ -220,17 +231,17 @@ float CSplineCatmullRom::arcLengthViaTable(float u)
 float CSplineCatmullRom::parameterViaTable(float arcLength)
 {
 	//if((arcLength < 0)||(arcLength > 1.0f))
-	if(arcLength <= 0.0f)
+	if(arcLength < 0)
 		return 0.0f;
 	if(isTableEmpty())
 		return 0.0f;
 
-	int n = vArcTable.size();
+	int n = m_vArcTable.size();
 	int i;
 
 	for (i = n - 1; i >= 0; i--)
 	{
-		if(arcLength > vArcTable[i].g)
+		if(arcLength > m_vArcTable[i].g)
 			break;
 	}
 
@@ -238,9 +249,9 @@ float CSplineCatmullRom::parameterViaTable(float arcLength)
 	s = arcLength;
 
 	if((i >=0)&&(i < n - 1))
-		u = vArcTable[i].u + (s - vArcTable[i].g)/(vArcTable[i+1].g - vArcTable[i].g)*(vArcTable[i+1].u - vArcTable[i].u);
+		u = m_vArcTable[i].u + (s - m_vArcTable[i].g)/(m_vArcTable[i+1].g - m_vArcTable[i].g)*(m_vArcTable[i+1].u - m_vArcTable[i].u);
 	else if(i == n - 1)
-		u = vArcTable[i].u + (s - vArcTable[i].g)/(1.00f - vArcTable[i].g)*(1.00f - vArcTable[i].u);
+		u = m_vArcTable[i].u + (s - m_vArcTable[i].g)/(1.00f - m_vArcTable[i].g)*(1.00f - m_vArcTable[i].u);
 	else
 		u = 1.00f;
 
@@ -248,41 +259,56 @@ float CSplineCatmullRom::parameterViaTable(float arcLength)
 	return u;
 }
 
-void CSplineCatmullRom::addPoint(vec3f& p)
+void CSplineCatmullRom::addPoint(const vec3f& p)
 {
-	vCtrlPoints.push_back(p);
+	m_vCtrlPoints.push_back(p);
 }
 
 void CSplineCatmullRom::removePoint(size_t i)
 {
-	if(vCtrlPoints.isItemIndex(i))
-		vCtrlPoints.erase(vCtrlPoints.begin() + i);
+	if(isPointIndexCorrect(i))
+		m_vCtrlPoints.erase(m_vCtrlPoints.begin() + i);
 }
 
 void CSplineCatmullRom::removeAll()
 {
-	vCtrlPoints.clear();
-	vArcTable.clear();
+	m_vCtrlPoints.resize(0);
+	m_vArcTable.resize(0);
 }
 
 vec3f CSplineCatmullRom::getPoint(size_t i)
 {
-	return vCtrlPoints[i];
+	return m_vCtrlPoints[i];
 }
 
-void CSplineCatmullRom::setPoint(int index, vec3f& pt)
+void CSplineCatmullRom::setPoint(int index, const vec3f& pt)
 {
-	if(!vCtrlPoints.isItemIndex(index))	return;
-	vCtrlPoints[index] = pt;
+	if(!isPointIndexCorrect(index))
+		return;
+
+	float x = m_vCtrlPoints[index].x;
+	float y = m_vCtrlPoints[index].y;
+	float z = m_vCtrlPoints[index].z;
+
+	m_vCtrlPoints[index] = pt;
+
+	x = m_vCtrlPoints[index].x;
+	y = m_vCtrlPoints[index].y;
+	z = m_vCtrlPoints[index].z;
+}
+
+bool CSplineCatmullRom::isPointIndexCorrect(size_t i)
+{
+	return (i >= 0)&&(i < m_vCtrlPoints.size());
 }
 
 bool CSplineCatmullRom::getLocalSpline(float t, float &local_t, int *indices)
 {
-	int n = vCtrlPoints.size();
+	int n = m_vCtrlPoints.size();
 	if(n < 4)	
 		return false;
 
-	clampf(t, 0.0f, 1.0f);
+    Clampf(t, 0.0f, 1.0f);
 
 	int nSlices = n - 3;
 	int p = static_cast<int>(ceil(nSlices * t));
@@ -313,7 +339,7 @@ vec3f CSplineCatmullRom::tangent(float t)
 	}
 
 	// Interpolate
-	return tangent(local, vCtrlPoints[indices[0]], vCtrlPoints[indices[1]], vCtrlPoints[indices[2]], vCtrlPoints[indices[3]]);
+	return tangent(local, m_vCtrlPoints[indices[0]], m_vCtrlPoints[indices[1]], m_vCtrlPoints[indices[2]], m_vCtrlPoints[indices[3]]);
 }
 
 vec3f CSplineCatmullRom::tangent(float t, vec3f& p0, vec3f& p1, vec3f& p2, vec3f& p3)
@@ -348,7 +374,7 @@ vec3f CSplineCatmullRom::acceleration(float t)
 	}
 
 	// Interpolate
-	return acceleration(local, vCtrlPoints[indices[0]], vCtrlPoints[indices[1]], vCtrlPoints[indices[2]], vCtrlPoints[indices[3]]);
+	return acceleration(local, m_vCtrlPoints[indices[0]], m_vCtrlPoints[indices[1]], m_vCtrlPoints[indices[2]], m_vCtrlPoints[indices[3]]);
 }
 
 vec3f CSplineCatmullRom::acceleration(float t, vec3f& p0, vec3f& p1, vec3f& p2, vec3f& p3)
@@ -383,7 +409,7 @@ vec3f CSplineCatmullRom::position(float t)
 	}
 
 	// Interpolate
-	return position(local, vCtrlPoints[indices[0]], vCtrlPoints[indices[1]], vCtrlPoints[indices[2]], vCtrlPoints[indices[3]]);
+	return position(local, m_vCtrlPoints[indices[0]], m_vCtrlPoints[indices[1]], m_vCtrlPoints[indices[2]], m_vCtrlPoints[indices[3]]);
 }
 
 
@@ -410,6 +436,7 @@ vec3f CSplineCatmullRom::position(float t, vec3f& p0, vec3f& p1, vec3f& p2, vec3
 
 void CSplineCatmullRom::drawCtrlLine(unsigned int gl_draw_mode)
 {
+	/*
 	vec3f v;
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glBegin(gl_draw_mode);
@@ -420,11 +447,13 @@ void CSplineCatmullRom::drawCtrlLine(unsigned int gl_draw_mode)
 		}
 		glEnd();
 	glPopAttrib();
+	*/
 }
 
 
 void CSplineCatmullRom::drawCurve(unsigned int gl_draw_mode)
 {
+	/*
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glBegin(gl_draw_mode);
 		for(size_t i=0; i<vArcTable.size(); i++)
@@ -433,11 +462,7 @@ void CSplineCatmullRom::drawCurve(unsigned int gl_draw_mode)
 		}
 		glEnd();
 	glPopAttrib();
-}
-
-void CSplineCatmullRom::computeOctree()
-{
-	m_octree.set(&vCtrlPoints[0], (int)vCtrlPoints.size());
+	*/
 }
 
 
@@ -446,7 +471,7 @@ std::istream& operator >>( istream& ins, CSplineCatmullRom& curve )
 	int ctCtrlPoints = 0;	
 	ins >> ctCtrlPoints;
 
-	DVec<vec3> ctrlPoints = curve.getControlPoints();
+	std::vector<vec3> ctrlPoints = curve.getControlPoints();
 	if(ctCtrlPoints > 0)
 	{
 		ctrlPoints.resize(ctCtrlPoints);
@@ -463,7 +488,7 @@ std::istream& operator >>( istream& ins, CSplineCatmullRom& curve )
 
 std::ostream& operator <<( std::ostream& outs, const CSplineCatmullRom& curve )
 {
-	int ctCtrlPoints = curve.vCtrlPoints.size();
+	int ctCtrlPoints = curve.m_vCtrlPoints.size();
 
 	if(ctCtrlPoints > 0)
 	{
@@ -472,10 +497,12 @@ std::ostream& operator <<( std::ostream& outs, const CSplineCatmullRom& curve )
 		vec3f p;
 		for(int i=0; i<ctCtrlPoints; i++)
 		{
-			p = curve.vCtrlPoints[i];
+			p = curve.m_vCtrlPoints[i];
 			outs << p.x << p.y << p.z;	
 		}
 	}
 
 	return outs;
+}
+
 }

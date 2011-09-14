@@ -196,6 +196,7 @@
     <ClInclude Include="include\CBlobTreeAnimation.h" />
     <ClInclude Include="include\CEaseInEaseOut.h" />
     <ClInclude Include="include\CParallelCollisionDetector.h" />
+    <ClInclude Include="include\CPolyOpenCL.h" />
     <ClInclude Include="include\_GlobalFunctions.h" />
     <ClInclude Include="include\_GlobalSettings.h" />
     <ClInclude Include="include\_LookupTables.h" />

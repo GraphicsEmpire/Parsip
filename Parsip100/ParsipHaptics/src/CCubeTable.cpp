@@ -121,7 +121,7 @@ int CMarchCubeTable::otherface (int edge, int face)
 void CMarchCubeTable::writeLookupTable()
 {
 //{-1, -1, -1, -1, -1, -1, -1, -1},
-	DVec<DAnsiStr> content;
+	std::vector<DAnsiStr> content;
 	INTLISTS lstPolygons;
 	INTLIST triangleFans;
 	int a, b, c;

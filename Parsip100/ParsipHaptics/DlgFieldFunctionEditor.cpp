@@ -1,29 +1,29 @@
 #include "DlgFieldFunctionEditor.h"
 #include "ui_DlgFieldFunction.h"
-
 #include <QFileDialog>
 #include <QFile>
 #include <qtextstream.h>
+#include "PS_FrameWork/include/_dataTypes.h"
 
 GLFieldEditor::GLFieldEditor(QWidget* parent):QGLWidget(parent)
 {
-
+	m_lpCurve = new CSplineCatmullRom();
 }
 
 GLFieldEditor::~GLFieldEditor()
 {
-	m_curve.removeAll();
+	SAFE_DELETE(m_lpCurve);
 }
 
 void GLFieldEditor::initializeGL()
 {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
-	m_curve.addPoint(vec3f(-1.0f, 1.0f, 0.0f));
-	m_curve.addPoint(vec3f(0.0f, 1.0f, 0.0f));
-	m_curve.addPoint(vec3f(0.5f, 0.42f, 0.0f));
-	m_curve.addPoint(vec3f(1.0f, 0.0f, 0.0f));
-	m_curve.addPoint(vec3f(2.0f, 0.0f, 0.0f));
-	m_curve.populateTableAdaptive();
+	m_lpCurve->addPoint(vec3f(-1.0f, 1.0f, 0.0f));
+	m_lpCurve->addPoint(vec3f(0.0f, 1.0f, 0.0f));
+	m_lpCurve->addPoint(vec3f(0.5f, 0.42f, 0.0f));
+	m_lpCurve->addPoint(vec3f(1.0f, 0.0f, 0.0f));
+	m_lpCurve->addPoint(vec3f(2.0f, 0.0f, 0.0f));
+	m_lpCurve->populateTableAdaptive();
 }
 
 //All our painting stuff are here
@@ -37,24 +37,29 @@ void GLFieldEditor::paintGL()
 	glLoadIdentity();
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
+		
+		std::vector<vec3f> vCtrlPoints = m_lpCurve->getControlPoints();
+		std::vector<CSplineCatmullRom::ARCLENGTHPARAM> vArcTable = m_lpCurve->getArcTable();
+		//////////////////////////////////////////////
+		glColor3f(0.0f, 0.0f, 0.0f);	
 		glLineWidth(3.0f);
-		glColor3f(0.0f, 0.0f, 0.0f);
-		m_curve.drawCurve(GL_LINE_STRIP);
-	
-		glPointSize(5.0f);
+		glBegin(GL_LINE_STRIP);
+		for(size_t i=0; i<vCtrlPoints.size(); i++)					
+			glVertex3fv(vCtrlPoints[i].ptr());		
+		glEnd();			
+		//////////////////////////////////////////////
 		glColor3f(0.0f, 1.0f, 0.0f);
-		m_curve.drawCtrlLine(GL_POINTS);
-
-		DVec<vec3f> lstPoints;
-		m_curve.getArcPoints(lstPoints);
-	
+		glPointSize(5.0f);		
+		glBegin(GL_POINTS);
+		for(size_t i=0; i<vCtrlPoints.size(); i++)
+			glVertex3fv(vCtrlPoints[i].ptr());		
+		glEnd();		
+		//////////////////////////////////////////////
 		glColor3f(0.35f, 0.43f, 0.86f);
 		glBegin(GL_POLYGON);
 			glVertex3f(0.0f, 0.0f, 0.0f);
-			for(size_t i=0; i<lstPoints.size(); i++)
-			{
-				glVertex3fv(lstPoints[i].ptr());
-			}
+			for(size_t i=0; i<vArcTable.size(); i++)			
+				glVertex3fv(vArcTable[i].pt.ptr());			
 		glEnd();
 	glPopAttrib();
 }

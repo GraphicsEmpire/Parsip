@@ -25,16 +25,16 @@ namespace PS
 				strPath = strShaderName;
 		}
 		SAFE_DELETE(cfg);
-		if(fileExists(strPath.ptr()))
+		if(FileExists(strPath))
 			return toWideString(strPath);
 
 		
 		//Try directories near exe 
 		DAnsiStr temp;
-		strPath = extractFilePath(getExePath());
+		strPath = ExtractFilePath(GetExePath());
 		temp = strPath + strShaderName;
 				
-		if(fileExists(temp.ptr()))
+		if(FileExists(temp.ptr()))
 			return toWideString(temp);
 		else 
 		{

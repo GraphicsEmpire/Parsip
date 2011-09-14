@@ -3,6 +3,7 @@
 #define PS_STRING_H
 
 #include <istream>
+#include <vector>
 #include "PS_StringBase.h"
 
 namespace PS{
@@ -16,16 +17,23 @@ namespace PS{
 		CAString(const char src[], size_t srcSize = 0);
 		CAString(const CAString& src);
 
-		~CAString(){;}
+		~CAString(){
+			reset();
+		}
 
 		typedef char UNIT;
 
-		size_t getInputLength(const char src[]);
+		size_t getInputLength(const char src[]) const;
+		size_t getInputLengthW(const wchar_t src[]) const;
 
 		void copyFromW(const wchar_t src[], size_t srcSize = 0);
 
 		void appendFromW(const wchar_t src[], size_t srcSize = 0);
 		void appendFromW(const wchar_t wch);
+
+
+		int  decompose(const char delimiter, std::vector<CAString>& lstWords) const;
+		bool lcompare(const char chrBuffer[], size_t bufSize = 0) const;
 
 
 		//Useful Funcs
@@ -39,7 +47,7 @@ namespace PS{
 		friend bool operator!=(const CAString& a, const CAString& b);	
 		friend std::ostream& operator <<(std::ostream& outs, const CAString& src);
 		friend std::istream& operator >>(std::istream& ins, CAString& src);
-	
+
 		CAString operator +(const CAString& src) const;
 		CAString operator +(const wchar_t src[]) const;
 		CAString operator +(wchar_t src[]) const;
@@ -72,11 +80,12 @@ namespace PS{
 		CWString(const wchar_t src[], size_t srcSize = 0);
 		CWString(const CWString& src);
 
-		~CWString(){;}
+		~CWString(){ reset();}
 
 
 		typedef wchar_t UNIT;
-		size_t getInputLength(const wchar_t src[]);
+		size_t getInputLength(const wchar_t src[]) const;
+
 
 		void copyFromA(const char src[], size_t srcSize = 0);
 

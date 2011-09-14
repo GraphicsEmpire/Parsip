@@ -8,6 +8,7 @@
 #define NULL_ACHAR	'\0'
 #define NULL_WCHAR	L'\0'
 
+/*
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p) { if(p) {delete (p); (p) = NULL;}}
 #endif
@@ -15,10 +16,21 @@
 #ifndef SAFE_DELETE_ARRAY
 #define SAFE_DELETE_ARRAY(p) { if( (p) ) {delete [] (p); (p) = NULL;}}
 #endif
+*/
 
 #include <istream>
-#include "Windows.h"
-#include <tchar.h>
+#include <stdlib.h>
+#include "_dataTypes.h"
+
+#ifdef WIN32
+	#include <tchar.h>
+	#include "Windows.h"
+#elif defined(__linux__)
+	#include "string.h"
+#endif
+
+//#define USE_SECURE_API
+#define USE_NORMAL_API
 
 namespace PS{
 
@@ -26,15 +38,12 @@ namespace PS{
 	class CTString
 	{
 	public:	
+		typedef Type UNIT;
+
 		CTString();
 		CTString(const CTString& src);
 		CTString(const Type src[], size_t srcSize = 0);
-
-		typedef Type UNIT;
-
-			
-
-		~CTString(){ reset(); }
+		virtual ~CTString();
 
 		__inline Type nullChar() const
 		{
@@ -54,7 +63,7 @@ namespace PS{
 			return (sizeof(Type) == sizeof(char));
 		}
 
-		virtual size_t getInputLength(const Type src[])
+		virtual size_t getInputLength(const Type src[]) const
 		{
 			return static_cast<int>(src[0]) + 1;
 		}
@@ -75,10 +84,13 @@ namespace PS{
 		bool empty() const { return (m_length == 0);}
 		//====================================================		
 		//Return a pointer to the start of the string in sequence
+		const Type* cptr() const {return static_cast<const Type*>(m_sequence);}
 		Type* ptr() const {return m_sequence;}
 		Type* c_str() const {return m_sequence;}
 
 		//Other functions
+		bool lfindstr(const CTString& src, size_t &pos) const;
+		bool rfindstr(const CTString& src, size_t &pos) const;
 		bool lfind(Type ch, size_t &pos) const;
 		bool rfind(Type ch, size_t &pos) const;		
 		bool isEqual(const CTString& src) const
@@ -110,7 +122,7 @@ namespace PS{
 		void appendFromT(const Type ch);
 		//====================================================		
 		//Operators
-		template<typename Type>
+		template<typename U>
 		friend std::ostream& operator <<(std::ostream& outs, const CTString& src);
 
 		Type operator [](size_t pos) const;
@@ -133,9 +145,9 @@ namespace PS{
 
 
 		//Return true if they are equal
-		template<typename Type>
+		template<typename U>
 		friend bool operator==(const CTString& a, const CTString& b);	
-		template<typename Type>
+		template<typename U>
 		friend bool operator!=(const CTString& a, const CTString& b);	
 
 	protected:
@@ -167,11 +179,18 @@ namespace PS{
 	}
 
 	template<class Type>			
-	CTString<Type>::CTString(const Type src[], size_t srcSize = 0)
+	CTString<Type>::CTString(const Type src[], size_t srcSize)
 	{
 		init();
 		copyFromT(src, srcSize);
 	}
+
+	template<class Type>
+	CTString<Type>::~CTString()
+	{
+		reset();
+	}
+
 
 /*
 	template<class Type>
@@ -367,20 +386,7 @@ namespace PS{
 	CTString<Type>& CTString<Type>::toUpper()
 	{
 		for (size_t i=0; i < m_length; i++)
-			m_sequence[i] = _totupper((Type)m_sequence[i]);			
-
-		/*
-		if(this->isAnsiCharStr());
-		{
-			for (size_t i=0; i < m_length; i++)
-				m_sequence[i] = toupper((char)m_sequence[i]);			
-		}
-		else
-		{
-			for (size_t i=0; i < m_length; i++)
-				m_sequence[i] = towupper((wchar_t)m_sequence[i]);			
-		}
-		*/
+			m_sequence[i] = toupper((Type)m_sequence[i]);
 		return *this;				
 	}
 
@@ -388,23 +394,9 @@ namespace PS{
 	CTString<Type>& CTString<Type>::toLower()
 	{
 		for (size_t i=0; i < m_length; i++)
-			m_sequence[i] = _totlower((Type)m_sequence[i]);
-
-		/*
-		if(this->isAnsiCharStr())
-		{
-			for (size_t i=0; i < m_length; i++)
-				m_sequence[i] = tolower((char)m_sequence[i]);
-		}
-		else
-		{
-			for (size_t i=0; i < m_length; i++)
-				m_sequence[i] = towlower((wchar_t)m_sequence[i]);
-		}
-		*/
+			m_sequence[i] = tolower((Type)m_sequence[i]);
 		return *this;			
 	}
-
 
 	template<class Type>
 	bool CTString<Type>::lfind(Type ch, size_t &pos) const
@@ -437,13 +429,77 @@ namespace PS{
 	}
 
 	template<class Type>
+	bool CTString<Type>::lfindstr(const CTString& src, size_t &pos) const
+	{
+		pos = -1;
+		if(m_length == 0) return false;
+		size_t szQuery = src.length();
+
+		if(szQuery > m_length) return false;
+
+		bool bMatched;
+		for(size_t i=0; i <= (m_length - szQuery); i++)
+		{
+			bMatched = true;
+			for(size_t j=0; j < szQuery; j++)
+			{
+				if(m_sequence[i + j] != src[j])
+				{
+					bMatched = false;
+					break;
+				}
+			}
+
+			if(bMatched)
+			{
+				pos = i;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	template<class Type>
+	bool CTString<Type>::rfindstr(const CTString& src, size_t &pos) const
+	{
+		pos = -1;
+		if(m_length == 0) return false;
+		size_t szQuery = src.length();
+
+		if(szQuery > m_length) return false;
+
+		bool bMatched;
+		for(size_t i=m_length - szQuery; i >= 0; i--)
+		{
+			bMatched = true;
+			for(size_t j=0; j < szQuery; j++)
+			{
+				if(m_sequence[i + j] != src[j])
+				{
+					bMatched = false;
+					break;
+				}
+			}
+
+			if(bMatched)
+			{
+				pos = i;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	template<class Type>
 	CTString<Type> CTString<Type>::substrT(size_t offset, size_t count) const
 	{
 		CTString output;
 		if(m_length == 0) return output;
 		if(!isPos(offset)) return output;
 
-		if(count == -1)		
+		if(count == size_t(-1))
 			count = m_length - offset;		
 		
 		if(!isPos(offset+count-1)) 

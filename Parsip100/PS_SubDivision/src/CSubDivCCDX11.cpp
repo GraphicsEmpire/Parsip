@@ -816,7 +816,7 @@ bool CSubDivDX11::runOneShot()
 {
 	if(!compileAllShaders())
 	{
-		CErrorManager::getInstance().FlushErrors();
+		CErrorManager::GetInstance().FlushErrors();
 		return false;
 	}
 
@@ -1129,7 +1129,7 @@ bool CSubDivDX11::runOneShotTBB()
 	//createFinalMeshInPlace();
 
 	//Show all errors
-	CErrorManager::getInstance().PopMostRecentThenCleanup();
+	CErrorManager::GetInstance().PopMostRecentThenCleanup();
 	//************************************************************************
 	if(m_pOnOverallProgress)
 		m_pOnOverallProgress("TBB SubDiv: Complete.", 100.0f);
@@ -1813,7 +1813,7 @@ bool CSubDivDX11::run()
 	if(m_pOnOverallProgress)
 		m_pOnOverallProgress("cleaned up and done.", 100.0f);
 
-	CErrorManager::getInstance().FlushErrors();
+	CErrorManager::GetInstance().FlushErrors();
 
 
 	return true;

@@ -91,7 +91,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\PS_GenCylinder.h" />
     <ClInclude Include="..\include\PS_ParticleSystem.h" />
+    <ClInclude Include="..\include\PS_ResourceManager.h" />
+    <ClInclude Include="..\include\PS_ShaderGLSL.h" />
+    <ClInclude Include="..\include\PS_ShaderManager.h" />
     <ClInclude Include="..\include\PS_Singleton.h" />
     <ClInclude Include="..\include\_dataTypes.h" />
     <ClInclude Include="..\include\_parsDebug.h" />
@@ -100,7 +104,6 @@
     <ClInclude Include="..\include\DX_ComputeShader11.h" />
     <ClInclude Include="..\include\DX_Device11.h" />
     <ClInclude Include="..\include\DX_ShaderManager.h" />
-    <ClInclude Include="..\include\GL_Shader.h" />
     <ClInclude Include="..\include\mathHelper.h" />
     <ClInclude Include="..\include\PS_AffineTransformation.h">
       <DeploymentContent>true</DeploymentContent>
@@ -139,7 +142,6 @@
     <ClCompile Include="..\src\DX_ComputeShader11.cpp" />
     <ClCompile Include="..\src\DX_Device11.cpp" />
     <ClCompile Include="..\src\DX_ShaderManager.cpp" />
-    <ClCompile Include="..\src\GL_Shader.cpp" />
     <ClCompile Include="..\src\PS_AppConfig.cpp" />
     <ClCompile Include="..\src\PS_ArcBallCamera.cpp" />
     <ClCompile Include="..\src\PS_DateTime.cpp" />
@@ -147,6 +149,7 @@
     <ClCompile Include="..\src\PS_Exceptions.cpp" />
     <ClCompile Include="..\src\PS_FileDirectory.cpp" />
     <ClCompile Include="..\include\PS_GeometryFuncs.cpp" />
+    <ClCompile Include="..\src\PS_GenCylinder.cpp" />
     <ClCompile Include="..\src\PS_HWUtils.c" />
     <ClCompile Include="..\src\PS_Matrix.cpp" />
     <ClCompile Include="..\src\PS_MeshOGL.cpp" />
@@ -155,6 +158,8 @@
     <ClCompile Include="..\src\PS_PerfLogger.cpp" />
     <ClCompile Include="..\src\PS_PixelMap.cpp" />
     <ClCompile Include="..\src\PS_Quaternion.cpp" />
+    <ClCompile Include="..\src\PS_ShaderGLSL.cpp" />
+    <ClCompile Include="..\src\PS_ShaderManager.cpp" />
     <ClCompile Include="..\src\PS_SplineCatmullRom.cpp" />
     <ClCompile Include="..\src\PS_String.cpp" />
     <ClCompile Include="..\src\TaskManager.cpp" />

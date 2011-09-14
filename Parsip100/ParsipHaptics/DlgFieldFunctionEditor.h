@@ -52,7 +52,7 @@ protected:
 	//Handle keyboard for blender-style shortcut keys
 	//void keyPressEvent(QKeyEvent *event);
 private:
-	CSplineCatmullRom m_curve;
+	CSplineCatmullRom* m_lpCurve;
 };
 //////////////////////////////////////////////////////////////////////////
 

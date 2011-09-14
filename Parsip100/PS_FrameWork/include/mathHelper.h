@@ -43,7 +43,7 @@ const float EPSILON  = 0.0001f;
 #define ZERO_CLAMP(x)	((((x) > 0 && ((x) < EPSILON)) || ((x) < 0 && ((x) > -EPSILON)))?0.0f:(x) )
 
 //////////////////////////////////////////////////////////////////////////
-__inline int log2f(float x)
+__inline int Log2f(float x)
 {
 	unsigned int ix = (unsigned int&)x;
 	unsigned int exp = (ix >> 23) & 0xFF;
@@ -51,24 +51,34 @@ __inline int log2f(float x)
 	return log2;
 }
 
-__inline int log2i(unsigned int x)
+__inline int Log2i(unsigned int x)
 {
-	return log2f((float)x);
+	return Log2f((float)x);
 }
 
-__inline float lerp(float t, float s1, float s2)
+__inline float Lerp(float t, float s1, float s2)
 {
 	return (1 - t)*s1 + t*s2;
 }
 
-__inline void clampf(float &v, float min, float max)
+__inline void Clampf(float &v, float minVal, float maxVal)
 {
-    if(v < min)
-        v = min;
-    else if(v > max)
-        v = max;
+    if(v < minVal)
+        v = minVal;
+    else if(v > maxVal)
+        v = maxVal;
 }
 
+__inline void Clampd(double &v, double minVal, double maxVal)
+{
+	if(v < minVal)
+		v = minVal;
+	else if(v > maxVal)
+		v = maxVal;
+}
+
+
+/*
 __inline void clampd(double &v, double min, double max)
 {
     if(v < min)
@@ -76,7 +86,7 @@ __inline void clampd(double &v, double min, double max)
     else if(v > max)
         v = max;
 }
-
+*/
 __inline bool FLOAT_EQ(float x, float v)
 {
 	return ( ((v - EPSILON) < x) && (x < (v + EPSILON)) );

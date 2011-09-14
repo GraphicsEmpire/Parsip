@@ -572,7 +572,7 @@ public:
 	float getAngleRad(const Vector3d<float> &other) const
 	{
 		float dd = dot(other);
-		clampf(dd, -1.0f, 1.0f);
+		Clampf(dd, -1.0f, 1.0f);
 
 		float rad_angle = float(acos(dd));
 

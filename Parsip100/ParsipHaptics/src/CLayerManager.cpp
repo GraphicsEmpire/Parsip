@@ -1587,7 +1587,7 @@ void CLayerManager::addLayer(const CBlobTree* blob,
 
 	//Load Mesh
 	if(chrMeshFileName != NULL)
-	if(PS::FILESTRINGUTILS::fileExists(chrMeshFileName))
+	if(PS::FILESTRINGUTILS::FileExists(chrMeshFileName))
 		aLayer->setMesh(DAnsiStr(chrMeshFileName));
 
 	//Set Mesh FileName
@@ -1866,7 +1866,7 @@ bool CLayerManager::saveScript( CSketchConfig* cfg )
 
 bool CLayerManager::loadScript( const DAnsiStr& strFN )
 {
-	if(!PS::FILESTRINGUTILS::fileExists(strFN.ptr())) return false;
+	if(!PS::FILESTRINGUTILS::FileExists(strFN.ptr())) return false;
 
 	CSketchConfig* cfg = new CSketchConfig(strFN, CAppConfig::fmRead);
 	bool bres = loadScript(cfg);

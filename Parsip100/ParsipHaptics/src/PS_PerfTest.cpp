@@ -8,8 +8,8 @@ namespace PS{
 	{
 		FOnPerformTest = NULL;
 		FOnOverallProgress = NULL;
-		m_strFileName = PS::FILESTRINGUTILS::createNewFileAtRoot(".csv");
-		//PS::FILESTRINGUTILS::changeFileExt(PS::FILESTRINGUTILS::getExePath(), std::string(".csv"));		
+		m_strFileName = PS::FILESTRINGUTILS::CreateNewFileAtRoot(".csv");
+		//PS::FILESTRINGUTILS::changeFileExt(PS::FILESTRINGUTILS::GetExePath(), std::string(".csv"));		
 		setHeaders();
 	}
 
@@ -73,7 +73,7 @@ namespace PS{
 			for(int j=0; j < ctFiles; j++)
 			{			
 				strTestFile = m_lstTestFiles[j];
-				temp = PS::FILESTRINGUTILS::extractFileName(strTestFile);			
+				temp = PS::FILESTRINGUTILS::ExtractFileName(strTestFile);			
 
 				//Output some progress status
 				if(FOnOverallProgress)
@@ -156,7 +156,7 @@ namespace PS{
 		m_lastSysConfig = temp;
 
 		//Model	
-		str  = str + "," + PS::FILESTRINGUTILS::extractFileName(strTestFile);		
+		str  = str + "," + PS::FILESTRINGUTILS::ExtractFileName(strTestFile);		
 
 		//Events
 		for (size_t i=0; i < perf->getEventCount(); i++)
@@ -244,7 +244,7 @@ namespace PS{
 
 		if(m_writeResultsBehavior == wtrAppendExisting)
 		{
-			if(PS::FILESTRINGUTILS::getFileSize(m_strFileName.ptr()) > 0)
+			if(PS::FILESTRINGUTILS::GetFileSize(m_strFileName.ptr()) > 0)
 				bWriteHeader = false;
 			ofs.open(m_strFileName.ptr(), ios::out | ios::app);
 		}

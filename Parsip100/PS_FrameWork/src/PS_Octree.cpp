@@ -46,10 +46,32 @@ COctree::~COctree()
 	removeAllChildren();
 }
 
+void COctree::set(const std::vector<vec3f>& lstPoints)
+{
+	removeAllChildren();
+
+	vec3 vMax, vMin, p;
+	vMin = lstPoints[0];
+	vMax = lstPoints[0];
+
+	for(int i=1; i<lstPoints.size(); i++)
+	{
+		p = lstPoints[i];
+		if(p.x > vMax.x ) vMax.x = p.x;
+		if(p.y > vMax.y ) vMax.y = p.y;
+		if(p.z > vMax.z ) vMax.z = p.z;
+		if(p.x < vMin.x ) vMin.x = p.x;
+		if(p.y < vMin.y ) vMin.y = p.y;
+		if(p.z < vMin.z ) vMin.z = p.z;
+	}
+	lower = vMin;
+	upper = vMax;	
+}
+
 void COctree::set(vec3 lstPoints[], int ctPoints)
 {
-	for(int i=0;i<8; i++)
-		children[i] = NULL;	
+	removeAllChildren();
+
 	vec3 vMax, vMin, p;
 	vMin = lstPoints[0];
 	vMax = lstPoints[0];

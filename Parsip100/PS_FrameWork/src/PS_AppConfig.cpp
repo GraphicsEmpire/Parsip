@@ -18,8 +18,8 @@ namespace PS{
 	//====================================================================================
 	bool CAppConfig::setForRead()
 	{		
-		//m_strFileName = changeFileExt(getExePath(), DAnsiStr(".inf"));
-		m_strFileName = createNewFileAtRoot(".inf");
+		m_strFileName = ChangeFileExt(GetExePath(), DAnsiStr(".inf"));
+		//m_strFileName = CreateNewFileAtRoot(".inf");
 		m_fmode = fmRead;
 		m_content.resize(0);
 		return readFile();		 
@@ -37,7 +37,7 @@ namespace PS{
 	//====================================================================================
 	void CAppConfig::setForWrite()
 	{
-		m_strFileName = createNewFileAtRoot(".inf");
+		m_strFileName = CreateNewFileAtRoot(".inf");
 		m_fmode = fmWrite;
 	}
 	//====================================================================================
@@ -243,7 +243,7 @@ namespace PS{
 		}
 		else
 		{
-			DAnsiStr strFileTitle = extractFileName(m_strFileName);
+			DAnsiStr strFileTitle = ExtractFileName(m_strFileName);
 			DAnsiStr strMsg = printToAStr("CAppConfig tried to read [file: %s; section: %s; variable: %s] which is not found.", 
 									      strFileTitle.ptr(), 
 										  section.ptr(), 

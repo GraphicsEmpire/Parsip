@@ -61,10 +61,9 @@ GLWidget::GLWidget(QWidget *parent)
 
 	//Setup TBB Task Scheduling system
 	tbb::task_scheduler_init init;
-	m_pTaskManager = TaskManager::getTaskManager();
-	m_pTaskManager->init();
-
-
+	TaskManager::getTaskManager()->init();
+	
+	
 	//Reset
 	resetTransformState();
 
@@ -99,7 +98,7 @@ GLWidget::GLWidget(QWidget *parent)
 	m_setParsip.griddim = DEFAULT_GRIM_DIM;
 	m_setParsip.ctThreads = TaskManager::getTaskManager()->getThreadCount();
 	m_setParsip.testRuns = 1000;
-	m_setParsip.strLastScene = PS::FILESTRINGUTILS::extractFilePath(PS::FILESTRINGUTILS::getExePath());
+	m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(PS::FILESTRINGUTILS::GetExePath());
 	//TaskManager::getTaskManager()->getThreadCount()
 
 
@@ -139,7 +138,7 @@ GLWidget::~GLWidget()
 	saveSettings();
 
 	//Cleanup Memory
-	m_pTaskManager->shutdown();
+	TaskManager::getTaskManager()->shutdown();	
 	m_layerManager.removeAllLayers();
 
 	//m_parsip.removeAllMPUs();
@@ -168,7 +167,7 @@ GLWidget::~GLWidget()
 
 void GLWidget::loadSetting()
 {
-	DAnsiStr strFP = PS::FILESTRINGUTILS::createNewFileAtRoot(".ini");
+	DAnsiStr strFP = PS::FILESTRINGUTILS::CreateNewFileAtRoot(".ini");
 	CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmRead);	
 	//m_setParsip.ctThreads = cfg->readInt("parsip", "threadscount", m_setParsip.ctThreads);	
 	m_setParsip.griddim		  = cfg->readInt("parsip", "griddimension", m_setParsip.griddim);
@@ -205,7 +204,7 @@ void GLWidget::loadSetting()
 
 void GLWidget::saveSettings()
 {
-	DAnsiStr strFP = PS::FILESTRINGUTILS::createNewFileAtRoot(".ini");
+	DAnsiStr strFP = PS::FILESTRINGUTILS::CreateNewFileAtRoot(".ini");
 	CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmWrite);	
 	cfg->writeInt("parsip", "griddimension", m_setParsip.griddim);
 	cfg->writeInt("parsip", "threadscount", m_setParsip.ctThreads);
@@ -312,7 +311,7 @@ void GLWidget::initializeGL()
 	//Load shader
 	if(bGlewInit)
 	{	
-		DAnsiStr strPath = extractFilePath(getExePath());
+		DAnsiStr strPath = ExtractFilePath(GetExePath());
 		DAnsiStr vshader = strPath + "Resources\\Shaders\\TPhongVS.glsl";
 		DAnsiStr fshader = strPath + "Resources\\Shaders\\TPhongFS.glsl";
 		int res = m_shader.compile(vshader.ptr(), fshader.ptr());
@@ -326,7 +325,7 @@ void GLWidget::initializeGL()
 	*/
 
 	//Shading using programmable stages of the pipeline
-	DAnsiStr strPath = extractFilePath(getExePath());
+	DAnsiStr strPath = ExtractFilePath(GetExePath());
 	DAnsiStr strVShaderPath = strPath + "Resources\\Shaders\\TPhongVS.glsl";
 	DAnsiStr strFShaderPath = strPath + "Resources\\Shaders\\TPhongFS.glsl";
 
@@ -411,7 +410,7 @@ void GLWidget::paintGL()
 		else if(CAnimManager::GetAnimManager()->hasSelectedCtrlPoint())
 		{
 			CAnimObject* obj = CAnimManager::GetAnimManager()->getActiveObject();		
-			c = obj->path->vCtrlPoints[obj->idxSelCtrlPoint];
+			c = obj->path->getControlPoints()[obj->idxSelCtrlPoint];
 		}
 		else
 			c = m_uiTransform.mouseDown;
@@ -732,8 +731,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 				
 				if(obj)
 				{
-					DVec<vec3f> lstCtrlPoints = obj->path->getControlPoints();
-					if(lstCtrlPoints.isItemIndex(obj->idxSelCtrlPoint))
+					std::vector<vec3f> lstCtrlPoints = obj->path->getControlPoints();
+					if(obj->path->isCtrlPointIndex(obj->idxSelCtrlPoint))
 					{						
 						vec3f c = lstCtrlPoints[obj->idxSelCtrlPoint] + m_uiTransform.translate;
 						obj->path->setPoint(obj->idxSelCtrlPoint, c);
@@ -982,14 +981,9 @@ void GLWidget::setParsipNormalsGeodesicAngle( float value )
 
 void GLWidget::setParsipThreadsCount(int value)
 {	
-	if(m_pTaskManager != NULL)
-	{
-		m_pTaskManager->shutdown();		
-	}
-
-	m_pTaskManager = TaskManager::getTaskManager();
-	m_pTaskManager->init(value);		
-	m_setParsip.ctThreads = m_pTaskManager->getThreadCount();
+	TaskManager::getTaskManager()->shutdown();
+	TaskManager::getTaskManager()->init(value);		
+	m_setParsip.ctThreads = TaskManager::getTaskManager()->getThreadCount();
 }
 
 void GLWidget::setParsipUseTBB(bool bEnable)
@@ -1286,9 +1280,9 @@ void GLWidget::actOpenProject()
 void GLWidget::actOpenProject(QString strFile)
 {
 	DAnsiStr strFilePath(strFile.toAscii().data());
-	DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::extractFileName(strFilePath);
-	DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::extractFileExt(strFilePath);
-	m_setParsip.strLastScene = PS::FILESTRINGUTILS::extractFilePath(strFilePath);
+	DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
+	DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::ExtractFileExt(strFilePath);
+	m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
 
 	//m_optParsip.removeAllMPUs();
 	if(strFileExt.toUpper() == "SCENE")
@@ -1369,10 +1363,10 @@ void GLWidget::actOpenProject(QString strFile)
 
 void GLWidget::actSaveProject()
 {
-	DAnsiStr strAppPath = PS::FILESTRINGUTILS::extractFilePath(PS::FILESTRINGUTILS::getExePath());
+	DAnsiStr strAppPath = PS::FILESTRINGUTILS::ExtractFilePath(PS::FILESTRINGUTILS::GetExePath());
 	QString qstrFileName = QFileDialog::getSaveFileName(this, tr("Save Scene"), strAppPath.ptr(), tr("Blobtree Scene(*.scene)"));
 	DAnsiStr strFilePath(qstrFileName.toAscii().data());
-	m_setParsip.strLastScene = PS::FILESTRINGUTILS::extractFilePath(strFilePath);
+	m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
 	m_layerManager.saveScript(strFilePath);	
 }
 
@@ -1399,11 +1393,11 @@ void GLWidget::actMeshInsert()
 													   tr("Obj Mesh(*.obj)"));
 
 	DAnsiStr strFilePath(strFileName.toAscii().data());
-	if(PS::FILESTRINGUTILS::fileExists(strFilePath.ptr()))
+	if(PS::FILESTRINGUTILS::FileExists(strFilePath.ptr()))
 	{
-		DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::extractFileName(strFilePath);
-		//DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::extractFileExt(strFilePath);
-		m_setParsip.strLastScene = PS::FILESTRINGUTILS::extractFilePath(strFilePath);
+		DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
+		//DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::ExtractFileExt(strFilePath);
+		m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
 
 		m_layerManager.addLayer(NULL, strFilePath.ptr(), strFileTitle.ptr());
 
@@ -3115,7 +3109,7 @@ void GLWidget::userInterfaceReady()
 	
 	//Set Threads Count
 	setParsipThreadsCount(tbb::task_scheduler_init::automatic);
-	emit sig_setParsipThreadsCount(m_pTaskManager->getThreadCount());
+	emit sig_setParsipThreadsCount(TaskManager::getTaskManager()->getThreadCount());
 
 	//Set default Materials
 	for(int i=0; i<8; i++)
@@ -3302,7 +3296,7 @@ void GLWidget::drawGraph()
 
 
 	float wTimeUnit = m_scrDim.x / static_cast<float>(tsPolygonize);
-	clampf(wTimeUnit, 1.0f, m_scrDim.x);
+	Clampf(wTimeUnit, 1.0f, m_scrDim.x);
 
 	float quadH = MATHMIN(font.LineHeight() + 2, (m_scrDim.y - font.LineHeight()) / static_cast<float>(ctCores));
 	float quadW;
@@ -3347,7 +3341,7 @@ void GLWidget::drawGraph()
 	
 	//////////////////////////////////////////	
 	float fontHeight = quadH - 2.0f;
-	clampf(fontHeight, 8.0f, 24.0f);
+	Clampf(fontHeight, 8.0f, 24.0f);
 	font.FaceSize((int)fontHeight);
 	for(int iCore=0; iCore<ctCores; iCore++)
 	{
@@ -3417,11 +3411,11 @@ void GLWidget::actTestPerformUtilizationTest()
 	if(m_layerManager.countLayers() == 0) return;
 
 	DVec<DAnsiStr> strHeaders;
-	DAnsiStr strOut = PS::FILESTRINGUTILS::extractFilePath(getExePath()) + DAnsiStr("CoresUtilization.csv");
+	DAnsiStr strOut = PS::FILESTRINGUTILS::ExtractFilePath(GetExePath()) + DAnsiStr("CoresUtilization.csv");
 	
 	PS::CPerfTest* perfCoreUtilizations = new PS::CPerfTest();
 	perfCoreUtilizations->setOutputFileName(strOut, PS::CPerfTest::wtrCreateNew);
-	int ctCores = m_pTaskManager->getThreadCount();
+	int ctCores = TaskManager::getTaskManager()->getThreadCount();
 
 	strHeaders.push_back("test#");
 	for(int iCore=0;iCore<ctCores; iCore++)			
@@ -3470,10 +3464,10 @@ void GLWidget::actTestPerformIncreasingThreads()
 	if(m_layerManager.countLayers() == 0) return;
 
 	DVec<DAnsiStr> strHeaders;
-	DAnsiStr strOut = PS::FILESTRINGUTILS::extractFilePath(getExePath()) + DAnsiStr("CoresUtilization.csv");
+	DAnsiStr strOut = PS::FILESTRINGUTILS::ExtractFilePath(GetExePath()) + DAnsiStr("CoresUtilization.csv");
 	PS::CPerfTest* perfCoreUtilizations = new PS::CPerfTest();
 	perfCoreUtilizations->setOutputFileName(strOut, PS::CPerfTest::wtrCreateNew);
-	int ctCores = m_pTaskManager->getThreadCount();
+	int ctCores = TaskManager::getTaskManager()->getThreadCount();
 		
 	strHeaders.push_back("test#");
 	for(int iCore=0;iCore<ctCores; iCore++)			
@@ -3567,7 +3561,7 @@ void GLWidget::actTestPerformIncreasingThreads()
 			parsip->statsMeshInfo(ctV, ctT);
 			//m_parsip.getTimingStats(tsSetup, tsPoly);
 			//m_parsip.getMeshStats(ctV, ctT);
-			str = printToAStr("%d,%d,%d,%d,", testNumber, m_pTaskManager->getThreadCount(), ctPrims, ctOperators);
+			str = printToAStr("%d,%d,%d,%d,", testNumber, TaskManager::getTaskManager()->getThreadCount(), ctPrims, ctOperators);
 			str += printToAStr("%.2f,%.2f,%.2f,", m_setParsip.cellSize, tsSetup, tsPoly);
 			str += printToAStr("%d,%d,", parsip->statsTotalFieldEvals(), parsip->statsTotalFieldEvals() / ctT);
 			str += printToAStr("%d,%d,%d,%d,",
@@ -3657,7 +3651,7 @@ void GLWidget::actTestPerformStd()
 		tsPoly = parsip->statsPolyTime();
 		
 		parsip->statsMeshInfo(ctV, ctT);
-		str = printToAStr("%d,%d,%d,%d,", i+1, m_pTaskManager->getThreadCount(), ctPrims, ctOperators);
+		str = printToAStr("%d,%d,%d,%d,", i+1, TaskManager::getTaskManager()->getThreadCount(), ctPrims, ctOperators);
 		str += printToAStr("%.2f,%.2f,%.2f,", m_setParsip.cellSize, tsSetup, tsPoly);
 		str += printToAStr("%d,%d,", parsip->statsTotalFieldEvals(), parsip->statsTotalFieldEvals() / ctT);
 		str += printToAStr("%d,%d,%d,%d,",
