@@ -92,7 +92,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\PS_GenCylinder.h" />
-    <ClInclude Include="..\include\PS_Mesh.h" />
     <ClInclude Include="..\include\PS_ParticleSystem.h" />
     <ClInclude Include="..\include\PS_ResourceManager.h" />
     <ClInclude Include="..\include\PS_ShaderGLSL.h" />
@@ -153,7 +152,6 @@
     <ClCompile Include="..\src\PS_GenCylinder.cpp" />
     <ClCompile Include="..\src\PS_HWUtils.c" />
     <ClCompile Include="..\src\PS_Matrix.cpp" />
-    <ClCompile Include="..\src\PS_Mesh.cpp" />
     <ClCompile Include="..\src\PS_MeshOGL.cpp" />
     <ClCompile Include="..\src\PS_MeshVV.cpp" />
     <ClCompile Include="..\src\PS_Octree.cpp" />
