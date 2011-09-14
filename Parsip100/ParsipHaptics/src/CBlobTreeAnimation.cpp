@@ -92,7 +92,7 @@ void CAnimObject::advance(float animTime)
 
 void CAnimObject::drawPathCtrlPoints()
 {
-	DVec<vec3f> vCtrlPoints = path->getControlPoints();
+	std::vector<vec3f> vCtrlPoints = path->getControlPoints();
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glPointSize(5.0f);
@@ -105,7 +105,7 @@ void CAnimObject::drawPathCtrlPoints()
 	}
 	glEnd();
 
-	if(vCtrlPoints.isItemIndex(idxSelCtrlPoint))	
+	if(idxSelCtrlPoint >=0 && idxSelCtrlPoint < (int)vCtrlPoints.size())	
 	{
 		glPointSize(7.0f);
 		glColor3f(1.0f, 0.0f, 0.0f);
@@ -226,8 +226,7 @@ bool CAnimManager::queryHitPathCtrlPoint( const PS::MATH::CRay& ray, float t0, f
 	if(idxPath >= 0)
 	{
 		COctree oct;
-		DVec<vec3f> vCtrlPoints;
-		vCtrlPoints = m_lstObjects[idxPath]->path->getControlPoints();
+		std::vector<vec3f> vCtrlPoints = m_lstObjects[idxPath]->path->getControlPoints();
 		vec3f delta(m_selRadius, m_selRadius, m_selRadius);
 
 		for(size_t i=0; i<vCtrlPoints.size(); i++)
@@ -274,7 +273,9 @@ bool CAnimManager::hasSelectedCtrlPoint()
 {
 	CAnimObject* obj = getActiveObject();
 	if(obj)
-		return obj->path->vCtrlPoints.isItemIndex(obj->idxSelCtrlPoint);
+	{
+		return obj->path->isCtrlPointIndex(obj->idxSelCtrlPoint);
+	}
 	return false;
 }
 

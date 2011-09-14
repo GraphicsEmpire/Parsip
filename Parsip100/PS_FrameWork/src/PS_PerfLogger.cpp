@@ -2,6 +2,8 @@
 #include "PS_PerfLogger.h"
 #include "PS_FileDirectory.h"
 
+using namespace PS::FILESTRINGUTILS;
+
 namespace PS
 {
 
@@ -187,7 +189,7 @@ void CPerfLogger::endEvent(UINT id)
 		e->endTS = getPerfCounter();
 		e->timeMS = convertTimeTicksToMS(e->endTS - e->startTS);
 		
-		printf("%s(%d) : %s : %4.2lf ms\n", PS::FILESTRINGUTILS::extractFileName(e->strFile.c_str()), e->lineNumber, e->strFunction.c_str(), e->timeMS );
+		printf("%s(%d) : %s : %4.2lf ms\n", ExtractFileName(e->strFile.c_str()), e->lineNumber, e->strFunction.c_str(), e->timeMS );
 		//printf("%s(%d) : %s : %4.2lf ms\n", e->strFile.c_str(), e->lineNumber, e->strFunction.c_str(), e->timeMS );
 		//printf( "%s: %4.2lf ms\n", mpMsg, DUT::TimeTicksToMS( elapsed ) );
 	}
@@ -253,7 +255,7 @@ double CPerfLogger::convertTimeTicksToMS( I64 ticks )
 //========================================================================================
 void CPerfLogger::init()
 {
-	this->m_strFileName = PS::FILESTRINGUTILS::createNewFileAtRoot(".perf");  //changeFileExt(PS::FILESTRINGUTILS::getExePath(), DAnsiStr(".perf"));
+	this->m_strFileName = ChangeFileExt(GetExePath(), DAnsiStr(".perf"));
 /*
 #if defined(_MSC_VER)
 	if(m_freq == 0)	

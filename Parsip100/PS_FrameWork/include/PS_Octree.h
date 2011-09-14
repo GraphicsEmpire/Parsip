@@ -39,6 +39,7 @@ public:
 	
 	COctree* children[8];
 		
+	void set(const std::vector<vec3f>& lstPoints);
 	void set(vec3 lstPoints[], int ctPoints);
 	void set(vec3f lo, vec3f hi);
 

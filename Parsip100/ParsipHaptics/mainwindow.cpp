@@ -303,7 +303,7 @@ void MainWindow::readApplySetting()
 	SettingsDisplay setDisplay;
 	int dragScale = 100;
 
-	DAnsiStr strFP = PS::FILESTRINGUTILS::createNewFileAtRoot(".ini");
+	DAnsiStr strFP = PS::FILESTRINGUTILS::CreateNewFileAtRoot(".ini");
 	CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmRead);	
 	
 	//setParsip.ctThreads = cfg->readInt("parsip", "threadscount", setParsip.ctThreads);
@@ -338,7 +338,7 @@ void MainWindow::readApplySetting()
 
 
 	//ui->sliderThreadsCount->setValue(setParsip.ctThreads);
-	ui->cboGridDim->setCurrentIndex(setParsip.griddim > 0?(log2i(setParsip.griddim) - 3):0);
+	ui->cboGridDim->setCurrentIndex(setParsip.griddim > 0?(Log2i(setParsip.griddim) - 3):0);
 	ui->udNormalsAngle->setValue(setParsip.adaptiveParam);
 	ui->udThreadsCount->setValue(setParsip.ctThreads);
 	ui->rbCube->setChecked(setParsip.cellShape == csCube);
@@ -573,7 +573,7 @@ void MainWindow::actNetSaveSettings()
 	m_setSketchNet.bAutoConnect = true;	
 	m_setSketchNet.port = ui->udServerPort->value();
 	
-	DAnsiStr strFP = PS::FILESTRINGUTILS::createNewFileAtRoot(".net");
+	DAnsiStr strFP = PS::FILESTRINGUTILS::CreateNewFileAtRoot(".net");
 	CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmWrite);	
 	cfg->writeBool("sketchnet", "autoconnect", m_setSketchNet.bAutoConnect);
 	cfg->writeInt("sketchnet", "port", m_setSketchNet.port);
@@ -591,7 +591,7 @@ void MainWindow::actNetSaveSettings()
 
 void MainWindow::readApplySettingNet()
 {	
-	DAnsiStr strFP = PS::FILESTRINGUTILS::createNewFileAtRoot(".net");
+	DAnsiStr strFP = PS::FILESTRINGUTILS::CreateNewFileAtRoot(".net");
 	CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmRead);	
 
 	m_setSketchNet.bAutoConnect = cfg->readBool("sketchnet", "autoconnect", m_setSketchNet.bAutoConnect);

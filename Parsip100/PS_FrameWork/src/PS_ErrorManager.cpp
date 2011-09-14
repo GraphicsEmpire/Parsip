@@ -1,277 +1,191 @@
 //#include "stdafx.h"
 #ifdef _WIN32
-	#include <windows.h>
+#include <windows.h>
 #endif // _WIN32
 
-#include <iostream>
+#if defined(__linux__)
+#include <stdarg.h>
+#endif
 #include <stdexcept>
 //#include <vector>
 
 #include "PS_Exceptions.h"
 #include "PS_FileDirectory.h"
 #include "PS_ErrorManager.h"
+#include <fstream>
 
 
 namespace PS{
 
-DVec<DAnsiStr> CErrorManager::m_errorStack = DVec<DAnsiStr>();
-CErrorManager* CErrorManager::sm_pErrorManager = 0;
-bool CErrorManager::m_isDestroyed = false;
+	CErrorManager* CErrorManager::sm_pErrorManager = NULL;
 
-/**
-*/
-void CErrorManager::PushError(const char *file, int line)
-{
-	if (m_errorStack.size() < 100)
-		m_errorStack.push_back(FormatError(file, line, "An assertion failure has occurred."));
-}
-
-/**
-*/
-void CErrorManager::PushError(const char *file, int line, const char *message)
-{
-	if (m_errorStack.size() < 100 && message)
+	CErrorManager::CErrorManager(void)
 	{
-		DAnsiStr entireMessage(message);
-		DVec<DAnsiStr> partialMessageArray;
-		DAnsiStr temp;
-
-		size_t last, current;
-
-		// The last element of the string.
-		last = entireMessage.length();
-
-		// Walk backward through the string.
-		while (entireMessage.rfind('\n', current))
-		{
-			current++;
-
-			// Push each message into the vector. Current is incremented 
-			// before copying to avoid copying the delimiter.
-			temp = entireMessage.substr(current, last - current);
-
-			partialMessageArray.push_back(temp);
-
-			// Back over the delimiter we just found, and set last to the end 
-			// of the next message.
-			current -= 2;
-			last = current;			
-		}
-
-		temp = entireMessage.substr(0, last - current);
-
-		// Pick up the first message - it's not preceded by a delimiter.
-		partialMessageArray.push_back(temp);
-
-		while (partialMessageArray.size() != 0)
-		{
-			if (!partialMessageArray.back().empty())
-			{
-				temp = FormatError(file, line, partialMessageArray.back().ptr());
-				m_errorStack.push_back(temp);
-			}
-
-			partialMessageArray.pop_back();
-		}
+		m_bDisplayRightAway = true;
+		m_bWriteToFile = true;
+		m_fOnPopError = NULL;
+		m_stkErrors.clear();
 	}
-}
 
-/**
-*/
-void CErrorManager::PushError(const char *message)
-{
-	if (m_errorStack.size() < 100 && message)
+	CErrorManager::~CErrorManager(void)
 	{
-		DAnsiStr entireMessage(message);
-		DVec<DAnsiStr> partialMessageArray;
-		DAnsiStr temp;
-
-		size_t last, current;
-
-		// The last element of the string.
-		last = entireMessage.length();
-		
-		// Walk backward through the string.
-		while (entireMessage.rfind('\n', current))
-		{
-			current++;
-
-			// Push each message into the vector. Current is incremented 
-			// before copying to avoid copying the delimiter.
-			temp = entireMessage.substr(current, last - current);
-
-			partialMessageArray.push_back(temp);
-
-			// Back over the delimiter we just found, and set last to the end 
-			// of the next message.
-			current -= 2;
-			last = current;			
-		}
-		
-		temp = entireMessage.substr(0, last - current);
-
-		// Pick up the first message - it's not preceded by a delimiter.
-		partialMessageArray.push_back(temp);
-
-		while (partialMessageArray.size() != 0)
-		{
-			if (!partialMessageArray.back().empty())
-			{
-				temp = FormatError(partialMessageArray.back().ptr());
-				m_errorStack.push_back(temp);
-			}
-
-			partialMessageArray.pop_back();
-		}
+		FlushErrors();
+		m_fOnPopError = NULL;
+		sm_pErrorManager = NULL;
 	}
-}
 
-void CErrorManager::PopMostRecentThenCleanup() const
-{
-	if(m_errorStack.size() == 0) return;
-	DAnsiStr strError = m_errorStack.back();
-	if (strError.length() == 0) return;
-	
-	DWideStr wstrMsg = printToWStr("There are %d errors. I am going to clear all of them but this is the most recent one:\n", m_errorStack.size());
-	wstrMsg.appendFromA(strError.ptr());
 
-#ifdef _WIN32
-	MessageBox(0, (LPCWSTR)wstrMsg.ptr(), (LPCWSTR)L"Error", MB_OK);
+	void CErrorManager::PushError(const char *file, int line)
+	{
+		pushToStack(FormatError(file, line, "An assertion failure has occurred."));
+	}
+
+	void CErrorManager::PushError(const char *file, int line, const char *message)
+	{
+		pushToStack(FormatError(file, line, message));
+	}
+
+	void CErrorManager::PushErrorExt(const char *file, int line, const char *pFmt, ...)
+	{
+		va_list	vl;
+		va_start( vl, pFmt );
+
+		char	buff[1024];
+
+#ifdef USE_SECURE_API
+		vsnprintf_s( buff, _countof(buff)-1, _TRUNCATE, pFmt, vl );
+#else
+		vsnprintf(buff, sizeof(buff)-1, pFmt, vl);
+#endif
+		va_end( vl );
+
+		DAnsiStr strError = DAnsiStr(buff);
+		DAnsiStr strHeader = printToAStr("%s(%d) : error: ", file, line);
+		pushToStack(strHeader + strError);
+	}
+
+	void CErrorManager::PushError(const char *message)
+	{
+		pushToStack(FormatError(message));
+	}
+
+	void CErrorManager::pushToStack(const DAnsiStr& strError)
+	{
+		if(strError.length() == 0)
+			return;
+		if(m_stkErrors.size() > MAX_ERRORS_TO_KEEP)
+			FlushErrors();
+		else if(m_bDisplayRightAway)
+		{
+			displayError(strError.ptr());
+		}
+		m_stkErrors.push_back(strError);
+	}
+
+	void CErrorManager::PopMostRecentThenCleanup()
+	{
+		if(m_stkErrors.size() == 0) return;
+		DAnsiStr strError = m_stkErrors.back();
+		if (strError.length() == 0) return;
+
+		DAnsiStr strMsg = printToAStr("There are %d errors. I am going to clear all of them but this is the most recent one:\n", m_stkErrors.size());
+		strMsg += strError;
+		displayError(strMsg.cptr());
+		m_stkErrors.resize(0);
+	}
+
+	/**
+	*/
+	void CErrorManager::PopError()
+	{
+		if(m_stkErrors.size() == 0) return;
+		DAnsiStr strError = m_stkErrors.back();
+		if (strError.length() != 0)
+			displayError(strError.cptr());
+
+		m_stkErrors.pop_back();
+	}
+
+	void CErrorManager::displayError(const char* chrError) const
+	{
+		if(chrError == NULL) return;
+		if(m_fOnPopError)
+			m_fOnPopError(chrError);
+		else
+		{
+#ifdef WIN32
+			OutputDebugStringA(chrError);
+			DWideStr wstr(chrError);
+			MessageBoxW(0, (LPCWSTR)wstr.ptr(), (LPCWSTR)L"Error", MB_OK);
 #else // !_WIN32
-	cout << wstrMsg << endl;
-#endif // _WIN32	
-	m_errorStack.clear();
-}
-
-/**
-*/
-void CErrorManager::PopError(void) const
-{
-	if(m_errorStack.size() == 0) return;
-
-	DAnsiStr strError = m_errorStack.back();
-	if (strError.length() == 0) return;
-
-	DWideStr wstr(strError.ptr(), strError.length());
-#ifdef _WIN32
-	MessageBox(0, (LPCWSTR)wstr.ptr(), (LPCWSTR)L"Error", MB_OK);
-#else // !_WIN32
-	cout << strError << endl;
+			fprintf(stderr, "\n");
+			fprintf(stderr, chrError);
 #endif // _WIN32
-	m_errorStack.pop_back();
-}
-
-void CErrorManager::ClearErrors()
-{
-	if(m_errorStack.size() > 0 )
-	{
-		DAnsiStr strMsg = printToAStr("Clearing %d errors.", m_errorStack.size());
-		OutputDebugStringA(strMsg.ptr());
-		m_errorStack.clear();
-	}	
-}
-
-/**
-*/
-void CErrorManager::FlushErrors() const
-{
-	int errorCount;
-
-	errorCount = 0;
-
-	while (m_errorStack.size() > 0)
-	{
-		PopError();
-
-		errorCount++;
+		}
 	}
 
-	//if (errorCount)
-	//	cout << errorCount << " error(s)" << endl;
-}
+	void CErrorManager::ClearErrors()
+	{
+		if(m_stkErrors.size() > 0 )
+		{
+			DAnsiStr strMsg = printToAStr("Clearing %d errors.", m_stkErrors.size());
+			displayError(strMsg.ptr());
+			m_stkErrors.clear();
+		}	
+	}
 
-/**
-*/
-bool CErrorManager::IsOk(void) const
-{
-	return (m_errorStack.size() == 0);
-}
+	/**
+	*/
+	void CErrorManager::FlushErrors()
+	{
+		if (m_bWriteToFile && m_stkErrors.size() > 0)
+		{
+			DAnsiStr strFN = PS::FILESTRINGUTILS::GetExePath();
+			strFN = PS::FILESTRINGUTILS::ChangeFileExt(strFN, DAnsiStr(".log"));
 
-/**
-*/
-CErrorManager::CErrorManager(void)
-{
-	m_errorStack.clear();
-}
+			//Writing the stack error to disk
+			ofstream ofs(strFN.ptr(), ios::out | ios::trunc);
+			if (!ofs.is_open())
+				return;
 
-/**
-*/
-CErrorManager::~CErrorManager(void)
-{
-	sm_pErrorManager = 0;
-	m_isDestroyed = true;
-}
+			DAnsiStr strLine;
+			for (size_t i = 0; i < m_stkErrors.size(); i++)
+			{
+				strLine = m_stkErrors[i];
+				if (strLine.length() > 0)
+					ofs << strLine << '\0' << '\n';
+			}
+			ofs.close();
+		}
+		while (m_stkErrors.size() > 0) {
+			PopError();
+		}
+	}
 
-/**
-*/
-void CErrorManager::Create(void)
-{
-	static CErrorManager theInstance;
+	/**
+	*/
+	DAnsiStr CErrorManager::FormatError(const char *file, int line, const char *message) const
+	{
+		DAnsiStr strError;
 
-	m_errorStack.clear();
+		if(message)
+			strError = printToAStr("%s(%d) : error: %s", file, line, message);
+		else
+			strError = printToAStr("%s(%d) : error: (invalid error message)", file, line);
+		return strError;
+	}
 
-	sm_pErrorManager = &theInstance;
-}
+	/**
+	*/
+	DAnsiStr CErrorManager::FormatError(const char *message) const
+	{
+		DAnsiStr strError;
+		if (message)
+			strError = printToAStr("error: %s", message);
+		else 
+			strError = DAnsiStr("error: (invalid error message)");
 
-/**
-*/
-void CErrorManager::OnDeadReference(void)
-{
-	//throw runtime_error("Dead Reference Detected.");
-	throw PS::CAExceptions("Dead Reference Detected.");
-}
-
-/**
-*/
-DAnsiStr CErrorManager::FormatError(const char *file, int line, const char *message) const
-{
-	char lineString[64];
-	DAnsiStr errorString;
-
-#ifdef _WIN32
-	sprintf_s(lineString, 64, "%i", line);
-#else // !_WIN32
-	sprintf(lineString, "%i", line);
-#endif // _WIN32
-
-	errorString = file;
-	errorString += "(";
-	errorString += lineString;
-	errorString += ")";
-	errorString += " : error: ";
-
-	if (message)
-		errorString += message;
-	else 
-		errorString += "(invalid error message)";
-
-	return errorString;
-}
-
-/**
-*/
-DAnsiStr CErrorManager::FormatError(const char *message) const
-{
-	DAnsiStr errorString;
-
-	errorString = "error: ";
-
-	if (message)
-		errorString += message;
-	else 
-		errorString += "(invalid error message)";
-
-	return errorString;
-}
+		return strError;
+	}
 
 }

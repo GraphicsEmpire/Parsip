@@ -16,10 +16,11 @@
 
 #include "CompactBlobTree.h"
 #include "CPolyParsipOptimized.h"
-
 #include "_GlobalFunctions.h"
+#include "Loki/Singleton.h"
 
 using namespace std;
+using namespace Loki;
 
 /*
 	Layer will group a set of BlobNodes so that they can be polygonized together.
@@ -330,6 +331,8 @@ public:
 	}
 	
 };
+
+typedef SingletonHolder<CLayerManager, CreateUsingNew, PhoenixSingleton> LayerManagerSingleton;
 
 }
 }

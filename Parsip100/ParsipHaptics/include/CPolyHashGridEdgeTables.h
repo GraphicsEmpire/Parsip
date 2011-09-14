@@ -31,7 +31,7 @@ namespace PS{
 		{
 			dim = d;
 			cellid_shift_x = 0;
-			cellid_shift_y = log2i(dim);
+			cellid_shift_y = Log2i(dim);
 			cellid_shift_z = 2*cellid_shift_y;			
 			cellid_bitmask = (unsigned int)((1 << cellid_shift_y) - 1);
 			cellid_hashsize = (unsigned int)(1 << (3*cellid_shift_y));

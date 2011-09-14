@@ -48,8 +48,8 @@ namespace PS
 			void setDefault()
 			{
 				m_strConfigName = "DEFAULT";
-				m_strExeName = extractFileName( getExePath() );
-				m_strResPath = extractFilePath( getExePath() );
+				m_strExeName = ExtractFileName( GetExePath() );
+				m_strResPath = ExtractFilePath( GetExePath() );
 				m_strResPath += "Resources";
 				m_strComputeShadersPath = m_strResPath + "\\DXComputeShaders";
 				m_strTargetEventName = "";

@@ -115,7 +115,7 @@ HRESULT DXShader11::compile( LPCWSTR pSrcFile,
 {
 	HRESULT hr;
     
-	if(!PS::FILESTRINGUTILS::fileExistsW( pSrcFile))
+	if(!PS::FILESTRINGUTILS::FileExists( pSrcFile))
 		return E_FAIL;
 
     DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -156,7 +156,7 @@ HRESULT DXShader11::compile( LPCWSTR pSrcFile,
 		{
 			DAnsiStr strBinFile;
 			strBinFile.copyFromW(pSrcFile);
-			strBinFile =  PS::FILESTRINGUTILS::changeFileExtA(strBinFile, DAnsiStr(".bin"));
+			strBinFile =  PS::FILESTRINGUTILS::ChangeFileExt(strBinFile, DAnsiStr(".bin"));
 			ofstream ofs(strBinFile.ptr(), ios::out | ios::trunc | ios::binary);
 			if(!ofs.is_open())
 				return false;
@@ -185,7 +185,7 @@ bool DXShader11::tryLoadBinThenCompile(LPCWSTR pSrcFile,
 	//First try loading from bin
 	DAnsiStr strBinFile;
 	strBinFile.copyFromW(pSrcFile);
-	strBinFile =  PS::FILESTRINGUTILS::changeFileExtA(strBinFile, DAnsiStr(".bin"));
+	strBinFile =  PS::FILESTRINGUTILS::ChangeFileExt(strBinFile, DAnsiStr(".bin"));
 
 	if(loadFromBinary(strBinFile.ptr())	)
 		return true;

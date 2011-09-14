@@ -959,10 +959,10 @@ void CMeshVV::removeAll(void)
 
 bool CMeshVV::open(const DAnsiStr& strFileName)
 {
-	if(!PS::FILESTRINGUTILS::fileExists(strFileName.c_str()))
+	if(!PS::FILESTRINGUTILS::FileExists(strFileName.c_str()))
 		return false;
 	
-	DAnsiStr strExt = PS::FILESTRINGUTILS::extractFileExt(strFileName);
+	DAnsiStr strExt = PS::FILESTRINGUTILS::ExtractFileExt(strFileName);
 	strExt.toUpper();
 
 	if(strcmp(strExt.c_str(), "OFF") == 0)
