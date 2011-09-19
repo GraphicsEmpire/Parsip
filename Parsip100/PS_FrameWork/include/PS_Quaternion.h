@@ -1,14 +1,8 @@
-//-------------------------------------------------------------------------------------------
-//  University of Victoria Computer Science Department 
-//	Assignment04
-//  Course title: Computer Animation CSC578B
-//	Please report any comments or feedback to: pouryash@uvic.ca
-//
-//	Author: Pourya Shirazian 
-//  Student# V00681446
-//	Date  : January 2009
-//-------------------------------------------------------------------------------------------
-
+//***************************************************************************
+// Author: Pourya Shirazian 
+// Quaternion math for efficient rotations. Use quaternions to avoid 
+// gymbal lock problem.
+//***************************************************************************
 #ifndef PS_QUATERNION_H
 #define PS_QUATERNION_H
 
@@ -16,11 +10,6 @@
 
 #include "PS_Vector.h"
 #include "PS_Matrix.h"
-
-
-#ifndef PI
-#define PI 3.14159265358979323846264338327950288419716939937510f
-#endif
 
 namespace PS{
 namespace MATH{

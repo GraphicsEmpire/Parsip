@@ -1,14 +1,8 @@
-//-------------------------------------------------------------------------------------------
-//  University of Victoria Computer Science Department 
-//	Assignment04
-//  Course title: Computer Animation CSC578B
-//	Please report any comments or feedback to: pouryash@uvic.ca
-//
-//	Author: Pourya Shirazian 
-//  Student# V00681446
-//	Date  : January 2009
-//-------------------------------------------------------------------------------------------
-
+//***************************************************************************
+// Author: Pourya Shirazian 
+// Quaternion math for efficient rotations. Use quaternions to avoid 
+// gymbal lock problem.
+//***************************************************************************
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,15 +153,15 @@ void CQuaternion::RandomRotation(bool x,bool y,bool z)
 
 	if ( x )
 	{
-		ex = ranf()*PI*2;
+		ex = ranf()*Pi*2;
 	}
 	if ( y )
 	{
-		ey = ranf()*PI*2;
+		ey = ranf()*Pi*2;
 	}
 	if ( z )
 	{
-		ez = ranf()*PI*2;
+		ez = ranf()*Pi*2;
 	}
 
 	fromEuler(ex,ey,ez);

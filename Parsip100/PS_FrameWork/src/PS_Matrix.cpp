@@ -1,14 +1,3 @@
-//-------------------------------------------------------------------------------------------
-//  University of Victoria Computer Science Department 
-//	Assignment04
-//  Course title: Computer Animation CSC578B
-//	Please report any comments or feedback to: pouryash@uvic.ca
-//
-//	Author: Pourya Shirazian 
-//  Student# V00681446
-//	Date  : January 2009
-//-------------------------------------------------------------------------------------------
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

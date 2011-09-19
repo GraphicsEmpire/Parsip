@@ -1,16 +1,9 @@
-//-------------------------------------------------------------------------------------------
-//  University of Victoria Computer Science Department 
-//	Assignment04
-//  Course title: Computer Animation CSC578B
-//	Please report any comments or feedback to: pouryash@uvic.ca
-//
-//	Author: Pourya Shirazian 
-//  Student# V00681446
-//	Date  : January 2009
-//-------------------------------------------------------------------------------------------
+//***************************************************************************
+// Author: Pourya Shirazian 
+// Matrix 4x4 a column-major matrix
+//***************************************************************************
 
 #ifndef CMATRIX_H
-
 #define CMATRIX_H
 
 #include <string.h> // need memcpy

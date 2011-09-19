@@ -1,10 +1,15 @@
+//***************************************************************************
+// Author: Pourya Shirazian 
+// mathhelper contains optimized and handy routines for vector and scalar
+// operations.
+//***************************************************************************
 #pragma once
 #ifndef MATHHELPER_H
 #define MATHHELPER_H
 
 #include <cmath>
 #include <limits>
-#include<math.h>
+#include <math.h>
 
 //Constants for conversion
 const float DEG_TO_RAD = ((2.0f * 3.14152654f) / 360.0f);

@@ -1,3 +1,9 @@
+//***************************************************************************
+// Author: Pourya Shirazian 
+// 2,3,4 Dimensional generic vector classes. many necessary operations
+// have been implemented in each class.
+//***************************************************************************
+
 #pragma once
 #ifndef VECTOR_H
 #define VECTOR_H
