@@ -31,7 +31,7 @@
 	#define gzgets(f,b,l) fgets(b,l,f)
 	#define gzflush(f,b)  fflush(f)
 #else
-	#include <zlib.h>
+        //#include <zlib.h>
 #endif
 
 #endif

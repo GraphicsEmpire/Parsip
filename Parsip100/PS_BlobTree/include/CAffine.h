@@ -25,8 +25,8 @@ private:
 	CMatrix m_mtxBackward;
 
 public:
-	typedef enum AffineTransformationType {attTranslate, attRotate, attScale};
-	typedef enum AffineDirection {adForward, adReverse};
+        enum AffineTransformationType {attTranslate, attRotate, attScale};
+        enum AffineDirection {adForward, adReverse};
 
 	CAffine() 
 	{
@@ -239,7 +239,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "AFFINE");		
+            strncpy(chrName, "AFFINE", MAX_NAME_LEN);
 	}
 
 	COctree computeOctree()

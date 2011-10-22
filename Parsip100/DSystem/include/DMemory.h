@@ -42,8 +42,8 @@ void operator delete [] ( void *p, const char *pFile, int line );
 
 void *operator new( size_t size );
 void *operator new [] ( size_t size );
-void operator delete( void *p ) _THROW0();
-void operator delete [] ( void *p ) _THROW0();
+//void operator delete( void *p ) _THROW0();
+//void operator delete [] ( void *p ) _THROW0();
 
 //==================================================================
 namespace DMEM

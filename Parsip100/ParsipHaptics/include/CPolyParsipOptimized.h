@@ -6,7 +6,7 @@
 //#include "CLayerManager.h"
 
 #include "CCubeTable.h"
-#include "PS_FrameWork/include/PS_SIMDVec.h"
+
 #include "tbb/parallel_reduce.h"
 #include "tbb/parallel_for.h"
 #include "tbb/blocked_range.h"

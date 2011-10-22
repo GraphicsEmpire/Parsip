@@ -184,7 +184,7 @@ namespace BLOBTREE{
 
 		void getName(char * chrName)
 		{
-			strcpy_s(chrName, MAX_NAME_LEN, "RICCI BLEND");		
+                    strncpy(chrName, "RICCI BLEND", MAX_NAME_LEN);
 		}
 
 

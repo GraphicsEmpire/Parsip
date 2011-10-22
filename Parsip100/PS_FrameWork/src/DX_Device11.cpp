@@ -1,6 +1,8 @@
 //#include "stdafx.h"
 #include "DX_Device11.h"
 
+#ifdef WIN32
+
 namespace PS
 {
 
@@ -266,3 +268,5 @@ HRESULT WINAPI DXDevice11::Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
 
 
 }
+
+#endif

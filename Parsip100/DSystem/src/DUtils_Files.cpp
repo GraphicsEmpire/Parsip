@@ -13,7 +13,7 @@
 
 #endif
 
-#include <direct.h>
+//#include <direct.h>
 #include "DUtils_Files.h"
 
 //==================================================================

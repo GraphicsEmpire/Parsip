@@ -9,7 +9,7 @@ using namespace std;
 namespace PS{
 namespace BLOBTREE{
 
-typedef enum FieldFunctionType {fftWyvill, fftSoftObjects};
+enum FieldFunctionType {fftWyvill, fftSoftObjects};
 
 //Field Function Parent Class
 class  CFieldFunction {

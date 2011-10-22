@@ -134,7 +134,10 @@ DAnsiStr CreateNewFileAtRoot(const char* pExtWithDot)
 		return temp;
 	}
 	else
-		return strOutput;	
+        {
+            strOutput.appendFromT(pExtWithDot);
+            return strOutput;
+        }
 }
 
 //==================================================================

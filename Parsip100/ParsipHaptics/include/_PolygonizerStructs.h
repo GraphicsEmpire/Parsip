@@ -23,7 +23,7 @@ enum CellShape
 	csCube		= 1  
 };
 
-typedef enum VertexState {vsCold = 0, vsHot = 1};
+enum VertexState {vsCold = 0, vsHot = 1};
 
 struct SUBVOL_RAY_TEST_RESULT
 {

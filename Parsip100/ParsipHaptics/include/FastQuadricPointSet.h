@@ -186,7 +186,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "FASTQUADRATICPOINTSET");		
+            strncpy(chrName, "FASTQUADRATICPOINTSET", MAX_NAME_LEN);
 	}
 
 	bool isOperator() 

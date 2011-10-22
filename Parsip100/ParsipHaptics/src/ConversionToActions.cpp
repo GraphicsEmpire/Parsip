@@ -107,12 +107,12 @@ int CBlobTreeToActions::recursive_nodeToAction( CBlobTree* node )
 	//All transformations should be written
 	vec3f v = node->getTransform().getTranslate();
 	if(v != vec3f(0.0f, 0.0f, 0.0f))
-		appendCommand(cmdMove, node, toVec4f(v));
+                appendCommand(cmdMove, node, vec4f(v, 0.0f));
 
 	v = node->getTransform().getScale();
 	v = v - vec3f(1.0f, 1.0f, 1.0f);
 	if(v != vec3f(0.0f, 0.0f, 0.0f))
-		appendCommand(cmdScale, node, toVec4f(v));
+                appendCommand(cmdScale, node, vec4f(v, 1.0f));
 
 	vec4f q = node->getTransform().getRotation().getAsVec4f();
 	if(q != vec4f(0.0f, 0.0f, 0.0f, 1.0f))

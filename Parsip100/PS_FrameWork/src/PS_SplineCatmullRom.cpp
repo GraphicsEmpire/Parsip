@@ -55,7 +55,7 @@ int CSplineCatmullRom::getArcTableCount()
 	return m_vArcTable.size();
 }
 
-CSplineCatmullRom::ARCLENGTHPARAM CSplineCatmullRom::getArcTableEntry(size_t i)
+CSplineCatmullRom::ARCLENGTHPARAM CSplineCatmullRom::getArcTableEntry(U32 i)
 {
 	ARCLENGTHPARAM dummyEntry;
 	if((i >=0)&&(i < m_vArcTable.size()))
@@ -68,7 +68,7 @@ void CSplineCatmullRom::getArcPoints(std::vector<vec3f>& lstPoints) const
 {
 	if(m_vArcTable.size() < 2) return;
 	lstPoints.resize(m_vArcTable.size());	
-	for(size_t i=0; i<m_vArcTable.size(); i++)
+        for(U32 i=0; i<m_vArcTable.size(); i++)
 	{
 		lstPoints[i] = m_vArcTable[i].pt;
 	}
@@ -194,7 +194,7 @@ bool CSplineCatmullRom::isTableEmpty()
 
 float CSplineCatmullRom::getArcLength() const
 {
-	size_t n = m_vArcTable.size();
+        U32 n = m_vArcTable.size();
 	if(n > 0)
 		return m_vArcTable[n-1].g;
 	else
@@ -264,7 +264,7 @@ void CSplineCatmullRom::addPoint(const vec3f& p)
 	m_vCtrlPoints.push_back(p);
 }
 
-void CSplineCatmullRom::removePoint(size_t i)
+void CSplineCatmullRom::removePoint(U32 i)
 {
 	if(isPointIndexCorrect(i))
 		m_vCtrlPoints.erase(m_vCtrlPoints.begin() + i);
@@ -276,7 +276,7 @@ void CSplineCatmullRom::removeAll()
 	m_vArcTable.resize(0);
 }
 
-vec3f CSplineCatmullRom::getPoint(size_t i)
+vec3f CSplineCatmullRom::getPoint(U32 i)
 {
 	return m_vCtrlPoints[i];
 }
@@ -297,7 +297,7 @@ void CSplineCatmullRom::setPoint(int index, const vec3f& pt)
 	z = m_vCtrlPoints[index].z;
 }
 
-bool CSplineCatmullRom::isPointIndexCorrect(size_t i)
+bool CSplineCatmullRom::isPointIndexCorrect(U32 i)
 {
 	return (i >= 0)&&(i < m_vCtrlPoints.size());
 }
@@ -440,7 +440,7 @@ void CSplineCatmullRom::drawCtrlLine(unsigned int gl_draw_mode)
 	vec3f v;
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glBegin(gl_draw_mode);
-		for(size_t i=0; i<vCtrlPoints.size(); i++)
+                for(U32 i=0; i<vCtrlPoints.size(); i++)
 		{
 			v = vCtrlPoints[i];
 			glVertex3f(v.x, v.y, v.z);
@@ -456,7 +456,7 @@ void CSplineCatmullRom::drawCurve(unsigned int gl_draw_mode)
 	/*
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glBegin(gl_draw_mode);
-		for(size_t i=0; i<vArcTable.size(); i++)
+                for(U32 i=0; i<vArcTable.size(); i++)
 		{
 			glVertex3fv(vArcTable[i].pt.ptr());
 		}

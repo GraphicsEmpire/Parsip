@@ -596,13 +596,13 @@ void CVoxelTriangulationBody::operator ()(const blocked_range<size_t> &range)
 
 bool runParallelReduceContinuation(CLayer * alayer)
 {	
-	parsProfilerStart(1);
+        //parsProfilerStart(1);
 
 	CVoxelTracker * tracker = new CVoxelTracker(alayer);
 	bool bPar = alayer->getParallelMode();	
 	bool bRes = tracker->march(bPar);
 
-	parsProfilerEnd(1);	
+        //parsProfilerEnd(1);
 
 	//House Keeping
 	SAFE_DELETE(tracker);

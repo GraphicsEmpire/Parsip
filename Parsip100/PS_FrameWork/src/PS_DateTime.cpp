@@ -7,13 +7,20 @@ namespace DATETIMEUTILS{
 
 DAnsiStr getCurrentDateTime()
 {
-	time_t rawtime;
-	struct tm timeinfo;		
-	time( &rawtime);
-	localtime_s(&timeinfo, &rawtime);
+	time_t rawtime;	
+        char buffer[256];
 
-	char buffer[256];
+        time( &rawtime);
+#ifdef WIN32
+        struct tm timeinfo;
+        localtime_s(&timeinfo, &rawtime);
 	asctime_s(buffer, 256, &timeinfo);		
+#else
+        struct tm * lpTimeInfo;
+        lpTimeInfo = localtime(&rawtime);
+
+        strncpy(buffer, asctime(lpTimeInfo), 256);
+#endif
 	return DAnsiStr(buffer);
 }
 

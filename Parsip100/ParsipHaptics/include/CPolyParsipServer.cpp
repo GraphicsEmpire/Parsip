@@ -5,6 +5,11 @@
 #include "CParallelAdaptiveSubdivision.h"
 #include "PS_BlobTree/include/CRicciBlend.h"
 
+#ifdef linux
+#include <sys/types.h>
+#include <pthread.h>
+#endif
+
 #define DEBUGMESH 1
 
 namespace PS{
@@ -24,7 +29,12 @@ namespace PS{
 		m_bTreeCompacted = false;
 		m_statFieldEvaluations = 0;
 		m_statIntersectedCells = 0;
-		m_threadID = GetCurrentThreadId();
+
+                #ifdef WIN32
+                    m_threadID = GetCurrentThreadId();
+                #else
+                    m_threadID = pthread_self();
+                #endif
 
 		//Reset all data structures
 		//m_processedEdges.reset();

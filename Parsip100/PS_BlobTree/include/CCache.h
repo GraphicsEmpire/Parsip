@@ -4,7 +4,7 @@
 #include <math.h>
 #include "CBlobTree.h"
 #include "CVolumeBox.h"
-#include "CAdaptiveUniformGrid3D.h"
+#include "CAdaptiveUniformGrid3d.h"
 
 namespace PS{
 namespace BLOBTREE{
@@ -71,7 +71,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "CACHE");		
+            strncpy(chrName, "CACHE", MAX_NAME_LEN);
 	}
 
 	COctree computeOctree()

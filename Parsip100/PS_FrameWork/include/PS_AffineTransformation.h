@@ -25,8 +25,8 @@ namespace PS{
 		CMatrix m_mtxBackward;
 
 	public:
-		typedef enum AffineTransformationType {attTranslate, attRotate, attScale};
-		typedef enum AffineDirection {adForward, adReverse};
+                enum AffineTransformationType {attTranslate, attRotate, attScale};
+                enum AffineDirection {adForward, adReverse};
 
 		CAffineTransformation() 
 		{

@@ -7,7 +7,7 @@
 namespace PS{
 namespace BLOBTREE{
 
-typedef enum RootFindingMethod {rfmParabola, rfmBisection, rfmLinearInterpolation, rfmNewtonRaphson};
+enum RootFindingMethod {rfmParabola, rfmBisection, rfmLinearInterpolation, rfmNewtonRaphson};
 
 class CRootFinder 
 {

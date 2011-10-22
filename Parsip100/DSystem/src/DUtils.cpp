@@ -18,6 +18,7 @@
 #include "DTypes.h"
 #include "DUtils.h"
 #include "DMemory.h"
+#include <string.h>
 //==================================================================
 namespace DUT
 {
@@ -220,7 +221,7 @@ CDExceptions::CDExceptions( const char *pFmt, ... )
 
 	char	buff[MAX_EXCEPTION_SIZE];
 
-	vsnprintf_s( buff, sizeof(buff), _countof(buff)-1, pFmt, vl );
+        vsnprintf( buff, sizeof(buff), pFmt, vl );
 	va_end( vl );
 
 	int len = strlen(buff);

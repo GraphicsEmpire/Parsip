@@ -9,7 +9,7 @@
 
 #define DEFAULT_SHININESS 16.0f
 
-typedef enum ColorType {ctAmbient, ctDiffused, ctSpecular};
+enum ColorType {ctAmbient, ctDiffused, ctSpecular};
 
 namespace PS{
 using namespace MATH;

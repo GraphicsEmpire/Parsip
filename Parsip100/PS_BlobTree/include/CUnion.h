@@ -99,7 +99,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "UNION");		
+            strncpy(chrName, "UNION", MAX_NAME_LEN);
 	}
 
 	//Octree manipulation

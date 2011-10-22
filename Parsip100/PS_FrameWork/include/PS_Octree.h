@@ -30,9 +30,9 @@ public:
 	~COctree();
 
 public:
-	typedef enum SIDE {xSide, ySide, zSide};
-	typedef enum CORNERS {LBN=0, LBF=1, LTN=2, LTF=3, RBN=4, RBF=5, RTN=6, RTF=7};
-	typedef enum DIRECTION {L=0, R=1, B=2, T=3, N=4, F=5};
+        enum SIDE {xSide, ySide, zSide};
+        enum CORNERS {LBN=0, LBF=1, LTN=2, LTF=3, RBN=4, RBF=5, RTN=6, RTF=7};
+        enum DIRECTION {L=0, R=1, B=2, T=3, N=4, F=5};
 
 	vec3 lower; 
 	vec3 upper;	

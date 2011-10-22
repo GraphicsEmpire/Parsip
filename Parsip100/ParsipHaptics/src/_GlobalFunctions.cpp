@@ -177,7 +177,7 @@ CBlobTree* cloneBlobTree(CBlobTree* input, int rootID, int* lpCtClonned )
 	CBlobTree* outputRoot = cloneNode(input, rootID++);
 
 	//Pair First is Parent, Second in Similar Child to be cloned
-	std::stack<pair<CBlobTree *, CBlobTree *>> stkChildren;
+        std::stack< pair<CBlobTree *, CBlobTree *> > stkChildren;
 	for(size_t i=0; i < inputRoot->countChildren(); i++)
 	{
 		pair<CBlobTree*, CBlobTree*> MyPair(outputRoot, inputRoot->getChild(i));
@@ -212,6 +212,7 @@ CBlobTree* cloneBlobTree(CBlobTree* input, int rootID, int* lpCtClonned )
 	return outputRoot;
 }
 
+/*
 void *aligned_malloc_ps(size_t size, size_t align_size)
 {
 	char *ptr,*ptr2,*aligned_ptr;
@@ -239,6 +240,7 @@ void aligned_free_ps(void *ptr)
 	ptr = (void*)iptr;
 	free(ptr);
 }
+*/
 
 QString printToQStr( const char* pFmt, ... )
 {
@@ -246,7 +248,7 @@ QString printToQStr( const char* pFmt, ... )
 	va_start( vl, pFmt );
 
 	char	buff[1024];
-	vsnprintf_s( buff, _countof(buff)-1, _TRUNCATE, pFmt, vl );
+        vsnprintf( buff, 1024, pFmt, vl );
 
 	va_end( vl );
 

@@ -102,7 +102,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "CYLINDER");
+                strncpy(chrName, "CYLINDER", MAX_NAME_LEN);
 	}
 
 	bool getExtremes(vec3f& lower, vec3f& upper)

@@ -167,7 +167,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "SHEAR");		
+            strncpy(chrName, "SHEAR", MAX_NAME_LEN);
 	}
 
 	COctree computeOctree()

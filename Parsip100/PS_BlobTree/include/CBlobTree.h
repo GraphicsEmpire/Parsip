@@ -22,11 +22,11 @@ using namespace PS::BLOBTREE::Vol;
 namespace PS{
 namespace BLOBTREE{
 
-typedef enum MajorAxices {xAxis, yAxis, zAxis};
-typedef enum WarpOrder {woLinear, woQuadratic};
-typedef enum BlobNodeType{bntPrimSkeleton, bntPrimQuadricPoint, bntPrimFastQuadraticPointSet, bntPrimHalfPlane,
-						  bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend,
-						  bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
+enum MajorAxices {xAxis, yAxis, zAxis};
+enum WarpOrder {woLinear, woQuadratic};
+enum BlobNodeType{bntPrimSkeleton, bntPrimQuadricPoint, bntPrimFastQuadraticPointSet, bntPrimHalfPlane,
+                  bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend,
+                  bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
 
 //This will help for managing different properties that each BlobTree Node exposes
 class CBlobTree 
@@ -193,7 +193,7 @@ public:
 
 	CBlobTree * getChild(size_t index)
 	{
-		if((index >= 0)&&(index < countChildren()))
+                if(index < countChildren())
 			return m_children[index];
 		else 
 			return NULL;
@@ -218,7 +218,7 @@ public:
 
 	bool isChildIndex(size_t index)
 	{
-		return ((index >= 0)&&(index < m_children.size()));
+                return (index < m_children.size());
 	}
 	//////////////////////////////////////////////////////////////////////////
 	bool inside(vec3f p)

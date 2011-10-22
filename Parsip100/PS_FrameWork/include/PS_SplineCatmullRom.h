@@ -48,16 +48,16 @@ public:
 	COctree getOctree() const;
 
 
-	size_t getCtrlPointsCount() const {return m_vCtrlPoints.size();}
-	vec3f  getPoint(size_t i);
+        U32 getCtrlPointsCount() const {return m_vCtrlPoints.size();}
+        vec3f  getPoint(U32 i);
 
 	void setPoint(int index, const vec3f& pt);
 	void addPoint(const vec3f& p);
-	void removePoint(size_t i);
+        void removePoint(U32 i);
 	void removeAll();
 
-	void setSegmentsCount(size_t nSegments);
-	size_t getSegmentsCount() const { return m_nSegments; }
+        void setSegmentsCount(U32 nSegments);
+        U32 getSegmentsCount() const { return m_nSegments; }
 
 	float getArcLength() const;
 	//void selectCtrlPoint(int index, bool bSelect);
@@ -78,7 +78,7 @@ public:
 	float parameterViaTable(float arcLength);
 	bool isTableEmpty();
 
-	ARCLENGTHPARAM getArcTableEntry(size_t i);
+        ARCLENGTHPARAM getArcTableEntry(U32 i);
 	int getArcTableCount();
 
 	void drawCtrlLine(unsigned int gl_draw_mode = 0);
@@ -88,12 +88,12 @@ public:
 	friend std::ostream& operator <<(std::ostream& outs, const CSplineCatmullRom& curve);
 	friend std::istream& operator >>(std::istream& ins, const CSplineCatmullRom& curve);
 private:	
-	bool isPointIndexCorrect(size_t i);    
+        bool isPointIndexCorrect(U32 i);
 	bool getLocalSpline(float t, float &local_t, int *indices);
 
 
 private:	
-	size_t  m_nSegments;	
+        U32  m_nSegments;
 	std::vector<vec3f> m_vCtrlPoints;
 	std::vector<ARCLENGTHPARAM> m_vArcTable;
 };

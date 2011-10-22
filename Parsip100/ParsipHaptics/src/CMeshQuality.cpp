@@ -10,7 +10,7 @@ using namespace std;
 
 namespace PS{
 
-
+/*
 //========================================================================
 CMeshQuality::CMeshQuality(void)
 {
@@ -49,9 +49,9 @@ bool CMeshQuality::load(int vertexCount,
 		return false;
 	}
 
-	m_lpMesh->SetMode(polygonMode);
+        m_lpMesh->setMode(polygonMode);
 
-	m_lpMesh->m_vertexSize = vertexSize;
+        m_lpMesh->setUnitVertexSize(vertexSize);
 
 	if (vertexOffset == 0)
 		vertexOffset = vertexSize;
@@ -75,8 +75,6 @@ bool CMeshQuality::load(int vertexCount,
 	return true;
 }
 
-/**
-*/
 bool CMeshQuality::SetMeasure(TriangleQualityEnum qualityMeasure)
 {
 	m_qualityMeasure = qualityMeasure;
@@ -84,8 +82,6 @@ bool CMeshQuality::SetMeasure(TriangleQualityEnum qualityMeasure)
 	return true;
 }
 
-/**
-*/
 bool CMeshQuality::MeasureQuality(void)
 {
 	if (m_lpMesh == NULL)
@@ -112,8 +108,6 @@ bool CMeshQuality::MeasureQuality(void)
 	return true;
 }
 
-/**
-*/
 float CMeshQuality::GetVertexQuality(int vertexName) const
 {
 	if (!m_lpMesh)
@@ -133,36 +127,26 @@ float CMeshQuality::GetVertexQuality(int vertexName) const
 	return m_qualityArray[vertexName];
 }
 
-/**
-*/
 float CMeshQuality::GetMinQuality(void) const
 {
 	return m_minQuality;
 }
 
-/**
-*/
 float CMeshQuality::GetMaxQuality(void) const
 {
 	return m_maxQuality;
 }
 
-/**
-*/
 float CMeshQuality::GetAverageQuality(void) const
 {
 	return m_averageQuality;
 }
 
-/**
-*/
 int CMeshQuality::GetDegenerateTriangleCount(void) const
 {
 	return m_degenerateTriangleCount;
 }
 
-/**
-*/
 float CMeshQuality::GetTriangleQuality(const float *A, const float *B, const float *C)
 {
 	float a,
@@ -241,8 +225,6 @@ float CMeshQuality::GetTriangleQuality(const float *A, const float *B, const flo
 	return quality;
 }
 
-/**
-*/
 float CMeshQuality::GetMinimumTriangleAngle(const float *A, const float *B, const float *C)
 {
 	float u[3],
@@ -286,8 +268,6 @@ float CMeshQuality::GetMinimumTriangleAngle(const float *A, const float *B, cons
 	return MyMath::RadiansToDegrees<float>(minimumAngle);
 }
 
-/**
-*/
 float CMeshQuality::GetMaximumTriangleAngle(const float *A, const float *B, const float *C)
 {
 	float u[3],
@@ -331,8 +311,6 @@ float CMeshQuality::GetMaximumTriangleAngle(const float *A, const float *B, cons
 	return MyMath::RadiansToDegrees<float>(maximumAngle);
 }
 
-/**
-*/
 void CMeshQuality::Create(void)
 {
 	m_lpMesh = NULL;
@@ -350,8 +328,6 @@ void CMeshQuality::Create(void)
 	m_degenerateTriangleCount = 0;
 }
 
-/**
-*/
 bool CMeshQuality::MeasureQualityOfTriangleMesh(void)
 {
 	int vertexCount,
@@ -454,8 +430,6 @@ bool CMeshQuality::MeasureQualityOfTriangleMesh(void)
 	return true;
 }
 
-/**
-*/
 bool CMeshQuality::MeasureQualityOfQuadMesh(void)
 {
 	int vertexCount,
@@ -566,5 +540,5 @@ bool CMeshQuality::MeasureQualityOfQuadMesh(void)
 
 	return true;
 }
-
+*/
 }

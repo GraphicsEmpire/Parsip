@@ -34,8 +34,8 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
 		ops[curID].parent = parentID;	
 
 				
-		ops[curID].octLo = toVec4f(root->getOctree().lower);
-		ops[curID].octHi = toVec4f(root->getOctree().upper);
+                ops[curID].octLo = vec4f(root->getOctree().lower, 0.0f);
+                ops[curID].octHi = vec4f(root->getOctree().upper, 0.0f);
 
 	
 		int kidID;

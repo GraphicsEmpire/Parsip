@@ -95,24 +95,6 @@ void CMatrix::set(const vec3f &facing,const vec3f &N)
 }
 
 
-void CMatrix::GetPose(const vec3f &pos,
-							const CQuaternion            &rot,
-							vec3f       &tpos,
-							CQuaternion                  &trot) const
-{
-        CMatrix child;
-        CMatrix combine;
-
-	rot.toMatrix(child);
-	child.setTranslate(pos);
-
-	combine.multiply(child,*this);
-
-	combine.GetTranslation(tpos);
-	trot.fromMatrix(combine);
-
-}
-
 void CMatrix::Report(const char *header) const
 {
 #if USE_LOG

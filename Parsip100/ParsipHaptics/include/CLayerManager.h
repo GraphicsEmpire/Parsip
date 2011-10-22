@@ -17,7 +17,7 @@
 #include "CompactBlobTree.h"
 #include "CPolyParsipOptimized.h"
 #include "_GlobalFunctions.h"
-#include "Loki/Singleton.h"
+#include "loki/Singleton.h"
 
 using namespace std;
 using namespace Loki;
@@ -32,7 +32,7 @@ namespace BLOBTREE{
 
 typedef pair<CBlobTree*, vec3f> PAIR_NODESEED;
 typedef pair<CBlobTree*, CMeshVV*> PAIR_NODEMESH;
-typedef enum cmdBlobTree{cbtDelete, cbtFindParent, cbtFindDepth, cbtTransformOperator};
+enum cmdBlobTree{cbtDelete, cbtFindParent, cbtFindDepth, cbtTransformOperator};
 
 struct CmdBlobTreeParams
 {	
@@ -239,7 +239,7 @@ public:
 	void setMesh(const DAnsiStr& strFileName);	
 
 
-	bool saveAsVolumeData(UCHAR* buffer, int w, int h, int d);
+        bool saveAsVolumeData(U8* buffer, int w, int h, int d);
 	bool saveAsVolumeData(const char* strFileName, int w, int h, int d);
 };
 

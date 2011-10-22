@@ -98,7 +98,7 @@ public:
 
 
 	//Create an individual Gear
-	static CBlobTree* createGear(int ctTeeth, CMaterial& outer, CMaterial& inner)
+        static CBlobTree* createGear(int ctTeeth, const CMaterial& outer, const CMaterial& inner)
 	{
 		//Let's create one gear 
 		vec3 center = vec3(0.0f, 2.0f, 0.0f);
@@ -390,7 +390,7 @@ public:
 	//Create a complete gearbox
 	static CBlobTree* createGearBox(CLayerManager * lm = NULL)
 	{
-		CBlobTree* gear1  = createGear(10, CMaterial::mtrlRedPlastic(), CMaterial::mtrlBrass());
+                CBlobTree* gear1  = createGear(10, CMaterial::mtrlRedPlastic(), CMaterial::mtrlBrass());
 		CBlobTree* gear2  = createGear(8, CMaterial::mtrlGreen(), CMaterial::mtrlBrass());
 		CBlobTree* gear3  = createGear(10, CMaterial::mtrlBlue(), CMaterial::mtrlBrass());		
 		//********************************************

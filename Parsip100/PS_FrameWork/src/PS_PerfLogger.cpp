@@ -1,6 +1,9 @@
 //#include "stdafx.h"
 #include "PS_PerfLogger.h"
 #include "PS_FileDirectory.h"
+#ifdef linux
+    #include <sys/time.h>
+#endif
 
 using namespace PS::FILESTRINGUTILS;
 
@@ -59,7 +62,7 @@ void CPerfLogger::flushPendingEvents()
 	for(size_t i=0; i < m_pendingEvents.size(); i++)
 	{
 		EVENTENTRY* e = m_pendingEvents[i];
-		sprintf_s(strLine, MAX_LINE_SIZE, "%s(%d) : %s : %4.2lf ms", e->strFile.c_str(), e->lineNumber, e->strFunction.c_str(), e->timeMS );
+                snprintf(strLine, MAX_LINE_SIZE, "%s(%d) : %s : %4.2lf ms", e->strFile.c_str(), e->lineNumber, e->strFunction.c_str(), e->timeMS );
 		m_content.push_back(DAnsiStr(strLine));
 	}
 }
@@ -67,14 +70,14 @@ void CPerfLogger::flushPendingEvents()
 DAnsiStr CPerfLogger::toString(double t)
 {
 	char strLine[32];
-	sprintf_s(strLine, 32, "%4.2lf", t );
+        snprintf(strLine, 32, "%4.2lf", t );
 	return DAnsiStr(strLine);
 }
 //========================================================================================
 DAnsiStr CPerfLogger::toString(int t)
 {
 	char strLine[32];
-	sprintf_s(strLine, 32, "%d", t );
+        snprintf(strLine, 32, "%d", t );
 	return DAnsiStr(strLine);
 }
 //========================================================================================
@@ -169,7 +172,7 @@ double CPerfLogger::getTotalTime()
 }
 
 //========================================================================================
-UINT CPerfLogger::startEvent(const char* strFunc, const char* strFile, int lineNumber)
+U32 CPerfLogger::startEvent(const char* strFunc, const char* strFile, int lineNumber)
 {
 	EVENTENTRY* e = new EVENTENTRY;
 	e->startTS = getPerfCounter();
@@ -181,7 +184,7 @@ UINT CPerfLogger::startEvent(const char* strFunc, const char* strFile, int lineN
 }
 
 //========================================================================================
-void CPerfLogger::endEvent(UINT id)
+void CPerfLogger::endEvent(U32 id)
 {
 	if(id >= 0 && id < m_pendingEvents.size())
 	{
@@ -189,7 +192,7 @@ void CPerfLogger::endEvent(UINT id)
 		e->endTS = getPerfCounter();
 		e->timeMS = convertTimeTicksToMS(e->endTS - e->startTS);
 		
-		printf("%s(%d) : %s : %4.2lf ms\n", ExtractFileName(e->strFile.c_str()), e->lineNumber, e->strFunction.c_str(), e->timeMS );
+                printf("%s(%d) : %s : %4.2lf ms\n", ExtractFileName(e->strFile).ptr(), e->lineNumber, e->strFunction.c_str(), e->timeMS );
 		//printf("%s(%d) : %s : %4.2lf ms\n", e->strFile.c_str(), e->lineNumber, e->strFunction.c_str(), e->timeMS );
 		//printf( "%s: %4.2lf ms\n", mpMsg, DUT::TimeTicksToMS( elapsed ) );
 	}
@@ -204,7 +207,7 @@ bool CPerfLogger::writeFile()
 	char line[MAX_LINE_SIZE];
 	for(size_t i=0; i < m_content.size(); i++)
 	{
-		sprintf_s(line, MAX_LINE_SIZE, "%s\n", m_content[i].c_str());
+                snprintf(line, MAX_LINE_SIZE, "%s\n", m_content[i].c_str());
 		ofs << line;
 	}
 	ofs.close();
@@ -278,9 +281,9 @@ DAnsiStr CPerfLogger::toString(CPerfLogger::EVENTENTRY* e, bool bIncludeFileLine
 
 	char strLine[MAX_LINE_SIZE];
 	if(bIncludeFileLine)
-		sprintf_s(strLine, MAX_LINE_SIZE, "%s(%d) : %s : %4.2lf ms", e->strFile.c_str(), e->lineNumber, e->strFunction.c_str(), e->timeMS );
+                snprintf(strLine, MAX_LINE_SIZE, "%s(%d) : %s : %4.2lf ms", e->strFile.c_str(), e->lineNumber, e->strFunction.c_str(), e->timeMS );
 	else
-		sprintf_s(strLine, MAX_LINE_SIZE, "%s : %4.2lf ms", e->strFunction.c_str(), e->timeMS );
+                snprintf(strLine, MAX_LINE_SIZE, "%s : %4.2lf ms", e->strFunction.c_str(), e->timeMS );
 	strOut.copyFromT(strLine);
 	return strOut;
 }

@@ -57,7 +57,8 @@ namespace PS{
 
 			void getName(char * chrName)
 			{
-				strcpy_s(chrName, MAX_NAME_LEN, "QUADRICPOINT");				
+                            strncpy(chrName, "QUADRICPOINT", MAX_NAME_LEN);
+
 			}
 
 			COctree computeOctree()

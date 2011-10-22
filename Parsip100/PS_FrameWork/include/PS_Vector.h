@@ -514,12 +514,12 @@ public:
 
 	bool isUnit() const 
 	{
-		return FLOAT_EQ(1.0f, float(length()));
+                return FLOAT_EQ(1.0f, float(length2()));
 	}
 
 	bool isZero() const
 	{
-		return FLOAT_EQ(0.0f, float(length()));
+                return FLOAT_EQ(0.0f, float(length2()));
 	}
 
 	Vector3d<Type> add(Type displacement)
@@ -675,28 +675,28 @@ public:
 		return c;
 	}
 
-	Vector3d findArbitaryNormal()
-	{
-		vec3f absDir = this->vectorAbs();
-		vec3f n	= vec3f(1.0f, 0.0f, 0.0f);
-		float fMin = absDir.x;
-		if(absDir.y < fMin)
-		{
-			fMin = absDir.y;
-			n	 = vec3f(0.0f, 1.0f, 0.0f);			
-		}
-		if(absDir.z < fMin )
-		{			
-			fMin = absDir.z;
-			n	 = vec3f(0.0f, 0.0f, 1.0f);
-		}
-		n = this->cross(n);
-		n.normalize();
+        Vector3d findArbitaryNormal()
+        {
+            Vector3d absDir = this->vectorAbs();
+            Vector3d n	= Vector3d(1.0f, 0.0f, 0.0f);
+            float fMin = absDir.x;
+            if(absDir.y < fMin)
+            {
+                fMin = absDir.y;
+                n	 = Vector3d(0.0f, 1.0f, 0.0f);
+            }
+            if(absDir.z < fMin )
+            {
+                fMin = absDir.z;
+                n	 = Vector3d(0.0f, 0.0f, 1.0f);
+            }
+            n = this->cross(n);
+            n.normalize();
 
-		return n;
-	}
-// return -(*this).
-	Vector3d negative(void) const
+            return n;
+        }
+
+        Vector3d negative() const
 	{
 		Vector3d result;
 		result.x = -x;
@@ -1013,6 +1013,14 @@ public:
 		z = a.z;
 		w = a.w;
 	}
+
+        Vector4d(const Vector3d<Type>& a3, Type w)
+        {
+            x = a3.x;
+            y = a3.y;
+            z = a3.z;
+            w = w;
+        }
 
 	Vector4d(const Type* t)
 	{

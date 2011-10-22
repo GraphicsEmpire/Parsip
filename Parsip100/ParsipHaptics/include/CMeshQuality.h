@@ -5,6 +5,7 @@
 
 namespace PS{
 
+/*
 class CMeshQuality
 {
 public:
@@ -55,6 +56,7 @@ private:
 	int m_degenerateTriangleCount;
 };
 
+*/
 }
 
 #endif // MESHQUALITY_INCLUDED

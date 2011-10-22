@@ -28,26 +28,26 @@ public:
 
 	static float sineEase(float t)
 	{
-		return ((sin(t * Pi - PI/2) + 1)/2);
+                return ((sin(t * Pi - Pi/2) + 1)/2);
 	}
 
 	static float sineEase(float t, float k1,float k2)
 	{
-		float f = k1 * 2/PI + k2 - k1 + (1.0 - k2)*2/PI;
+                float f = k1 * 2/Pi + k2 - k1 + (1.0 - k2)*2/Pi;
 		float s = 0.0f;
 
 		if (t < k1)
 		{
-			s = k1 * (2/PI) * (sin((t/k1) * (PI/2) - PI/2) + 1);
+                        s = k1 * (2/Pi) * (sin((t/k1) * (Pi/2) - Pi/2) + 1);
 		}
 		else if(t < k2)
 		{
-			s = (2*k1/PI + t - k1);
+                        s = (2*k1/Pi + t - k1);
 
 		}
 		else
 		{
-			s = 2*k1/PI + k2 - k1 + ((1 - k2) * (2 / PI)) * sin(((t - k2)/(1.0 - k2))*PI/2);
+                        s = 2*k1/Pi + k2 - k1 + ((1 - k2) * (2 / Pi)) * sin(((t - k2)/(1.0 - k2))*Pi/2);
 
 		}
 		

@@ -2,10 +2,11 @@
 //Computer Graphics Lab
 //Author : Pourya Shirazian
 //*****************************************************************************************
-#pragma once;
+#pragma once
 #ifndef CPIXELMAP_H
 #define CPIXELMAP_H
 
+/*
 #include <iostream>
 #include <fstream>
 #include <math.h>
@@ -96,4 +97,7 @@ private:
 };
 
 }
+
+*/
 #endif
+

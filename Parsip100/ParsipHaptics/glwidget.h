@@ -27,7 +27,7 @@ using namespace PS;
 using namespace PS::MATH;
 using namespace PS::BLOBTREE;
 
-typedef enum SHOWMESH {smNone = 0, smWireFrame = 1, smSurface = 2};
+enum SHOWMESH {smNone = 0, smWireFrame = 1, smSurface = 2};
 
 struct SettingsParsip
 {
@@ -277,9 +277,9 @@ protected:
 	void wheelEvent(QWheelEvent *event);
 
 private:
-	typedef enum UIMODE {uimSelect, uimSketch, uimTransform, uimAnimation};
-	typedef enum UITRANSFORMTYPE {uitTranslate, uitRotate, uitScale};
-	typedef enum UITRANSFORMAXIS {uiaX, uiaY, uiaZ, uiaFree};
+        enum UIMODE {uimSelect, uimSketch, uimTransform, uimAnimation};
+        enum UITRANSFORMTYPE {uitTranslate, uitRotate, uitScale};
+        enum UITRANSFORMAXIS {uiaX, uiaY, uiaZ, uiaFree};
 
 	struct UITRANSFORM{
 		UITRANSFORMTYPE type;

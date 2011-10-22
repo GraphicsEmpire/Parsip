@@ -72,7 +72,7 @@ CAdaptiveUniformGrid3D::CAdaptiveUniformGrid3D( float fVoxelSize, const vec3 & v
 	//  origin is heavily negative...
 	SetOrigin( vOrigin );
 
-	m_nLastBlockID = static_cast<UINT>(1<<32);	// invalid!
+        m_nLastBlockID = static_cast<U32>(1<<32);	// invalid!
 	m_pLastBlock = NULL;
 
 	InvalidateLastCellCache();
@@ -639,7 +639,7 @@ void CAdaptiveUniformGrid3D::Invalidate( bool bDiscardMemory )
 	if (bDiscardMemory) 
 	{
 		m_blocks.clear();
-		m_nLastBlockID =  static_cast<UINT>(1<<32);	// invalid!
+                m_nLastBlockID =  static_cast<U32>(1<<32);	// invalid!
 		m_pLastBlock = NULL;
 	}
 

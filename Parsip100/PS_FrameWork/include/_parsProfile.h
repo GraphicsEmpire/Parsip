@@ -1,6 +1,8 @@
 //This file is created for profiling runs.
 //Here we defined 16 timers
 
+#ifdef WIN32
+
 #include "windows.h"
 
 static LARGE_INTEGER G_PARS_PROFILER_STARTS[16];
@@ -47,3 +49,5 @@ static void parsProfilerPrint(char * str, double timeval)
 	sprintf_s(buf, 512, "Profiler>>%s: %f\n", str, timeval);
 	OutputDebugStringA(buf);
 }
+
+#endif

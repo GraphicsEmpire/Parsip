@@ -93,7 +93,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "DIFFERENCE");				
+            strncpy(chrName, "DIFFERENCE", MAX_NAME_LEN);
 	}
 
 	COctree computeOctree()

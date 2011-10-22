@@ -20,12 +20,12 @@ using namespace PS::BLOBTREE;
 
 namespace PS{
 
-typedef enum SKETCHCMD {cmdAdd, cmdOperator, cmdDelete, 
+enum SKETCHCMD {cmdAdd, cmdOperator, cmdDelete,
 						cmdLock, cmdUnlock, 
 						cmdMove, cmdScale, cmdRotate, 
 						cmdAck,	cmdSet};
 
-typedef enum SKETCHACK{ackSuccess = 1, ackIDNotFound = -1, ackIDNotLocked = -2, ackIDLocked = -3};
+enum SKETCHACK{ackSuccess = 1, ackIDNotFound = -1, ackIDNotLocked = -2, ackIDLocked = -3};
 
 /*
 #define SKETCHNET_ACK_SUCCESS		 1
@@ -35,7 +35,7 @@ typedef enum SKETCHACK{ackSuccess = 1, ackIDNotFound = -1, ackIDNotLocked = -2, 
 */
 #define SKETCHNET_ACK_NOT_VALID		-4
 
-typedef enum TOKENTYPE{ttCommand, ttOperator, ttPrimitive, ttNone};
+enum TOKENTYPE{ttCommand, ttOperator, ttPrimitive, ttNone};
 
 #define DEFAULT_PORT_NUM 27003
 #define MAX_LOG_SIZE 10
@@ -202,7 +202,7 @@ private:
 
 
 protected:
-	typedef enum PROTOCOL_ERROR{peNoError, peBlobNodeID, peMsgID, peParam, peLChild, peRChild, peUnknown};
+        enum PROTOCOL_ERROR{peNoError, peBlobNodeID, peMsgID, peParam, peLChild, peRChild, peUnknown};
 
 	typedef std::map<string,int> TOKENS;
 	typedef std::map<int,string> SIGNATURES;

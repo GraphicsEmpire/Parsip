@@ -360,7 +360,7 @@ void CMeshVV::setTexCoord(int idxChannel, UINT idxTexCoord, vec4f tex)
 }
 
 */
-vec4f CMeshVV::getTexCoord(int idxChannel, UINT idxTexCoord)
+vec4f CMeshVV::getTexCoord(int idxChannel, U32 idxTexCoord)
 {
 	return vec4f (&m_lstTexChannels[idxChannel][idxTexCoord]);
 }
@@ -849,7 +849,7 @@ int CMeshVV::getFace(size_t idxFace, vec3* arrVertices, size_t szVerticesBuffer)
 	if(arrVertices == NULL)
 		return -2;
 	
-	const size_t* arrPrimitive = getFace(idxFace);
+        const U32* arrPrimitive = getFace(idxFace);
 	for(size_t i=0; i < ctFaceSides; i++)
 	{			
 		arrVertices[i] = getVertex3(arrPrimitive[i]);
@@ -858,7 +858,7 @@ int CMeshVV::getFace(size_t idxFace, vec3* arrVertices, size_t szVerticesBuffer)
 	return ctFaceSides;
 }
 
-const unsigned *CMeshVV::getFace(unsigned int primitiveId) const
+const U32 *CMeshVV::getFace(unsigned int primitiveId) const
 {
 	int size;
 
@@ -1620,11 +1620,12 @@ bool CMeshVV::saveToSURFELFile(const DAnsiStr& fileName) const
 
 bool CMeshVV::openOBJ(const DAnsiStr& name)
 {	
-	initMesh(TRIANGLES, 3, 3, 1, 2);
+    /*
+    initMesh(TRIANGLES, 3, 3, 1, 2);
 
     // find the file   
-	std::wifstream ifs( name.c_str() );
-    WCHAR line[256] = {0};    
+    std::wifstream ifs( name.c_str() );
+    U8 line[256] = {0};
 
     // Parse the .obj file. Both triangle faces and quad faces are supported.
     // Only v and f tags are processed, other tags like vn, vt etc are ignored.	
@@ -1728,10 +1729,9 @@ bool CMeshVV::openOBJ(const DAnsiStr& name)
 	lstFaces.clear();
 	
 	return (countFaces() > 0);
+        */
 }
 
-/**
-*/
 bool CMeshVV::openOFF(const DAnsiStr& fileName)
 {
 	// Declare temporary variables to read data into.
@@ -2025,6 +2025,7 @@ bool CMeshVV::openOFF(const DAnsiStr& fileName)
 */
 bool CMeshVV::openStevenOFF(const DAnsiStr& fileName)
 {
+    /*
 	FILE *fileStream;
 	int fileStatus,
 		vertexCount,
@@ -2101,12 +2102,14 @@ bool CMeshVV::openStevenOFF(const DAnsiStr& fileName)
 	fclose(fileStream);
 
 	return true;
+        */
 }
 
 /**
 */
 bool CMeshVV::openCrystalStructureDislocation(const DAnsiStr& fileName)
 {
+    /*
 	FILE *fileStream;
 	char token[128];
 	int fileStatus,
@@ -2230,6 +2233,7 @@ bool CMeshVV::openCrystalStructureDislocation(const DAnsiStr& fileName)
 	fclose(fileStream);
 
 	return true;
+        */
 }
 
 bool CMeshVV::fitTo(vec3f minCorner, vec3f maxCorner)
@@ -2831,19 +2835,19 @@ void CMeshVV::drawNormals(int len) const
 
 void CMeshVV::drawUncolored() const
 {
-	size_t ctNormals  = countNormals();
-	size_t ctVertices = countVertices();
-	size_t ctFaces    = countFaces();
-	size_t ctFaceSides = getUnitFaceSize();
+        U32 ctNormals  = countNormals();
+        U32 ctVertices = countVertices();
+        U32 ctFaces    = countFaces();
+        U32 ctFaceSides = getUnitFaceSize();
 	if(ctNormals != ctVertices) return;
 
 	vec3f v, n;
 	
 	glBegin(m_faceMode);	
-	for(size_t idxFace=0; idxFace < ctFaces; idxFace++)
+        for(U32 idxFace=0; idxFace < ctFaces; idxFace++)
 	{			
-		const size_t* arrPrimitive = getFace(idxFace);
-		for(size_t i=0; i < ctFaceSides; i++)
+                const U32* arrPrimitive = getFace(idxFace);
+                for(U32 i=0; i < ctFaceSides; i++)
 		{			
 			v = getVertex3(arrPrimitive[i]);
 			n = getNormal3(arrPrimitive[i]);
@@ -2869,6 +2873,7 @@ const float * CMeshVV::getColor( int n ) const
 
 bool CMeshVV::saveOBJ( const DAnsiStr& name ) const
 {
+    /*
 	// find the file   
 	std::ofstream ofs( name.c_str() );
 	WCHAR line[256] = {0};    
@@ -2941,6 +2946,7 @@ bool CMeshVV::saveOBJ( const DAnsiStr& name ) const
 	}
 
 	return (countFaces() > 0);
+        */
 }
 
 

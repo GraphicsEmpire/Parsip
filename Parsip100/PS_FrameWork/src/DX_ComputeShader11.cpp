@@ -4,6 +4,8 @@
 
 #include "PS_ErrorManager.h"
 
+#ifdef WIN32
+
 namespace PS
 {
 
@@ -404,4 +406,7 @@ ID3D11Buffer* DXShader11::createAndCopyToDebugBuffer( ID3D11Buffer* pGPUBuffer )
 }
 
 
+
 }
+
+#endif

@@ -20,7 +20,8 @@ namespace BLOBTREE{
 
 using namespace PS::MATH;
 
-typedef enum SkeletonType {sktCylinder, sktDisc, sktLine, sktPoint, sktRing, sktPolygon, sktCube, sktTriangle, sktCatmullRomCurve};
+enum SkeletonType {sktCylinder, sktDisc, sktLine, sktPoint, sktRing, sktPolygon, sktCube, sktTriangle, sktCatmullRomCurve};
+
 //Implementation of Skeleton types like point, line, disk, circle, cylinder, hollowCylinder
 class  CSkeleton
 {

@@ -1,7 +1,7 @@
 #ifndef CINTERVAL_H
 #define CINTERVAL_H
 
-#include <Cfloat>
+#include <float.h>
 
 #define INTERVAL_EPSILON 0.0001f
 

@@ -4,7 +4,7 @@
 
 #define DEFAULT_GRIM_DIM 8
 
-#include "PS_Framework/include/PS_Vector.h"
+#include "PS_FrameWork/include/PS_Vector.h"
 
 namespace PS{
 
@@ -51,7 +51,7 @@ namespace PS{
 		bool bValid;
 		int nDim;
 		static const int CACHE_DIM = 32;
-		__declspec(align(16)) float pValues[CACHE_DIM*CACHE_DIM*CACHE_DIM];	
+                float pValues[CACHE_DIM*CACHE_DIM*CACHE_DIM];
 
 		Grid()
 		{ 

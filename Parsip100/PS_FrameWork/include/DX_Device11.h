@@ -4,6 +4,8 @@
 #ifndef DX_DEVICE11_H
 #define DX_DEVICE11_H
 
+#ifdef WIN32
+
 #include <d3d11.h>
 #include <d3dx11.h>
 
@@ -93,5 +95,7 @@ public:
 };
 
 }
+
+#endif
 
 #endif

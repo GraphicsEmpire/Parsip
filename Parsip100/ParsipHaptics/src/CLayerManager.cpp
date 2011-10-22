@@ -1099,6 +1099,11 @@ int CLayer::recursive_GetBlobTreeSeedPoints(CBlobTree* node, stack<CBlobTree*> &
 				case(bntOpWarpShear):					
 					seed = dynamic_cast<CWarpShear*>(op)->warp(seed);					
 					break;
+                                default:
+                                {
+
+                                }
+
 				}
 			}
 
@@ -1223,10 +1228,10 @@ bool CLayer::saveAsVolumeData(const char* strFileName, int w, int h, int d)
 	if( err != 0 )
 		return false;
 
-	UCHAR* buffer = new UCHAR[w*h*d];
+        U8* buffer = new U8[w*h*d];
 	if(saveAsVolumeData(buffer, w, h, d))
 	{
-		size_t nWritten = fwrite(buffer, sizeof(UCHAR), w*h*d, stream);
+                size_t nWritten = fwrite(buffer, sizeof(U8), w*h*d, stream);
 		fclose(stream);
 
 		delete [] buffer; buffer = NULL;
@@ -1240,7 +1245,7 @@ bool CLayer::saveAsVolumeData(const char* strFileName, int w, int h, int d)
 	
 }
 
-bool CLayer::saveAsVolumeData(UCHAR* buffer, int w, int h, int d)
+bool CLayer::saveAsVolumeData(U8* buffer, int w, int h, int d)
 {
 	CBlobTree* root = getBlob();	
 	if((root == NULL) || (m_lpMesh == NULL) || (buffer == NULL)) 
@@ -1271,7 +1276,7 @@ bool CLayer::saveAsVolumeData(UCHAR* buffer, int w, int h, int d)
 				float fv = root->fieldValue(pt);
 				if(fv > 1.0f)
 					throw "FieldValue overflow!";
-				UCHAR val = static_cast<UCHAR>(fv * 255);
+                                U8 val = static_cast<U8>(fv * 255);
 				//data[j*d*w + k*w + i] = val;
 				//data[k*h*w + j*w + i ] = val;
 				buffer[i*h*d + j*d + k] = val;
@@ -1624,7 +1629,7 @@ bool CLayerManager::saveAsVolumeData(const char* strDir, int w, int h, int d)
 	char chrTitle[100];
 	for(size_t i=0; i< m_lstLayers.size(); i++)
 	{	
-		sprintf_s(chrTitle, 100, "//LAYERNUM_%d.raw", i);
+                snprintf(chrTitle, 100, "//LAYERNUM_%d.raw", i);
 		std::string strFileName = chrTitle;
 		std::string strPath = strDir + strFileName;
 		

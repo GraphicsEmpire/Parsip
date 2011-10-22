@@ -13,69 +13,69 @@ using namespace std;
 using namespace PS::MATH;
 
 namespace PS{
-	
-	
-	class CAppConfig
-	{
-	public:
-		typedef enum FileMode {fmRead, fmWrite, fmReadWrite, fmMemoryStream};
-	protected:
-		DAnsiStr   m_strFileName;		
-		FileMode   m_fmode;
-		std::vector<DAnsiStr> m_content;
-
-		bool readFile();
-		bool writeFile();
-
-	public:
-		//const int MAX_LINE_SIZE;	
-		CAppConfig():m_strFileName(""){};
-		CAppConfig(DAnsiStr strFileName, FileMode mode = fmReadWrite);
-		~CAppConfig();
-
-		FileMode getFileMode() const {return m_fmode;}
-		DAnsiStr getFileName() const {return m_strFileName;}
 
 
-		void clearContentBuffer();
-		void getContentBuffer(std::vector<DAnsiStr> outContentBuf) const;
-		void setContentBuffer(const std::vector<DAnsiStr>& inContentBuf);
+        class CAppConfig
+        {
+        public:
+                enum FileMode {fmRead, fmWrite, fmReadWrite, fmMemoryStream};
+        protected:
+                DAnsiStr   m_strFileName;
+                FileMode   m_fmode;
+                std::vector<DAnsiStr> m_content;
 
-		void set(DAnsiStr strFileName, FileMode mode = fmReadWrite);
-		bool setForRead();
-		void setForWrite();
+                bool readFile();
+                bool writeFile();
 
-		DAnsiStr getFilePath() const {return m_strFileName;}
+        public:
+                //const int MAX_LINE_SIZE;
+                CAppConfig():m_strFileName(""){};
+                CAppConfig(DAnsiStr strFileName, FileMode mode = fmReadWrite);
+                ~CAppConfig();
 
-		int hasSection(DAnsiStr strSection);	
-		bool writeValue(DAnsiStr section, DAnsiStr variable, DAnsiStr strValue);
+                FileMode getFileMode() const {return m_fmode;}
+                DAnsiStr getFileName() const {return m_strFileName;}
 
-		bool readLine(DAnsiStr section, DAnsiStr variable, DAnsiStr& strLine);
-		bool readValue(DAnsiStr section, DAnsiStr variable, DAnsiStr& strValue);
 
-		int readInt(DAnsiStr section, DAnsiStr variable, int def = 0);
-		void writeInt(DAnsiStr section, DAnsiStr variable, int val);
+                void clearContentBuffer();
+                void getContentBuffer(std::vector<DAnsiStr> outContentBuf) const;
+                void setContentBuffer(const std::vector<DAnsiStr>& inContentBuf);
 
-		float readFloat(DAnsiStr section, DAnsiStr variable, float def = 0.0f);
-		void writeFloat(DAnsiStr section, DAnsiStr variable, float val);
+                void set(DAnsiStr strFileName, FileMode mode = fmReadWrite);
+                bool setForRead();
+                void setForWrite();
 
-		double readDouble(DAnsiStr section, DAnsiStr variable, double def = 0.0);
-		void writeDouble(DAnsiStr section, DAnsiStr variable, double val);
+                DAnsiStr getFilePath() const {return m_strFileName;}
 
-		DAnsiStr readString(DAnsiStr section, DAnsiStr variable, DAnsiStr def = "");
-		void writeString(DAnsiStr section, DAnsiStr variable, DAnsiStr val);
+                int hasSection(DAnsiStr strSection);
+                bool writeValue(DAnsiStr section, DAnsiStr variable, DAnsiStr strValue);
 
-		bool readBool(DAnsiStr section, DAnsiStr variable, bool def = false);
-		void writeBool(DAnsiStr section, DAnsiStr variable, bool val);
+                bool readLine(DAnsiStr section, DAnsiStr variable, DAnsiStr& strLine);
+                bool readValue(DAnsiStr section, DAnsiStr variable, DAnsiStr& strValue);
 
-		bool readIntArray(DAnsiStr section, DAnsiStr variable, int ctExpected, std::vector<int>& arrayInt);
-		int writeIntArray(DAnsiStr section, DAnsiStr variable, const std::vector<int>& arrayInt);
+                int readInt(DAnsiStr section, DAnsiStr variable, int def = 0);
+                void writeInt(DAnsiStr section, DAnsiStr variable, int val);
 
-		vec3f readVec3f(DAnsiStr section, DAnsiStr variable);
-		void writeVec3f(DAnsiStr section, DAnsiStr variable, vec3f val);
+                float readFloat(DAnsiStr section, DAnsiStr variable, float def = 0.0f);
+                void writeFloat(DAnsiStr section, DAnsiStr variable, float val);
 
-		vec4f readVec4f(DAnsiStr section, DAnsiStr variable);
-		void writeVec4f(DAnsiStr section, DAnsiStr variable, vec4f val);
-	};
+                double readDouble(DAnsiStr section, DAnsiStr variable, double def = 0.0);
+                void writeDouble(DAnsiStr section, DAnsiStr variable, double val);
+
+                DAnsiStr readString(DAnsiStr section, DAnsiStr variable, DAnsiStr def = "");
+                void writeString(DAnsiStr section, DAnsiStr variable, DAnsiStr val);
+
+                bool readBool(DAnsiStr section, DAnsiStr variable, bool def = false);
+                void writeBool(DAnsiStr section, DAnsiStr variable, bool val);
+
+                bool readIntArray(DAnsiStr section, DAnsiStr variable, int ctExpected, std::vector<int>& arrayInt);
+                int writeIntArray(DAnsiStr section, DAnsiStr variable, const std::vector<int>& arrayInt);
+
+                vec3f readVec3f(DAnsiStr section, DAnsiStr variable);
+                void writeVec3f(DAnsiStr section, DAnsiStr variable, vec3f val);
+
+                vec4f readVec4f(DAnsiStr section, DAnsiStr variable);
+                void writeVec4f(DAnsiStr section, DAnsiStr variable, vec4f val);
+        };
 }
-#endif 
+#endif

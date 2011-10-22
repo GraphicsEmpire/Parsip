@@ -22,8 +22,8 @@
 	#if defined(__APPLE__) && defined (TARGET_OS_IPHONE)	//Binary shaders cannot be run on Apple Hardware. Training course will compile shaders every time.
 		#define PSGetProcAddress(x) ::x
 	#else
-		#include <EGL/egl.h>
-		#define PSGetProcAddress(x) eglGetProcAddress(#x)
+                //#include <EGL/egl.h>
+                //#define PSGetProcAddress(x) eglGetProcAddress(#x)
 	#endif
 
 #endif

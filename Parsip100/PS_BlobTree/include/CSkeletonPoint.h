@@ -58,7 +58,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "POINT");				
+            strncpy(chrName, "POINT", MAX_NAME_LEN);
 	}
 
 	bool getExtremes(vec3f& lower, vec3f& upper)

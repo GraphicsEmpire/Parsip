@@ -12,12 +12,14 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <windows.h>
 
-//#include "stdafx.h"
 #include "DSystem/include/DContainers.h"
 #include "PS_String.h"
 #include "_dataTypes.h"
+
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 using namespace std;
 
@@ -39,7 +41,7 @@ namespace PS{
 		{
 		private:
 			CPerfLogger* m_logger;
-			UINT	m_eventID;
+                        U32	m_eventID;
 
 			void init();
 		public:
@@ -70,8 +72,8 @@ namespace PS{
 		static I64 getPerfCounter();
 		static	double convertTimeTicksToMS( I64 ticks );
 
-		UINT startEvent(const char* strFunc, const char* strFile, int lineNumber);
-		void endEvent(UINT id);
+                U32 startEvent(const char* strFunc, const char* strFile, int lineNumber);
+                void endEvent(U32 id);
 
 		//Some statistical functions
 		//Get Most time-consuming event

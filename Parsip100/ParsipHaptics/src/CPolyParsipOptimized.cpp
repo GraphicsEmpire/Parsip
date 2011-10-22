@@ -3,6 +3,10 @@
 #include "PS_FrameWork/include/PS_ErrorManager.h"
 #include <map>
 
+#ifdef linux
+    #include <pthread.h>
+#endif
+
 namespace PS{
 
 	//Start Processing MPU
@@ -16,7 +20,12 @@ namespace PS{
 		lpOutputMesh->initMesh(CMeshVV::TRIANGLES, 3, 4, 0, 0);				
 
 		//Thread ID
+                #ifdef WIN32
 		m_threadID = GetCurrentThreadId();
+                #else
+                m_threadID = pthread_self();
+                #endif
+
 
 		//Do All Pre-fetchings
 		//PREFETCH(m_fvCache);
@@ -137,7 +146,7 @@ namespace PS{
 		size_t ctIntersectedCells = 0;
 		
 		//Init
-		ZeroMemory(m_edgeTableSizes, 2*CELLID_HASHSIZE*sizeof(int));		
+                memset(m_edgeTableSizes, 0, 2*CELLID_HASHSIZE*sizeof(int));
 		int m = GRID_DIM*GRID_DIM*GRID_DIM;
 		for(int i=0; i<m; i++)
 			m_fvCache[i] = FLT_MIN;

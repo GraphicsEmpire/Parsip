@@ -756,15 +756,6 @@ public:
 	}
 
 
-	// takes an input pose, converts it to a 4x4 matrix..
-	// then multiplies that times the parent...
-	// then extracts the pose (translation and rotation) from
-	// the combined matrix.
-	void GetPose(const vec3f &pos,
-		const CQuaternion            &rot,
-		vec3f       &tpos,
-		CQuaternion                  &trot) const;
-
 	void Report(const char *header) const;
 
 	void InvertUnscaled(const CMatrix &invert)

@@ -7,10 +7,10 @@
 #endif
 
 #include <string>
-using namespace std;
-
 #include <stdio.h>
 #include <stdarg.h>
+
+using namespace std;
 
 #ifndef ASSERT
 #ifdef _DEBUG
@@ -26,7 +26,8 @@ static void parsDebugInfo(char * str, ...)
 	va_list args;
 
 	va_start(args, str);
-	vsprintf_s(buf, str, args);
+
+        vsnprintf(buf, 1024, str, args);
 #ifdef _WIN32
 	OutputDebugStringA(buf);
 #else
@@ -41,7 +42,7 @@ static string parsDebugInfoString(char * str, ...)
 	va_list args;
 
 	va_start(args, str);
-	vsprintf_s(buf, str, args);
+        vsnprintf(buf, 1024, str, args);
 	va_end(args);
 	return string(buf);
 }

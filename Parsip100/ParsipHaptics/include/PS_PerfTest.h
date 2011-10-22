@@ -15,8 +15,8 @@ namespace PS
 
 	class CPerfTest{
 	public:
-		typedef enum Exetype {etDebug, etRelease};
-		typedef enum ExeTargetMachine {etm32, etm64};
+                enum Exetype {etDebug, etRelease};
+                enum ExeTargetMachine {etm32, etm64};
 
 		class TestConfig{
 		public:
@@ -89,7 +89,7 @@ namespace PS
 		};
 
 		typedef void (*OnPerformTest)(RenderTaskParams* param);
-		typedef enum WriteTestResults {wtrAppendExisting, wtrCreateNew, wtrIgnore};
+                enum WriteTestResults {wtrAppendExisting, wtrCreateNew, wtrIgnore};
 
 
 	public:

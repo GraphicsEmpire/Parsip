@@ -230,7 +230,7 @@ public:
 		if(m_skeleton != NULL)		
 			m_skeleton->getName(chrName);			
 		else
-			strcpy_s(chrName, MAX_NAME_LEN, "Primitive");		
+                    strncpy(chrName, "PRIMITIVE", MAX_NAME_LEN);
 	}
 
 	//Finds a seed point with field-value greater than the specified iso-value if asked for hot

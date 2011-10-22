@@ -138,7 +138,7 @@ public:
 
 	void getName(char * chrName)
 	{
-		strcpy_s(chrName, MAX_NAME_LEN, "TWIST");		
+            strncpy(chrName, "TWIST", MAX_NAME_LEN);
 	}
 
 

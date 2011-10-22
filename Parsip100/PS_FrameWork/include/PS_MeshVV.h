@@ -22,8 +22,8 @@ using namespace MATH;
 class CMeshVV 
 {
 public:
-	typedef DVec<unsigned int> element_array_type;
-	typedef enum STREAM_FORMAT {
+        typedef DVec<U32> element_array_type;
+        enum STREAM_FORMAT {
 		OFF,
 		STEVEN_OFF,
 		OBJ,
@@ -33,7 +33,8 @@ public:
 		CRYSTAL_STRUCTURE_DISLOCATIONS,
 		PS_BINARY
 	};
-	typedef enum POLYGON_MODE {
+
+        enum POLYGON_MODE {
 		POINTS = 0x0000,
 		LINES = 0x0001,
 		LINE_LOOP = 0x0002,
@@ -84,7 +85,7 @@ public:
 	//===================================================
 	//Add Texture Coordinates
 	bool isValidTexChannel(int idxChannel) const;
-	bool isValidTexChannelAndCoord(int idxChannel, unsigned int idxCoord) const;
+        bool isValidTexChannelAndCoord(int idxChannel, U32 idxCoord) const;
 	void addTexCoord(int idxChannel, float tex);
 	void addTexCoord(int idxChannel, vec2f tex);
 	void addTexCoord(int idxChannel, vec3f tex);
@@ -96,14 +97,14 @@ public:
 	void setTexCoord(int idxChannel, UINT idxTexCoord, vec4f tex);
 	*/
 
-	vec4f getTexCoord(int idxChannel, UINT idxTexCoord);
+        vec4f getTexCoord(int idxChannel, U32 idxTexCoord);
 
 	void setUnitTexCoordSize(int size);
 	void setUnitTexCoordSize(int idxChannel, int size);
 	int	 getUnitTexCoordSize(int idxChannel) const;	
 	void setTexChannelSize(int size);
 	int getTexChannelSize() const;
-	unsigned int countTexCoords(int idxChannel) const;
+        U32 countTexCoords(int idxChannel) const;
 	void clearTextures();
 	//===================================================
 	void addNormal(vec3 n);
@@ -114,7 +115,7 @@ public:
 	const float *getNormal(int n) const;
 	vec3 getNormal3(int n) const;
 	const float *getNormalArray(void) const;
-	unsigned int countNormals(void) const;
+        U32 countNormals(void) const;
 	void clearNormals(void);
 	//===================================================
 	void addVertex(vec2 v2);
@@ -140,27 +141,27 @@ public:
 	const float *getVertexArray(void) const;
 
 	int getVertexSize(void) const;
-	unsigned int countVertices(void) const;
+        U32 countVertices(void) const;
 	void clearVertices(void);
 	//===================================================
-	void addFace(unsigned int vertexId);
-	void addFaceArray(DVec<unsigned int>& input);
-	void addFaceArray(const unsigned int *begin, const unsigned int *end);
-	void addLine(unsigned int firstId, unsigned int secondId);
-	void addTriangle(unsigned int firstId, unsigned int secondId, unsigned int thirdId);
-	void addQuad(unsigned int* ids);
-	void addQuad(unsigned int firstId, unsigned int secondId, unsigned int thirdId, unsigned int fourthId);
+        void addFace(U32 vertexId);
+        void addFaceArray(DVec<U32>& input);
+        void addFaceArray(const U32 *begin, const U32 *end);
+        void addLine(U32 firstId, U32 secondId);
+        void addTriangle(U32 firstId, U32 secondId, U32 thirdId);
+        void addQuad(U32* ids);
+        void addQuad(U32 firstId, U32 secondId, U32 thirdId, U32 fourthId);
 	
 	const unsigned *getElementArray(void) const;
 	int getFaceArraySize(void) const;
 	void clearFaces(void);
 
 	//Get Primitives	
-	unsigned int getFaceMode(void) const;	
+        U32 getFaceMode(void) const;
 	int getFace(size_t idxFace, vec3* arrVertices, size_t szVerticesBuffer);
-	const unsigned *getFace(unsigned int primitiveId) const;
+        const U32 *getFace(U32 primitiveId) const;
 	int getUnitFaceSize(void) const;
-	unsigned int countFaces(void) const;
+        U32 countFaces(void) const;
 	//===================================================
 	virtual void removeAll(void);	
 	//Open and Save File Formats
@@ -220,8 +221,8 @@ public:
 	DVec<float> m_lstVertices;
 	DVec<float> m_lstNormals;
 
-	unsigned int m_faceMode;
-	DVec<unsigned int> m_lstFaces;	
+        U32 m_faceMode;
+        DVec<U32> m_lstFaces;
 };
 
 }

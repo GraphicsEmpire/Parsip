@@ -7,7 +7,7 @@
 
 #include "PS_FrameWork/include/PS_String.h"
 #include "PS_BlobTree/include/CBlobTree.h"
-#include "PS_FrameWork/include/PS_SIMDVec.h"
+
 using namespace PS::BLOBTREE;
 
 //Solution from:
@@ -30,35 +30,6 @@ bool FindSeedPoint(CBlobTree* lpNode, bool bFindHot, float iso_value, int ctTrie
 CBlobTree* cloneNode(CBlobTree* node, int id = 0);
 CBlobTree* cloneBlobTree(CBlobTree* input, int rootID = 0, int* lpCtClonned = NULL);
 
-__inline vec3f toNormalVec3(const svec4f& v)
-{
-	return vec3f(v[0], v[1], v[2]);
-}
-
-__inline vec4f toNormalVec4(const svec4f& v)
-{
-	return vec4f(v[0], v[1], v[2], v[3]);
-}
-
-__inline svec4f toSIMDVec(const vec4f& v)
-{
-	svec4f res;
-	res.set(v.x, v.y, v.z, v.w);
-	return res;
-}
-
-__inline svec4f toSIMDVec(const vec3f& v)
-{
-	svec4f res;
-	res.set(v.x, v.y, v.z);
-	return res;
-}
-
-__inline vec4f toVec4f(const vec3f& v)
-{
-	vec4f res(v.x, v.y, v.z, 0.0f);
-	return res;
-}
 
 __inline bool intersects(const vec4f& lo1, const vec4f& hi1, const vec4f& lo2, const vec4f& hi2)
 {
@@ -80,9 +51,9 @@ CBlobTree* CompactBlobTree(CBlobTree* input);
 QString printToQStr(const char* pFmt, ...);
 
 /* align_size has to be a power of two !! */
-void* aligned_malloc_ps(size_t size, size_t align_size);
+//void* aligned_malloc_ps(size_t size, size_t align_size);
 
-void aligned_free_ps(void *ptr);
+//void aligned_free_ps(void *ptr);
 
 /*
 int main( void )
