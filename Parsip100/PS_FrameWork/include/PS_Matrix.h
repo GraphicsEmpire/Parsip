@@ -142,7 +142,7 @@ public:
 				for(int k=0; k<4; k++ )
 					pM[4*i+j] +=  pA[4*i+k] * pB[4*k+j];
 
-	};
+        }
 
 	
 	// rls - special case only multiplies the 3x3 rotation.
@@ -159,7 +159,7 @@ public:
 				for(int k=0; k<3; k++ )
 					pM[4*i+j] +=  pA[4*i+k] * pB[4*k+j];
 
-	};
+        }
 
 
 	inline float transformZ(float x,float y,float z) const
@@ -184,7 +184,7 @@ public:
 			(mElement[2][2] * v.z) + mElement[3][2];
 
 		return t;
-	};
+        }
 
 	void transform(const float *v,float *t) const
 	{
@@ -200,7 +200,7 @@ public:
 			(mElement[1][2] * v[1]) +
 			(mElement[2][2] * v[2]) + mElement[3][2];
 
-	};
+        }
 
 	void transform(const vec3f & v,vec3f &t,const vec3f &o) const
 	{
@@ -216,7 +216,7 @@ public:
 			(mElement[1][2] * v.y) +
 			(mElement[2][2] * v.z) + (mElement[3][2]-o.z);
 
-	};
+        }
 
 	void transform(const Vector2d<float> & v,Vector2d<float> &t) const
 	{
@@ -226,7 +226,7 @@ public:
 		t.y = (mElement[0][1] * v.x) +
 			(mElement[1][1] * v.y) + mElement[2][1];
 
-	};
+        }
 
 	inline vec3f transformRotateOnly(const vec3f &v) const
 	{
@@ -579,9 +579,11 @@ public:
 
 	void invert(CMatrix &invert) const
 	{
-		float determinant = getDeterminant();
-		assert( determinant > 0.0001f );
-		determinant = 1.0f / determinant;
+		float determinant = getDeterminant();                
+                if(FLOAT_EQ(determinant, 0.0f))
+                    determinant = 1.0f;
+                else
+                    determinant = 1.0f / determinant;
 		for ( int i = 0; i < 4; i++ )
 		{
 			for ( int j = 0; j < 4; j++ )

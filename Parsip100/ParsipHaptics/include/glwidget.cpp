@@ -1588,23 +1588,26 @@ void GLWidget::setPrimitiveColorFromColorDlg()
                       static_cast<int>(dif.w * 255.0f));
 
         QColor clNew = QColorDialog::getColor(clPrev, this, "Select Material Color");
-        CMaterial m;
-        float invFactor = 1.0f / 255.0f;
-        m.diffused = vec4f(static_cast<float>(clNew.red())*invFactor,
-                           static_cast<float>(clNew.green())*invFactor,
-                           static_cast<float>(clNew.blue())*invFactor,
-                           static_cast<float>(clNew.alpha())*invFactor);
-        m.ambient = m.diffused * 0.5f;
-        m.specular = vec4f(0.8f, 0.8f, 0.8f, 0.8f) + m.diffused * 0.2f;
-        m.shininess = 32.0f;
-        sprim->setMaterial(m);
-        sprim->setColor(m.diffused);
+        if(clNew.isValid())
+        {
+            CMaterial m;
+            float invFactor = 1.0f / 255.0f;
+            m.diffused = vec4f(static_cast<float>(clNew.red())*invFactor,
+                               static_cast<float>(clNew.green())*invFactor,
+                               static_cast<float>(clNew.blue())*invFactor,
+                               static_cast<float>(clNew.alpha())*invFactor);
+            m.ambient = m.diffused * 0.5f;
+            m.specular = vec4f(0.8f, 0.8f, 0.8f, 0.8f) + m.diffused * 0.2f;
+            m.shininess = 32.0f;
+            sprim->setMaterial(m);
+            sprim->setColor(m.diffused);
 
-        active->bumpRevision();
-        actMeshPolygonize(m_layerManager.getActiveLayerIndex());
+            active->bumpRevision();
+            actMeshPolygonize(m_layerManager.getActiveLayerIndex());
 
-        emit sig_setPrimitiveColor(clNew);
-        emit sig_showColorRibbon(getModelColorRibbon());
+            emit sig_setPrimitiveColor(clNew);
+            emit sig_showColorRibbon(getModelColorRibbon());
+        }
     }
 }
 
