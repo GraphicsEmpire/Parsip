@@ -4055,7 +4055,7 @@ void GLWidget::actFileExportMesh()
     //Save Mesh
     if(!bres)
     {
-        ReportError("Uable to save!");
+        ReportError("Unable to save!");
         FlushAllErrors();
     }
 

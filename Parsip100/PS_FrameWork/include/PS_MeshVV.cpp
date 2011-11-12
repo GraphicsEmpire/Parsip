@@ -2872,81 +2872,71 @@ const float * CMeshVV::getColor( int n ) const
 }
 
 bool CMeshVV::saveOBJ( const DAnsiStr& name ) const
-{
-    /*
-	// find the file   
-	std::ofstream ofs( name.c_str() );
-	WCHAR line[256] = {0};    
+{  
+    // find the file
+    std::ofstream ofs( name.c_str() );
 
-	// Parse the .obj file. Both triangle faces and quad faces are supported.
-	// Only v and f tags are processed, other tags like vn, vt etc are ignored.	
-	vec3 pos;
-	vec3 normal;
-	vec2 texCoord;
-	
-	
-	DAnsiStr strOut = printToAStr("#Exported from Parsip\n");
-	ofs << strOut;
-	strOut = printToAStr("o cube1\n");
-	ofs << strOut;
+    DAnsiStr strOut = printToAStr("#Exported from Parsip\n");
+    ofs << strOut;
+    strOut = printToAStr("o cube1\n");
+    ofs << strOut;
 
-	strOut = printToAStr("#%d vertices, %d faces\n", this->countVertices(), this->countFaces());
-	ofs << strOut;
+    strOut = printToAStr("#%d vertices, %d faces\n", this->countVertices(), this->countFaces());
+    ofs << strOut;
 
-	vec3f v;
-	size_t ctVertices = countVertices();
-	for(size_t i=0; i<ctVertices; i++)
-	{
-		v = getVertex3(i);
-		strOut = printToAStr("v %f %f %f\n",  v.x, v.y, v.z);
-		ofs << strOut;
-	}
+    vec3f v;
+    size_t ctVertices = countVertices();
+    for(size_t i=0; i<ctVertices; i++)
+    {
+        v = getVertex3(i);
+        strOut = printToAStr("v %f %f %f\n",  v.x, v.y, v.z);
+        ofs << strOut;
+    }
 
-	vec3f n;
-	size_t ctNormals = countNormals();
-	for(size_t i=0; i<ctNormals; i++)
-	{
-		n = getNormal3(i);
-		strOut = printToAStr("vn %f %f %f\n",  n.x, n.y, n.z);
-		ofs << strOut;
-	}
+    vec3f n;
+    size_t ctNormals = countNormals();
+    for(size_t i=0; i<ctNormals; i++)
+    {
+        n = getNormal3(i);
+        strOut = printToAStr("vn %f %f %f\n",  n.x, n.y, n.z);
+        ofs << strOut;
+    }
 
 
-	strOut = printToAStr("g cube1_default\n");
-	ofs << strOut;
+    strOut = printToAStr("g cube1_default\n");
+    ofs << strOut;
 
-	strOut = printToAStr("usemtl default\n");
-	ofs << strOut;
-		
-	int f[4];
-	size_t ctWritten = 0;
-	if(m_faceMode == TRIANGLES)
-	{				
-		for(size_t i=0; i<m_lstFaces.size(); i+=3)
-		{
-			f[0] = m_lstFaces[i + 0] + 1;
-			f[1] = m_lstFaces[i + 1] + 1;
-			f[2] = m_lstFaces[i + 2] + 1;
-			strOut = printToAStr("f %d//%d %d//%d %d//%d\n",  f[0], f[0], f[1], f[1], f[2], f[2]);
-			ofs << strOut;
-			ctWritten++;
-		}
-	}
-	else if(m_faceMode == QUADS)
-	{
-		for(size_t i=0; i<m_lstFaces.size(); i+=4)
-		{
-			f[0] = m_lstFaces[i + 0] + 1;
-			f[1] = m_lstFaces[i + 1] + 1;
-			f[2] = m_lstFaces[i + 2] + 1;
-			f[3] = m_lstFaces[i + 3] + 1;
-			strOut = printToAStr("f %d//%d %d//%d %d//%d %d//%d\n",  f[0], f[0], f[1], f[1], f[2], f[2], f[3], f[3]);
-			ofs << strOut;
-		}
-	}
+    strOut = printToAStr("usemtl default\n");
+    ofs << strOut;
 
-	return (countFaces() > 0);
-        */
+    int f[4];
+    size_t ctWritten = 0;
+    if(m_faceMode == TRIANGLES)
+    {
+        for(size_t i=0; i<m_lstFaces.size(); i+=3)
+        {
+            f[0] = m_lstFaces[i + 0] + 1;
+            f[1] = m_lstFaces[i + 1] + 1;
+            f[2] = m_lstFaces[i + 2] + 1;
+            strOut = printToAStr("f %d//%d %d//%d %d//%d\n",  f[0], f[0], f[1], f[1], f[2], f[2]);
+            ofs << strOut;
+            ctWritten++;
+        }
+    }
+    else if(m_faceMode == QUADS)
+    {
+        for(size_t i=0; i<m_lstFaces.size(); i+=4)
+        {
+            f[0] = m_lstFaces[i + 0] + 1;
+            f[1] = m_lstFaces[i + 1] + 1;
+            f[2] = m_lstFaces[i + 2] + 1;
+            f[3] = m_lstFaces[i + 3] + 1;
+            strOut = printToAStr("f %d//%d %d//%d %d//%d %d//%d\n",  f[0], f[0], f[1], f[1], f[2], f[2], f[3], f[3]);
+            ofs << strOut;
+        }
+    }
+
+    return (countFaces() > 0);
 }
 
 
