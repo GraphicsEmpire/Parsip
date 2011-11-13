@@ -68,7 +68,7 @@ void CSplineCatmullRom::getArcPoints(std::vector<vec3f>& lstPoints) const
 {
 	if(m_vArcTable.size() < 2) return;
 	lstPoints.resize(m_vArcTable.size());	
-        for(U32 i=0; i<m_vArcTable.size(); i++)
+    for(U32 i=0; i<m_vArcTable.size(); i++)
 	{
 		lstPoints[i] = m_vArcTable[i].pt;
 	}
@@ -266,7 +266,7 @@ void CSplineCatmullRom::addPoint(const vec3f& p)
 
 void CSplineCatmullRom::removePoint(U32 i)
 {
-	if(isPointIndexCorrect(i))
+	if(isCtrlPointIndex(i))
 		m_vCtrlPoints.erase(m_vCtrlPoints.begin() + i);
 }
 
@@ -283,7 +283,7 @@ vec3f CSplineCatmullRom::getPoint(U32 i)
 
 void CSplineCatmullRom::setPoint(int index, const vec3f& pt)
 {
-	if(!isPointIndexCorrect(index))
+	if(!isCtrlPointIndex(index))
 		return;
 
 	float x = m_vCtrlPoints[index].x;
@@ -297,10 +297,6 @@ void CSplineCatmullRom::setPoint(int index, const vec3f& pt)
 	z = m_vCtrlPoints[index].z;
 }
 
-bool CSplineCatmullRom::isPointIndexCorrect(U32 i)
-{
-	return (i >= 0)&&(i < m_vCtrlPoints.size());
-}
 
 bool CSplineCatmullRom::getLocalSpline(float t, float &local_t, int *indices)
 {
@@ -435,7 +431,7 @@ vec3f CSplineCatmullRom::position(float t, vec3f& p0, vec3f& p1, vec3f& p2, vec3
 }
 
 void CSplineCatmullRom::drawCtrlLine(unsigned int gl_draw_mode)
-{
+{	
 	/*
 	vec3f v;
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -452,16 +448,14 @@ void CSplineCatmullRom::drawCtrlLine(unsigned int gl_draw_mode)
 
 
 void CSplineCatmullRom::drawCurve(unsigned int gl_draw_mode)
-{
+{	
 	/*
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glBegin(gl_draw_mode);
-                for(U32 i=0; i<vArcTable.size(); i++)
-		{
-			glVertex3fv(vArcTable[i].pt.ptr());
-		}
+        for(U32 i=0; i<vArcTable.size(); i++)	
+			glVertex3fv(vArcTable[i].pt.ptr());		
 		glEnd();
-	glPopAttrib();
+	glPopAttrib();	
 	*/
 }
 

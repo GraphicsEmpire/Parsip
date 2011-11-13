@@ -18,58 +18,15 @@
 #include "PS_FrameWork/include/TaskManager.h"
 #include "PS_FrameWork/include/PS_SplineCatmullRom.h"
 #include "CLayerManager.h"
-//#include "CPolyParsipServer.h"
 #include "CPolyParsipOptimized.h"
 #include "CBlobTreeNetwork.h"
 #include "DlgFieldFunctionEditor.h"
+#include "AppSettings.h"
 
 using namespace PS;
 using namespace PS::MATH;
 using namespace PS::BLOBTREE;
 
-enum SHOWMESH {smNone = 0, smWireFrame = 1, smSurface = 2};
-
-struct SettingsParsip
-{
-    int	ctThreads;
-    int	griddim;
-    int	testRuns;
-    float adaptiveParam;
-    float cellSize;
-
-    CellShape	cellShape;
-    bool bUseAdaptiveSubDivision;
-    bool bUseComputeShaders;
-    bool bUseTBB;
-    bool bForceMC;
-    DAnsiStr strLastScene;
-};
-
-struct SettingsDisplay
-{
-    int  showMesh;
-    bool bDarkBackground;
-    bool bShowSeedPoints;
-    bool bShowNormals;
-    bool bDrawChessboardGround;
-    bool bShowBoxLayer;
-    bool bShowBoxPrimitive;
-    bool bShowBoxPoly;
-    bool bShowAnimCurves;
-
-    bool bShowGraph;
-    bool bShowColorCodedMPUs;
-    int  normalLength;
-    CMaterial mtrlMeshWires;
-    //vec3f bgColor;
-};
-
-/*
-class GLGizmo : public QGLWidget
-{
-
-};
-*/
 
 //This is our OpenGL Component we built it on top of QGLWidget
 class GLWidget : public QGLWidget
@@ -295,12 +252,9 @@ private:
     QTimer*			m_timer;
 
     PS::CArcBallCamera m_camera;
-    PS::CArcBallCamera::MOUSEBUTTONSTATE m_mouseButton;
-    int		m_mouseDragScale;
+    PS::CArcBallCamera::MOUSEBUTTONSTATE m_mouseButton;  
     vec2i	m_mouseLastPos;
     vec2i	m_scrDim;
-    SettingsDisplay m_setDisplay;
-    SettingsParsip	m_setParsip;
     CLayerManager	m_layerManager;
     //CParsipServer	m_parsip;
     //CParsipOptimized m_optParsip;
@@ -366,10 +320,6 @@ private:
     QStandardItemModel* getModelColorRibbon();
 
     bool windowToObject(vec3f window, vec3f& object);
-
-    //Serialize App Settings
-    void saveSettings();
-    void loadSetting();
 
     //Draw everything
     void drawLayerManager();

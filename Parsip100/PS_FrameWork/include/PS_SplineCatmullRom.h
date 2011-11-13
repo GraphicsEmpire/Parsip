@@ -41,15 +41,15 @@ public:
 	void set(const CSplineCatmullRom& rhs);
 
 	bool isValid() const { return ((m_vCtrlPoints.size() >= 4) && (m_vArcTable.size() > 0)); }
-	bool isCtrlPointIndex(U32 index) const {return (index >=0 && index < m_vCtrlPoints.size());}
+	bool isCtrlPointIndex(int index) const {return (index >=0 && index < (int)m_vCtrlPoints.size());}
 	std::vector<vec3>& getControlPoints() {return m_vCtrlPoints;}
 	std::vector<ARCLENGTHPARAM>& getArcTable() {return m_vArcTable;}
 	void getArcPoints(std::vector<vec3f>& lstPoints) const;
 	COctree getOctree() const;
 
 
-        U32 getCtrlPointsCount() const {return m_vCtrlPoints.size();}
-        vec3f  getPoint(U32 i);
+    U32 getCtrlPointsCount() const {return m_vCtrlPoints.size();}
+    vec3f  getPoint(U32 i);
 
 	void setPoint(int index, const vec3f& pt);
 	void addPoint(const vec3f& p);
@@ -87,8 +87,7 @@ public:
 	//Serialize Control Points
 	friend std::ostream& operator <<(std::ostream& outs, const CSplineCatmullRom& curve);
 	friend std::istream& operator >>(std::istream& ins, const CSplineCatmullRom& curve);
-private:	
-        bool isPointIndexCorrect(U32 i);
+private:	   
 	bool getLocalSpline(float t, float &local_t, int *indices);
 
 

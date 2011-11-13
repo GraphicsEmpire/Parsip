@@ -32,9 +32,6 @@
 #include "CBlobTreeNetwork.h"
 #include "CBlobTreeAnimation.h"
 
-//#include "ftgl.h"
-
-
 using namespace PS::FILESTRINGUTILS;
 using namespace PS::BLOBTREEANIMATION;
 using namespace Qt;
@@ -77,7 +74,7 @@ GLWidget::GLWidget(QWidget *parent)
     connect(m_dlgFieldEditor, SIGNAL(sig_actSetProgress(int, int, int)), this, SIGNAL(sig_setProgress(int, int, int)));
 
     m_layerManager.setActiveLayer(-1);
-    m_mouseDragScale	= DEFAULT_MOUSE_DRAG_SCALE;
+
     m_animSpeed			= 1.0f;
     m_glChessBoard		= 0;
     m_uiMode			= uimSketch;
@@ -93,32 +90,6 @@ GLWidget::GLWidget(QWidget *parent)
     m_modelColorRibbon		= NULL;
     m_lpSelectedBlobNode	= NULL;
 
-    m_setParsip.bUseComputeShaders = false;
-    m_setParsip.bUseTBB	  = true;
-    m_setParsip.cellShape = csCube;
-    m_setParsip.bUseAdaptiveSubDivision = true;
-    m_setParsip.adaptiveParam = DEFAULT_EDGE_NORMALS_ANGLE;
-    m_setParsip.cellSize  = DEFAULT_CELL_SIZE;
-    m_setParsip.griddim = DEFAULT_GRIM_DIM;
-    m_setParsip.ctThreads = TaskManager::getTaskManager()->getThreadCount();
-    m_setParsip.testRuns = 1000;
-    m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(PS::FILESTRINGUTILS::GetExePath());
-    //TaskManager::getTaskManager()->getThreadCount()
-
-
-
-    m_setDisplay.showMesh		   = smSurface;
-    m_setDisplay.bDarkBackground  = true;
-    m_setDisplay.bShowBoxLayer	   = true;
-    m_setDisplay.bShowBoxPrimitive = true;
-    m_setDisplay.bShowBoxPoly	   = true;
-
-    m_setDisplay.bDrawChessboardGround = true;
-    m_setDisplay.bShowSeedPoints	   = true;
-    m_setDisplay.bShowNormals	= true;
-    m_setDisplay.mtrlMeshWires  = CMaterial::mtrlRedPlastic();
-    m_setDisplay.normalLength   = DEFAULT_NORMAL_LEN;
-
     m_idxRibbonSelection = 0;
     m_bTransformSkeleton = false;
 
@@ -129,17 +100,11 @@ GLWidget::GLWidget(QWidget *parent)
 
     m_timer = new QTimer(this);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(advanceAnimation()));
-    //m_timer->start(1000);
-    //Load all settings
-    loadSetting();
 }
 
 GLWidget::~GLWidget()
 {
     makeCurrent();
-
-    //Save Settings
-    saveSettings();
 
     //Cleanup Memory
     TaskManager::getTaskManager()->shutdown();
@@ -169,86 +134,10 @@ GLWidget::~GLWidget()
     glDeleteLists(m_glTopCornerCube, 1);
 }
 
-void GLWidget::loadSetting()
-{
-    DAnsiStr strFP = PS::FILESTRINGUTILS::GetExePath() + ".ini";
-    if(!PS::FILESTRINGUTILS::FileExists(strFP))
-        return;
-
-    CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmRead);
-    //m_setParsip.ctThreads = cfg->readInt("parsip", "threadscount", m_setParsip.ctThreads);
-    m_setParsip.griddim		  = cfg->readInt("parsip", "griddimension", m_setParsip.griddim);
-    m_setParsip.adaptiveParam = cfg->readFloat("parsip", "adaptiveparam", m_setParsip.adaptiveParam);
-    m_setParsip.cellSize	  = cfg->readFloat("parsip", "cellsize", m_setParsip.cellSize);
-    m_setParsip.cellShape     = static_cast<CellShape>(cfg->readInt("parsip", "cellshape", static_cast<int>(m_setParsip.cellShape)));
-    m_setParsip.bUseAdaptiveSubDivision = cfg->readBool("parsip", "useadaptivesubdivision", m_setParsip.bUseAdaptiveSubDivision);
-
-    m_setParsip.bUseTBB = cfg->readBool("parsip", "usetbb", m_setParsip.bUseTBB);
-    m_setParsip.bUseComputeShaders = cfg->readBool("parsip", "usecomputeshaders", m_setParsip.bUseComputeShaders);
-    m_setParsip.bForceMC     = cfg->readBool("parsip", "forcemarchingcubes", m_setParsip.bForceMC);
-    m_setParsip.strLastScene = cfg->readString("parsip", "lastscene", m_setParsip.strLastScene);
-
-    m_setDisplay.bDarkBackground	= cfg->readBool("display", "darkbackground", m_setDisplay.bDarkBackground);
-    m_setDisplay.showMesh			= cfg->readInt("display", "drawmesh", m_setDisplay.showMesh);
-    m_setDisplay.bShowBoxLayer		= cfg->readBool("display", "drawboxlayer", m_setDisplay.bShowBoxLayer);
-    m_setDisplay.bShowBoxPrimitive	= cfg->readBool("display", "drawboxprimitive", m_setDisplay.bShowBoxPrimitive);
-    m_setDisplay.bShowBoxPoly		= cfg->readBool("display", "drawboxpoly", m_setDisplay.bShowBoxPoly);
-    m_setDisplay.bShowAnimCurves    = cfg->readBool("display", "drawanimcurves", m_setDisplay.bShowAnimCurves);
-
-
-
-    m_setDisplay.bDrawChessboardGround = cfg->readBool("display", "drawchessboard", m_setDisplay.bDrawChessboardGround);
-    m_setDisplay.bShowSeedPoints  = cfg->readBool("display", "drawseedpoints", m_setDisplay.bShowSeedPoints);
-    m_setDisplay.bShowNormals   = cfg->readBool("display", "drawnormals", m_setDisplay.bShowNormals);
-    m_setDisplay.normalLength	= cfg->readInt("display", "normallength", m_setDisplay.normalLength);
-
-    m_setDisplay.bShowColorCodedMPUs = cfg->readBool("display", "colorcodedmpu", m_setDisplay.bShowColorCodedMPUs);
-    m_setDisplay.bShowGraph			 = cfg->readBool("display", "graph", m_setDisplay.bShowGraph);
-    m_mouseDragScale				 = cfg->readInt("sketch", "mousedragscale", m_mouseDragScale);
-
-    SAFE_DELETE(cfg);
-}
-
-void GLWidget::saveSettings()
-{
-    DAnsiStr strFP = PS::FILESTRINGUTILS::CreateNewFileAtRoot(".ini");
-    CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmWrite);
-    cfg->writeInt("parsip", "griddimension", m_setParsip.griddim);
-    cfg->writeInt("parsip", "threadscount", m_setParsip.ctThreads);
-    cfg->writeFloat("parsip", "adaptiveparam", m_setParsip.adaptiveParam);
-    cfg->writeFloat("parsip", "cellsize", m_setParsip.cellSize);
-    cfg->writeInt("parsip", "cellshape", static_cast<int>(m_setParsip.cellShape));
-    cfg->writeBool("parsip", "usetbb", m_setParsip.bUseTBB);
-    cfg->writeBool("parsip", "usecomputeshaders", m_setParsip.bUseComputeShaders);
-    cfg->writeBool("parsip", "useadaptivesubdivision", m_setParsip.bUseAdaptiveSubDivision);
-    cfg->writeBool("parsip", "forcemarchingcubes", m_setParsip.bForceMC);
-    cfg->writeString("parsip", "lastscene", m_setParsip.strLastScene);
-
-
-    cfg->writeBool("display", "darkbackground", m_setDisplay.bDarkBackground);
-    cfg->writeInt("display", "drawmesh", m_setDisplay.showMesh);
-    cfg->writeBool("display", "drawboxlayer", m_setDisplay.bShowBoxLayer);
-    cfg->writeBool("display", "drawboxprimitive", m_setDisplay.bShowBoxPrimitive);
-    cfg->writeBool("display", "drawboxpoly", m_setDisplay.bShowBoxPoly);
-
-
-    cfg->writeBool("display", "drawchessboard", m_setDisplay.bDrawChessboardGround);
-    cfg->writeBool("display", "drawseedpoints", m_setDisplay.bShowSeedPoints);
-    cfg->writeBool("display", "drawnormals", m_setDisplay.bShowNormals);
-    cfg->writeInt("display", "normallength", m_setDisplay.normalLength);
-    cfg->writeBool("display", "colorcodedmpu", m_setDisplay.bShowColorCodedMPUs);
-    cfg->writeBool("display", "drawanimcurves", m_setDisplay.bShowAnimCurves);
-    cfg->writeBool("display", "graph", m_setDisplay.bShowGraph);
-
-    cfg->writeInt("sketch", "mousedragscale", m_mouseDragScale);
-
-    SAFE_DELETE(cfg);
-}
-
 void GLWidget::initializeGL()
 {
     //Background color will be gray
-    if(m_setDisplay.bDarkBackground)
+    if(AppSettingsSingleton::Instance().setDisplay.bDarkBackground)
         glClearColor(0.45f, 0.45f, 0.45f, 1.0f);
     else
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -387,20 +276,20 @@ void GLWidget::paintGL()
     drawLayerManager();
 
     //Draw Ground
-    if(m_setDisplay.bDrawChessboardGround)
+    if(AppSettingsSingleton::Instance().setDisplay.bDrawChessboardGround)
     {
         glCallList(m_glChessBoard);
         //glCallList(m_glTopCornerCube);
     }
 
-    //Draw based on current UI mode
-    CAnimManager* mgr = CAnimManager::GetAnimManager();
-    if((m_setDisplay.bShowAnimCurves)&&(mgr->countObjects() > 0))
+    //Draw based on current UI mode    
+	U32 ctAnimObjects = CAnimManagerSingleton::Instance().countObjects();
+    if((AppSettingsSingleton::Instance().setDisplay.bShowAnimCurves)&&(ctAnimObjects > 0))
     {
-        for(size_t i=0; i<mgr->countObjects(); i++)
+        for(U32 i=0; i<ctAnimObjects; i++)
         {
-            mgr->getObject(i)->drawPathCtrlPoints();
-            mgr->getObject(i)->drawPathCurve();
+            CAnimManagerSingleton::Instance().getObject(i)->drawPathCtrlPoints();
+            CAnimManagerSingleton::Instance().getObject(i)->drawPathCurve();
         }
     }
 
@@ -414,9 +303,9 @@ void GLWidget::paintGL()
         //CQuaternion q;
         if(m_layerManager.hasActiveSelOctree())
             c = m_layerManager.getActiveSelOctree().center();
-        else if(CAnimManager::GetAnimManager()->hasSelectedCtrlPoint())
+        else if(CAnimManagerSingleton::Instance().hasSelectedCtrlPoint())
         {
-            CAnimObject* obj = CAnimManager::GetAnimManager()->getActiveObject();
+            CAnimObject* obj = CAnimManagerSingleton::Instance().getActiveObject();
             c = obj->path->getControlPoints()[obj->idxSelCtrlPoint];
         }
         else
@@ -432,7 +321,7 @@ void GLWidget::paintGL()
         glEnable(GL_DEPTH_TEST);
     }
 
-    if(m_setDisplay.bShowGraph)
+    if(AppSettingsSingleton::Instance().setDisplay.bShowGraph)
     {
         drawGraph();
     }
@@ -565,7 +454,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
                 CLayer* active = m_layerManager.getActiveLayer();
                 if(active)
                 {
-                    CAnimObject* obj = CAnimManager::GetAnimManager()->getObject(active->selGetItem(0));
+                    CAnimObject* obj = CAnimManagerSingleton::Instance().getObject(active->selGetItem(0));
                     if(obj)
                     {
                         obj->path->addPoint(ptInSpace);
@@ -599,12 +488,11 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
             m_layerManager.selRemoveItems();
 
             //Check if we can select a ctrl point in path animation
-            int idxPath, idxCtrlPoint;
-            CAnimManager* mgr = CAnimManager::GetAnimManager();
-            if(mgr->queryHitPathCtrlPoint(ray, Z_NEAR, Z_FAR, idxPath, idxCtrlPoint))
+            int idxPath, idxCtrlPoint;            
+            if(CAnimManagerSingleton::Instance().queryHitPathCtrlPoint(ray, Z_NEAR, Z_FAR, idxPath, idxCtrlPoint))
             {
-                mgr->getObject(idxPath)->idxSelCtrlPoint = idxCtrlPoint;
-                mgr->setActiveObject(idxPath);
+                CAnimManagerSingleton::Instance().getObject(idxPath)->idxSelCtrlPoint = idxCtrlPoint;
+                CAnimManagerSingleton::Instance().setActiveObject(idxPath);
 
                 m_uiMode = uimTransform;
                 m_uiTransform.type = uitTranslate;
@@ -612,7 +500,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
             }
             else
             {
-                mgr->queryHitResetAll();
+                CAnimManagerSingleton::Instance().queryHitResetAll();
                 m_uiMode = uimSelect;
             }
         }
@@ -640,7 +528,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
             m_uiTransform.nStep++;
 
             vec3 displacement = mask(m_uiTransform.mouseMove - m_uiTransform.mouseDown, m_uiTransform.axis);
-            displacement *= static_cast<float>(m_mouseDragScale);
+            displacement *= static_cast<float>(AppSettingsSingleton::Instance().setSketch.mouseDragScale);
             m_uiTransform.mouseDown = m_uiTransform.mouseMove;
 
             if(m_uiTransform.type == uitTranslate)
@@ -734,7 +622,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
             }//IF BlobNode Selected
             else
             {
-                CAnimObject* obj = CAnimManager::GetAnimManager()->getActiveObject();
+                CAnimObject* obj = CAnimManagerSingleton::Instance().getActiveObject();
 
                 if(obj)
                 {
@@ -961,9 +849,9 @@ GLuint GLWidget::drawTopCornerCube()
 
 void GLWidget::setParsipCellSize(float value)
 {
-    if(m_setParsip.cellSize != value)
+    if(AppSettingsSingleton::Instance().setParsip.cellSize != value)
     {
-        m_setParsip.cellSize = value;
+        AppSettingsSingleton::Instance().setParsip.cellSize = value;
         m_layerManager.bumpRevisions();
     }
 }
@@ -972,16 +860,16 @@ void GLWidget::setParsipGridDim( int nComboItem )
 {
     if(nComboItem >=0 && nComboItem < 3)
     {
-        m_setParsip.griddim = (1 << (nComboItem + 3));
+        AppSettingsSingleton::Instance().setParsip.griddim = (1 << (nComboItem + 3));
         m_layerManager.bumpRevisions();
     }
 }
 
 void GLWidget::setParsipNormalsGeodesicAngle( float value )
 {
-    if(m_setParsip.adaptiveParam != value)
+    if(AppSettingsSingleton::Instance().setParsip.adaptiveParam != value)
     {
-        m_setParsip.adaptiveParam = value;
+        AppSettingsSingleton::Instance().setParsip.adaptiveParam = value;
         m_layerManager.bumpRevisions();
     }
 }
@@ -990,103 +878,103 @@ void GLWidget::setParsipThreadsCount(int value)
 {
     TaskManager::getTaskManager()->shutdown();
     TaskManager::getTaskManager()->init(value);
-    m_setParsip.ctThreads = TaskManager::getTaskManager()->getThreadCount();
+    AppSettingsSingleton::Instance().setParsip.ctThreads = TaskManager::getTaskManager()->getThreadCount();
 }
 
 void GLWidget::setParsipUseTBB(bool bEnable)
 {
-    m_setParsip.bUseTBB = bEnable;
+    AppSettingsSingleton::Instance().setParsip.bUseTBB = bEnable;
 }
 
 void GLWidget::setParsipUseComputeShaders(bool bEnable)
 {
-    m_setParsip.bUseComputeShaders = bEnable;
+    AppSettingsSingleton::Instance().setParsip.bUseComputeShaders = bEnable;
 }
 
 void GLWidget::setParsipUseAdaptiveSubDivision( bool bEnable )
 {
-    m_setParsip.bUseAdaptiveSubDivision = bEnable;
+    AppSettingsSingleton::Instance().setParsip.bUseAdaptiveSubDivision = bEnable;
     m_layerManager.bumpRevisions();
 }
 
 void GLWidget::setParsipCellShapeTetraHedra(bool bTetra)
 {
-    if(bTetra) m_setParsip.cellShape = csTetrahedra;
+    if(bTetra) AppSettingsSingleton::Instance().setParsip.cellShape = csTetrahedra;
     m_layerManager.bumpRevisions();
 }
 
 void GLWidget::setParsipCellShapeCube(bool bCube)
 {
-    if(bCube) m_setParsip.cellShape = csCube;
+    if(bCube) AppSettingsSingleton::Instance().setParsip.cellShape = csCube;
     m_layerManager.bumpRevisions();
 }
 
 void GLWidget::setDisplayMeshNone(bool bEnable)
 {
     if(bEnable)
-        m_setDisplay.showMesh = smNone;
+        AppSettingsSingleton::Instance().setDisplay.showMesh = smNone;
     updateGL();
 }
 
 void GLWidget::setDisplayMeshWireFrame(bool bEnable)
 {
     if(bEnable)
-        m_setDisplay.showMesh = smWireFrame;
+        AppSettingsSingleton::Instance().setDisplay.showMesh = smWireFrame;
     updateGL();
 }
 
 void GLWidget::setDisplayMeshSurface(bool bEnable)
 {
     if(bEnable)
-        m_setDisplay.showMesh = smSurface;
+        AppSettingsSingleton::Instance().setDisplay.showMesh = smSurface;
     updateGL();
 }
 
 void GLWidget::setDisplayBoxLayer(bool bEnable)
 {
-    m_setDisplay.bShowBoxLayer = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowBoxLayer = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayBoxPrimitive(bool bEnable)
 {
-    m_setDisplay.bShowBoxPrimitive = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowBoxPrimitive = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayBoxPoly(bool bEnable)
 {
-    m_setDisplay.bShowBoxPoly = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowBoxPoly = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplaySeedPoints(bool bEnable)
 {
-    m_setDisplay.bShowSeedPoints = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowSeedPoints = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayNormalsLength(int length)
 {
-    m_setDisplay.normalLength = length;
+    AppSettingsSingleton::Instance().setDisplay.normalLength = length;
     updateGL();
 }
 
 void GLWidget::setDisplayNormals(bool bEnable)
 {
-    m_setDisplay.bShowNormals = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowNormals = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayChessBoard(bool bEnable)
 {
-    m_setDisplay.bDrawChessboardGround = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bDrawChessboardGround = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayMtrlMeshWires(int index)
 {
-    m_setDisplay.mtrlMeshWires = CMaterial::getMaterialFromList(index);
+    AppSettingsSingleton::Instance().setDisplay.mtrlMeshWires = CMaterial::getMaterialFromList(index);
     updateGL();
 }
 
@@ -1149,7 +1037,7 @@ void GLWidget::drawLayerManager()
             glEnable(GL_LIGHTING);
 
             //Draw mesh in WireFrame Mode
-            if(m_setDisplay.showMesh == smWireFrame)
+            if(AppSettingsSingleton::Instance().setDisplay.showMesh == smWireFrame)
             {
                 glPushAttrib(GL_ALL_ATTRIB_BITS);
                 //Draw WireFrame Mesh
@@ -1160,7 +1048,7 @@ void GLWidget::drawLayerManager()
                     alayer->getPolygonizer()->drawMesh();
                 glPopAttrib();
             }
-            else if(m_setDisplay.showMesh == smSurface)
+            else if(AppSettingsSingleton::Instance().setDisplay.showMesh == smSurface)
             {
                 glPushMatrix();
                 glShadeModel(GL_SMOOTH);
@@ -1178,7 +1066,7 @@ void GLWidget::drawLayerManager()
             m_glShaderNormalMesh->release();
 
             //Draw SeedPoints
-            if(m_setDisplay.bShowSeedPoints)
+            if(AppSettingsSingleton::Instance().setDisplay.bShowSeedPoints)
             {
                 //CMeshVV::setOglMaterial(CMaterial::mtrlGreen());
                 glColor3f(0.0f, 1.0f, 0.0f);
@@ -1191,26 +1079,26 @@ void GLWidget::drawLayerManager()
             }
 
             //Draw Normals
-            if(m_setDisplay.bShowNormals)
+            if(AppSettingsSingleton::Instance().setDisplay.bShowNormals)
             {
-                //m_parsip.drawNormals(iLayer, m_setDisplay.normalLength);
-                //m_optParsip.drawNormals(m_setDisplay.normalLength);
+                //m_parsip.drawNormals(iLayer, AppSettingsSingleton::Instance().setDisplay.normalLength);
+                //m_optParsip.drawNormals(AppSettingsSingleton::Instance().setDisplay.normalLength);
                 if(alayer->getMesh())
-                    alayer->getMesh()->drawNormals(m_setDisplay.normalLength);
+                    alayer->getMesh()->drawNormals(AppSettingsSingleton::Instance().setDisplay.normalLength);
                 else
-                    alayer->getPolygonizer()->drawNormals(m_setDisplay.normalLength);
+                    alayer->getPolygonizer()->drawNormals(AppSettingsSingleton::Instance().setDisplay.normalLength);
             }
 
 
             //Draw Layer Octree
-            if(m_setDisplay.bShowBoxLayer)
+            if(AppSettingsSingleton::Instance().setDisplay.bShowBoxLayer)
             {
                 COctree octree = alayer->getOctree();
                 drawOctree(octree.lower, octree.upper, clOrange, true);
             }
 
             //Draw Primitive Octrees
-            if(m_setDisplay.bShowBoxPrimitive)
+            if(AppSettingsSingleton::Instance().setDisplay.bShowBoxPrimitive)
             {
                 size_t ctItems = alayer->queryCountItems();
                 if(ctItems > 0)
@@ -1258,7 +1146,7 @@ void GLWidget::drawLayerManager()
 
 
             //Draw Polygonization Boxes
-            if(m_setDisplay.bShowBoxPoly)
+            if(AppSettingsSingleton::Instance().setDisplay.bShowBoxPoly)
             {
                 vec3f lo, hi;
                 //size_t ctMPUs = m_parsip.countMPUs();
@@ -1279,7 +1167,7 @@ void GLWidget::drawLayerManager()
 void GLWidget::actOpenProject()
 {
     QString strFileName = QFileDialog::getOpenFileName(this, tr("Open Scene"),
-                                                       m_setParsip.strLastScene.ptr(),
+                                                       GetExePath().ptr(),
                                                        tr("Blobtree Scene(*.scene);;SketchNET Actions(*.acts);;Obj Mesh(*.obj);;Parsip Binary Mesh File(*.msh)"));
     actOpenProject(strFileName);
 }
@@ -1289,7 +1177,7 @@ void GLWidget::actOpenProject(QString strFile)
     DAnsiStr strFilePath(strFile.toAscii().data());
     DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
     DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::ExtractFileExt(strFilePath);
-    m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
+    //AppSettingsSingleton::Instance().setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
 
     //m_optParsip.removeAllMPUs();
     if(strFileExt.toUpper() == "SCENE")
@@ -1372,8 +1260,7 @@ void GLWidget::actSaveProject()
 {
     DAnsiStr strAppPath = PS::FILESTRINGUTILS::ExtractFilePath(PS::FILESTRINGUTILS::GetExePath());
     QString qstrFileName = QFileDialog::getSaveFileName(this, tr("Save Scene"), strAppPath.ptr(), tr("Blobtree Scene(*.scene)"));
-    DAnsiStr strFilePath(qstrFileName.toAscii().data());
-    m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
+    DAnsiStr strFilePath(qstrFileName.toAscii().data());    
     m_layerManager.saveScript(strFilePath);
 }
 
@@ -1396,16 +1283,13 @@ void GLWidget::actCloseProject()
 void GLWidget::actMeshInsert()
 {
     QString strFileName = QFileDialog::getOpenFileName(this, tr("Insert Mesh"),
-                                                       m_setParsip.strLastScene.ptr(),
+                                                       GetExePath().ptr(),
                                                        tr("Obj Mesh(*.obj)"));
 
     DAnsiStr strFilePath(strFileName.toAscii().data());
     if(PS::FILESTRINGUTILS::FileExists(strFilePath.ptr()))
     {
         DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
-        //DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::ExtractFileExt(strFilePath);
-        m_setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
-
         m_layerManager.addLayer(NULL, strFilePath.ptr(), strFileTitle.ptr());
 
         emit sig_showLayerManager(getModelLayerManager());
@@ -1440,9 +1324,9 @@ void GLWidget::actMeshPolygonize()
 
     //These values will be set upon each polygonization
     m_layerManager.resetAllMeshes();
-    m_layerManager.setCellSize(m_setParsip.cellSize);
-    m_layerManager.setCellShape(m_setParsip.cellShape);
-    m_layerManager.setAdaptiveParam(m_setParsip.adaptiveParam);
+    m_layerManager.setCellSize(AppSettingsSingleton::Instance().setParsip.cellSize);
+    m_layerManager.setCellShape(AppSettingsSingleton::Instance().setParsip.cellShape);
+    m_layerManager.setAdaptiveParam(AppSettingsSingleton::Instance().setParsip.adaptiveParam);
 
     CLayer* aLayer = NULL;
     double totalProcessTime = 0.0;
@@ -1471,8 +1355,8 @@ void GLWidget::actMeshPolygonize()
             //Setup polygonizer and run
             //Remove only the MPUs pertaining to this layer
             //m_parsip.removeLayerMPUs(iLayer);
-            //m_parsip.setForceMC(m_setParsip.bForceMC);
-            //m_parsip.setAdaptiveSubdivision(m_setParsip.bUseAdaptiveSubDivision);
+            //m_parsip.setForceMC(AppSettingsSingleton::Instance().setParsip.bForceMC);
+            //m_parsip.setAdaptiveSubdivision(AppSettingsSingleton::Instance().setParsip.bUseAdaptiveSubDivision);
 
             //Create MPUs from layer if it is visible
             if(aLayer->isVisible())
@@ -1492,7 +1376,7 @@ void GLWidget::actMeshPolygonize()
         totalProcessTime += aLayer->getPolygonizer()->statsPolyTime();
     }
 
-    if(m_setDisplay.bShowGraph)
+    if(AppSettingsSingleton::Instance().setDisplay.bShowGraph)
     {
         emit sig_setTimeFPS(totalProcessTime, static_cast<int>(1000.0 / totalProcessTime));
         emit sig_showStats(getModelStats());
@@ -1510,9 +1394,9 @@ void GLWidget::actMeshPolygonize(int idxLayer)
 
     //These values will be set upon each polygonization
     aLayer->setMesh();
-    aLayer->setCellSize(m_setParsip.cellSize);
-    aLayer->setAdaptiveParam(m_setParsip.adaptiveParam);
-    aLayer->setCellShape(m_setParsip.cellShape);
+    aLayer->setCellSize(AppSettingsSingleton::Instance().setParsip.cellSize);
+    aLayer->setAdaptiveParam(AppSettingsSingleton::Instance().setParsip.adaptiveParam);
+    aLayer->setCellShape(AppSettingsSingleton::Instance().setParsip.cellShape);
 
     //Reset stats
     aLayer->getPolygonizer()->resetStats();
@@ -1530,8 +1414,8 @@ void GLWidget::actMeshPolygonize(int idxLayer)
         aLayer->queryBlobTree(true, false);
 
         //m_parsip.removeLayerMPUs(idxLayer);
-        //m_parsip.setForceMC(m_setParsip.bForceMC);
-        //m_parsip.setAdaptiveSubdivision(m_setParsip.bUseAdaptiveSubDivision);
+        //m_parsip.setForceMC(AppSettingsSingleton::Instance().setParsip.bForceMC);
+        //m_parsip.setAdaptiveSubdivision(AppSettingsSingleton::Instance().setParsip.bUseAdaptiveSubDivision);
         if(aLayer->isVisible())
         {
             aLayer->setupCompactTree(aLayer->getBlob());
@@ -1546,7 +1430,7 @@ void GLWidget::actMeshPolygonize(int idxLayer)
         aLayer->getPolygonizer()->run();
     }
 
-    if(m_setDisplay.bShowGraph)
+    if(AppSettingsSingleton::Instance().setDisplay.bShowGraph)
     {
         double total = aLayer->getPolygonizer()->statsSetupTime() +
                 aLayer->getPolygonizer()->statsPolyTime();
@@ -3103,7 +2987,7 @@ void GLWidget::resetTransformState()
 
 void GLWidget::setMouseDragScale( int k )
 {
-    m_mouseDragScale = k;
+   AppSettingsSingleton::Instance().setSketch.mouseDragScale  = k;
 }
 
 void GLWidget::userInterfaceReady()
@@ -3131,19 +3015,19 @@ void GLWidget::userInterfaceReady()
 
 void GLWidget::setDisplayColorCodedMPUs( bool bEnable )
 {
-    m_setDisplay.bShowColorCodedMPUs = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowColorCodedMPUs = bEnable;
     //m_parsip.setColorCodedMPUs(bEnable);
 }
 
 void GLWidget::setDisplayGraph( bool bEnable )
 {
-    m_setDisplay.bShowGraph = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowGraph = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayAnimCurves(bool bEnable)
 {
-    m_setDisplay.bShowAnimCurves = bEnable;
+    AppSettingsSingleton::Instance().setDisplay.bShowAnimCurves = bEnable;
     updateGL();
 }
 
@@ -3154,7 +3038,7 @@ void GLWidget::actEditTransformSkeleton( bool bEnable )
 
 void GLWidget::setParsipForceMC( bool bEnable )
 {
-    m_setParsip.bForceMC = bEnable;
+    AppSettingsSingleton::Instance().setParsip.bForceMC = bEnable;
     m_layerManager.bumpRevisions();
 }
 
@@ -3415,7 +3299,7 @@ void GLWidget::getFrustumPlane( float z, vec3f& bottomleft, vec3f& topRight )
 
 void GLWidget::actTestSetRuns( int value )
 {
-    m_setParsip.testRuns = value;
+    AppSettingsSingleton::Instance().setParsip.testRuns = value;
 }
 
 void GLWidget::actTestStart()
@@ -3447,9 +3331,9 @@ void GLWidget::actTestPerformUtilizationTest()
     DVec<double> arrUtilization;
 
 
-    for(int i=0; i<m_setParsip.testRuns; i++)
+    for(int i=0; i<AppSettingsSingleton::Instance().setParsip.testRuns; i++)
     {
-        emit sig_setProgress(1, m_setParsip.testRuns, i+1);
+        emit sig_setProgress(1, AppSettingsSingleton::Instance().setParsip.testRuns, i+1);
 
         //Process Messages
         qApp->processEvents();
@@ -3551,12 +3435,12 @@ void GLWidget::actTestPerformIncreasingThreads()
         setParsipThreadsCount(iCore);
 
         //Run experiments with this amount of threads
-        for(int i=0; i<m_setParsip.testRuns; i++)
+        for(int i=0; i<AppSettingsSingleton::Instance().setParsip.testRuns; i++)
         {
             actMeshPolygonize();
 
             //Test Number
-            testNumber = (iCore - 1) * m_setParsip.testRuns + i + 1;
+            testNumber = (iCore - 1) * AppSettingsSingleton::Instance().setParsip.testRuns + i + 1;
 
             //Cores Utilization
             strOut = printToAStr("%d,", testNumber);
@@ -3582,7 +3466,7 @@ void GLWidget::actTestPerformIncreasingThreads()
             //m_parsip.getTimingStats(tsSetup, tsPoly);
             //m_parsip.getMeshStats(ctV, ctT);
             str = printToAStr("%d,%d,%d,%d,", testNumber, TaskManager::getTaskManager()->getThreadCount(), ctPrims, ctOperators);
-            str += printToAStr("%.2f,%.2f,%.2f,", m_setParsip.cellSize, tsSetup, tsPoly);
+            str += printToAStr("%.2f,%.2f,%.2f,", AppSettingsSingleton::Instance().setParsip.cellSize, tsSetup, tsPoly);
             str += printToAStr("%d,%d,", parsip->statsTotalFieldEvals(), parsip->statsTotalFieldEvals() / ctT);
             str += printToAStr("%d,%d,%d,%d,",
                                parsip->countMPUs(),
@@ -3656,9 +3540,9 @@ void GLWidget::actTestPerformStd()
 
     double tsSetup, tsPoly;
     size_t ctV, ctT;
-    for(int i=0; i<m_setParsip.testRuns; i++)
+    for(int i=0; i<AppSettingsSingleton::Instance().setParsip.testRuns; i++)
     {
-        emit sig_setProgress(0, m_setParsip.testRuns, i+1);
+        emit sig_setProgress(0, AppSettingsSingleton::Instance().setParsip.testRuns, i+1);
 
         //Process Messages
         qApp->processEvents();
@@ -3672,7 +3556,7 @@ void GLWidget::actTestPerformStd()
 
         parsip->statsMeshInfo(ctV, ctT);
         str = printToAStr("%d,%d,%d,%d,", i+1, TaskManager::getTaskManager()->getThreadCount(), ctPrims, ctOperators);
-        str += printToAStr("%.2f,%.2f,%.2f,", m_setParsip.cellSize, tsSetup, tsPoly);
+        str += printToAStr("%.2f,%.2f,%.2f,", AppSettingsSingleton::Instance().setParsip.cellSize, tsSetup, tsPoly);
         str += printToAStr("%d,%d,", parsip->statsTotalFieldEvals(), parsip->statsTotalFieldEvals() / ctT);
         str += printToAStr("%d,%d,%d,%d,",
                            parsip->countMPUs(),
@@ -4034,9 +3918,9 @@ bool GLWidget::actNetSendCommand( SKETCHCMD command, CBlobTree* node, vec4f para
 void GLWidget::actFileExportMesh()
 {
     if(m_layerManager.countLayers() == 0) return;
-
+	DAnsiStr strFilePath = GetExePath();
     QString strFileName = QFileDialog::getSaveFileName(this, tr("Export Mesh"),
-                                                       m_setParsip.strLastScene.ptr(),
+                                                       strFilePath.ptr(),
                                                        tr("Obj File(*.obj)"));
     //lstActions
     QString strActionsFN = strFileName + QString(".acts");
@@ -4069,21 +3953,21 @@ void GLWidget::actAnimDrawGuide()
     CBlobTree* root = active->selGetItem();
     if(root == NULL)
         return;
-    if(CAnimManager::GetAnimManager()->getObject(root) != NULL)
+    if(CAnimManagerSingleton::Instance().getObject(root) != NULL)
     {
         ReportError("Selected model already exists in path animation.");
         FlushAllErrors();
         return;
     }
-
-    CAnimManager::GetAnimManager()->addModel(root);
+		
+    CAnimManagerSingleton::Instance().addModel(root);
     m_uiMode = uimAnimation;
 }
 
 void GLWidget::actAnimStart()
 {
     m_animTime = 0.0f;
-    if(CAnimManager::GetAnimManager()->countObjects() > 0)
+    if(CAnimManagerSingleton::Instance().countObjects() > 0)
         m_timer->start();
 }
 
@@ -4093,15 +3977,14 @@ void GLWidget::actAnimStop()
 }
 
 void GLWidget::advanceAnimation()
-{
-    CAnimManager* mgr = CAnimManager::GetAnimManager();
-    if(mgr->countObjects() == 0) return;
+{  
+    if(CAnimManagerSingleton::Instance().countObjects() == 0) return;
 
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
     //Advance animation
-    mgr->advanceAnimation(m_animTime);
+    CAnimManagerSingleton::Instance().advanceAnimation(m_animTime);
 
     //Polygonize
     active->bumpRevision();
@@ -4146,7 +4029,7 @@ void GLWidget::actAnimSetStartLoc()
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
-    CAnimObject* obj = CAnimManager::GetAnimManager()->getObject(active->selGetItem(0));
+    CAnimObject* obj = CAnimManagerSingleton::Instance().getObject(active->selGetItem(0));
     if(obj)
     {
         obj->gotoStart();
@@ -4161,7 +4044,7 @@ void GLWidget::actAnimSetEndLoc()
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
-    CAnimObject* obj = CAnimManager::GetAnimManager()->getObject(active->selGetItem(0));
+    CAnimObject* obj = CAnimManagerSingleton::Instance().getObject(active->selGetItem(0));
     if(obj)
     {
         obj->gotoEnd();
@@ -4176,7 +4059,7 @@ void GLWidget::actAnimSetStartScale()
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
-    CAnimObject* obj = CAnimManager::GetAnimManager()->getObject(active->selGetItem(0));
+    CAnimObject* obj = CAnimManagerSingleton::Instance().getObject(active->selGetItem(0));
     if(obj)
     {
         vec3f s = active->selGetItem(0)->getTransform().getScale();
@@ -4194,7 +4077,7 @@ void GLWidget::actAnimSetEndScale()
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
-    CAnimObject* obj = CAnimManager::GetAnimManager()->getObject(active->selGetItem(0));
+    CAnimObject* obj = CAnimManagerSingleton::Instance().getObject(active->selGetItem(0));
     if(obj)
     {
         vec3f s = active->selGetItem(0)->getTransform().getScale();
@@ -4214,7 +4097,7 @@ void GLWidget::setAnimationSpeed( int speed )
 
 void GLWidget::actAnimRemoveAll()
 {
-    CAnimManager::GetAnimManager()->removeAll();
+	CAnimManagerSingleton::Instance().removeAll();   
     updateGL();
 }
 

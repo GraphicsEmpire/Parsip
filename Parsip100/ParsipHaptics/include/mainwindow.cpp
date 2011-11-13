@@ -299,47 +299,15 @@ void MainWindow::resetStatusBar()
 
 void MainWindow::readApplySetting()
 {
-    SettingsParsip setParsip;
-    SettingsDisplay setDisplay;
-    int dragScale = 100;
+	AppSettingsSingleton::Instance().loadSettings();
+	AppSettings::SettingsParsip setParsip;
+	AppSettings::SettingsDisplay setDisplay;
+	AppSettings::SettingsSketch setSketch;
 
-    DAnsiStr strFP = PS::FILESTRINGUTILS::GetExePath() + ".ini";
-    if(!PS::FILESTRINGUTILS::FileExists(strFP))
-        return;
-
-    CAppConfig* cfg = new CAppConfig(strFP, CAppConfig::fmRead);
-
-    //setParsip.ctThreads = cfg->readInt("parsip", "threadscount", setParsip.ctThreads);
-    memset(&setParsip, 0, sizeof(setParsip));
-    memset(&setDisplay, 0, sizeof(setDisplay));
-    setParsip.griddim		= cfg->readInt("parsip", "griddimension", setParsip.griddim);
-    setParsip.cellSize		= cfg->readFloat("parsip", "cellsize", setParsip.cellSize);
-    setParsip.adaptiveParam = cfg->readFloat("parsip", "adaptiveparam", setParsip.adaptiveParam);
-    setParsip.cellShape = static_cast<CellShape>(cfg->readInt("parsip", "cellshape", static_cast<int>(setParsip.cellShape)));
-    setParsip.bUseAdaptiveSubDivision = cfg->readBool("parsip", "useadaptivesubdivision", setParsip.bUseAdaptiveSubDivision);
-    setParsip.bUseTBB			 = cfg->readBool("parsip", "usetbb", setParsip.bUseTBB);
-    setParsip.bUseComputeShaders = cfg->readBool("parsip", "usecomputeshaders", setParsip.bUseComputeShaders);
-    setParsip.bForceMC			 = cfg->readBool("parsip", "forcemarchingcubes", setParsip.bForceMC);
-
-
-    setDisplay.showMesh			 = cfg->readInt("display", "drawmesh", setDisplay.showMesh);
-    setDisplay.bShowBoxLayer	 = cfg->readBool("display", "drawboxlayer", setDisplay.bShowBoxLayer);
-    setDisplay.bShowBoxPrimitive = cfg->readBool("display", "drawboxprimitive", setDisplay.bShowBoxPrimitive);
-    setDisplay.bShowBoxPoly		 = cfg->readBool("display", "drawboxpoly", setDisplay.bShowBoxPoly);
-    setDisplay.bShowAnimCurves = cfg->readBool("display", "drawanimcurves", setDisplay.bShowAnimCurves);
-
-    setDisplay.bShowSeedPoints   = cfg->readBool("display", "drawseedpoints", setDisplay.bShowSeedPoints);
-    setDisplay.bShowNormals		 = cfg->readBool("display", "drawnormals", setDisplay.bShowNormals);
-
-    setDisplay.normalLength			 = cfg->readInt("display", "normallength", setDisplay.normalLength);
-    setDisplay.bDrawChessboardGround = cfg->readBool("display", "drawchessboard", setDisplay.bDrawChessboardGround);
-    setDisplay.bShowColorCodedMPUs = cfg->readBool("display", "colorcodedmpu", setDisplay.bShowColorCodedMPUs);
-    setDisplay.bShowGraph		   = cfg->readBool("display", "graph", setDisplay.bShowGraph);
-    dragScale					   = cfg->readInt("sketch", "mousedragscale", dragScale);
-
-    SAFE_DELETE(cfg);
-
-
+	AppSettingsSingleton::Instance().copySettings(AppSettings::stParsip, &setParsip, sizeof(setParsip));
+	AppSettingsSingleton::Instance().copySettings(AppSettings::stDisplay, &setDisplay, sizeof(setDisplay));
+	AppSettingsSingleton::Instance().copySettings(AppSettings::stSketch, &setSketch, sizeof(setSketch));
+	
     //ui->sliderThreadsCount->setValue(setParsip.ctThreads);
     ui->cboGridDim->setCurrentIndex(setParsip.griddim > 0?(Log2i(setParsip.griddim) - 3):0);
     ui->udNormalsAngle->setValue(setParsip.adaptiveParam);
@@ -368,7 +336,7 @@ void MainWindow::readApplySetting()
 
     ui->chkColorCodeMPUMesh->setChecked(setDisplay.bShowColorCodedMPUs);
     ui->chkShowGraph->setChecked(setDisplay.bShowGraph);
-    ui->sliderMouseDragScale->setValue(dragScale);
+    ui->sliderMouseDragScale->setValue(setSketch.mouseDragScale);
 }
 
 void MainWindow::setParsipCellSize(int sliderValue)

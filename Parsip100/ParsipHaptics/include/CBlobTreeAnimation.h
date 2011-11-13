@@ -1,9 +1,11 @@
 #ifndef CBLOBTREE_ANIMATION_H
 #define CBLOBTREE_ANIMATION_H
 
+#include "loki/Singleton.h"
 #include "PS_BlobTree/include/CBlobTree.h"
 #include "PS_FrameWork/include/PS_SplineCatmullRom.h"
 
+using namespace Loki;
 using namespace PS;
 using namespace PS::BLOBTREE;
 
@@ -94,8 +96,6 @@ public:
 
 	void advanceAnimation(float animTime);
 
-	static CAnimManager* GetAnimManager();
-
 	CAnimObject* operator[](const int index) const 
 	{
 		if(m_lstObjects.isItemIndex((size_t)index))
@@ -103,9 +103,9 @@ public:
 		else 
 			return NULL;	
 	}
-protected:
-	static CAnimManager* sm_pAnimManager;
 };
+
+typedef SingletonHolder<CAnimManager, CreateUsingNew, PhoenixSingleton> CAnimManagerSingleton;
 
 }
 }

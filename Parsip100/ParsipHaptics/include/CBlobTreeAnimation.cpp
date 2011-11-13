@@ -8,8 +8,6 @@ namespace PS{
 
 namespace BLOBTREEANIMATION{
 
-CAnimManager* CAnimManager::sm_pAnimManager = NULL;
-
 void CAnimObject::gotoStart()
 {
 	if(!path->isValid()) return;
@@ -105,7 +103,7 @@ void CAnimObject::drawPathCtrlPoints()
 	}
 	glEnd();
 
-	if(idxSelCtrlPoint >=0 && idxSelCtrlPoint < (int)vCtrlPoints.size())	
+	if(path->isCtrlPointIndex(idxSelCtrlPoint))	
 	{
 		glPointSize(7.0f);
 		glColor3f(1.0f, 0.0f, 0.0f);
@@ -119,10 +117,16 @@ void CAnimObject::drawPathCtrlPoints()
 
 void CAnimObject::drawPathCurve()
 {
+	std::vector<vec3f> arcPoints;
+	path->getArcPoints(arcPoints);
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glLineWidth(1.0f);
-		glColor3f(0.0f, 0.0f, 0.0f);
-		path->drawCurve(GL_LINE_STRIP);
+		glBegin(GL_LINE_STRIP);
+		for (U32 i=0; i<arcPoints.size(); i++)
+		{			
+			glVertex3fv(arcPoints[i].ptr());
+		}
+		glEnd();
 	glPopAttrib();
 }
 
@@ -163,16 +167,6 @@ bool CAnimManager::remove( int index )
 		return true;
 	}
 	return false;
-}
-
-CAnimManager* CAnimManager::GetAnimManager()
-{
-	if(sm_pAnimManager == NULL)
-	{
-		sm_pAnimManager = new CAnimManager();
-	}
-
-	return sm_pAnimManager;
 }
 
 void CAnimManager::advanceAnimation(float animTime)
