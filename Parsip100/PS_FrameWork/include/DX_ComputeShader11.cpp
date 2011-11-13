@@ -4,7 +4,7 @@
 
 #include "PS_ErrorManager.h"
 
-#ifdef WIN32
+#ifdef WIN32DXSDK
 
 namespace PS
 {

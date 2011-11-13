@@ -1,7 +1,7 @@
 //#include "stdafx.h"
 #include "DX_Device11.h"
 
-#ifdef WIN32
+#ifdef WIN32DXSDK
 
 namespace PS
 {

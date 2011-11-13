@@ -12,7 +12,6 @@ DEPENDPATH += . \
               Parsip100/PS_BlobTree/include \
               Parsip100/PS_FrameWork/include
 INCLUDEPATH += . \
-               /home/pourya/Desktop/Projects/Dependencies/LOKI/include \
                Parsip100 \
                Parsip100/DSystem/include \
                Parsip100/ParsipHaptics/include \
@@ -210,27 +209,51 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
-win32:DESTDIR = $$PWD/Parsip100/Distrib
-else:unix:DESTDIR = $$PWD/Parsip100/Distrib
+DESTDIR = $$PWD/Parsip100/Distrib
 
 CONFIG(debug, debug|release) {
-     unix: TARGET = $$join(TARGET,,,_Debug)
-     else: TARGET = $$join(TARGET,,,d)
+     TARGET = $$join(TARGET,,,_Debug)
  }
 
 CONFIG(release, debug|release) {
-     unix: TARGET = $$join(TARGET,,,_Release)
-     else: TARGET = $$join(TARGET,,,d)
+     TARGET = $$join(TARGET,,,_Release)
  }
 
 
+##win32:CONFIG(release, debug|release):
+##else:win32:CONFIG(debug, debug|release):
+#CONFIG(debug, debug|release) {
+#     unix: TARGET = $$join(TARGET,,,_Debug)
+#     else: TARGET = $$join(TARGET,,,d)
+# }
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/release/ -ltbb
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/debug/ -ltbb
+#CONFIG(release, debug|release) {
+#     unix: TARGET = $$join(TARGET,,,_Release)
+#     else: TARGET = $$join(TARGET,,,d)
+# }
+
+win32:CONFIG(release, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb.lib  \
+                                              D:\Projects\Dependencies\GLEW\lib\glew32.lib
+else:win32:CONFIG(debug, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb_debug.lib \
+                                                 D:\Projects\Dependencies\GLEW\lib\glew32.lib
 else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/ -ltbb
 
-INCLUDEPATH += $$PWD/../Dependencies/TBB/include
-DEPENDPATH += $$PWD/../Dependencies/TBB/include
+#Add all special libraries used in the project
+win32:INCLUDEPATH += D:\Projects\Dependencies\TBB\include \
+                     D:\Projects\Dependencies\LOKI\include \
+                     D:\Projects\Dependencies\GLEW\include \
+                     C:\Program Files\Microsoft DirectX SDK (June 2010)\Include
 
-unix:!symbian|win32: LIBS += -lGLEW
+else:unix:INCLUDEPATH += $$PWD/../Dependencies/TBB/include \
+                         /home/pourya/Desktop/Projects/Dependencies/LOKI/include
+
+win32:DEPENDPATH += D:\Projects\Dependencies\TBB\include \
+                    D:\Projects\Dependencies\LOKI\include \
+                    D:\Projects\Dependencies\GLEW\include \
+                    C:\Program Files\Microsoft DirectX SDK (June 2010)\Include
+
+else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
+                        /home/pourya/Desktop/Projects/Dependencies/LOKI/include
+
+unix:!symbian: LIBS += -lGLEW
 

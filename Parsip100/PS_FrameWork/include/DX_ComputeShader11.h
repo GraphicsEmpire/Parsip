@@ -5,7 +5,7 @@
 #include "DX_Device11.h"
 #include "PS_Vector.h"
 
-#ifdef WIN32
+#ifdef WIN32DXSDK
 #include <d3dcompiler.h>
 
 namespace PS{

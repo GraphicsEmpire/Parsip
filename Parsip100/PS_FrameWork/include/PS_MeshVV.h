@@ -25,12 +25,10 @@ public:
         typedef DVec<U32> element_array_type;
         enum STREAM_FORMAT {
 		OFF,
-		STEVEN_OFF,
 		OBJ,
 		PLY,
 		ASCII_STL,
 		SURFEL,
-		CRYSTAL_STRUCTURE_DISLOCATIONS,
 		PS_BINARY
 	};
 
@@ -200,8 +198,6 @@ protected:
 	
 	bool openOBJ(const DAnsiStr& name);
 	bool openOFF(const DAnsiStr& name);
-	bool openStevenOFF(const DAnsiStr& name);
-	bool openCrystalStructureDislocation(const DAnsiStr& name);
 	bool openPSBinary(const DAnsiStr& strFileName);
 	bool openPSBinary(ifstream& fpRead);	
 public:

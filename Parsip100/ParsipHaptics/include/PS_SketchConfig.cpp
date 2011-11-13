@@ -50,31 +50,29 @@ namespace PS{
 
         int CSketchConfig::writeIntArray(DAnsiStr section, DAnsiStr variable, const std::vector<int>& arrayInt)
         {
-                char chrVariable[128];
-                DAnsiStr strValue;
-                if(arrayInt.size() > 1)
+            DAnsiStr strValue, strTemp;
+            if(arrayInt.size() > 1)
+            {
+                for(size_t i=0; i<arrayInt.size(); i++)
                 {
-                        for(size_t i=0; i<arrayInt.size(); i++)
-                        {
-                                if(i == 0)
-                                        snprintf(chrVariable, 128, "(%d, ", arrayInt[i]);
-                                else if(i == arrayInt.size() - 1)
-                                        snprintf(chrVariable, 128, "%d)", arrayInt[i]);
-                                else
-                                        snprintf(chrVariable, 128, "%d, ", arrayInt[i]);
-
-                                strValue += DAnsiStr(chrVariable);
-                        }
-                        writeValue(section, variable, strValue);
+                    if(i == 0)
+                        strTemp = printToAStr("(%d, ", arrayInt[i]);
+                    else if(i == arrayInt.size() - 1)
+                        strTemp = printToAStr("%d)", arrayInt[i]);
+                    else
+                        strTemp = printToAStr("%d, ", arrayInt[i]);
+                    strValue += strTemp;
                 }
-                else if(arrayInt.size() == 1)
-                {
-                        snprintf(chrVariable, 128, "(%d)", arrayInt[0]);
-                        writeValue(section, variable, DAnsiStr(chrVariable));
-                }
-                else
-                        writeValue(section, variable, DAnsiStr("()"));
-                return arrayInt.size();
+                writeValue(section, variable, strValue);
+            }
+            else if(arrayInt.size() == 1)
+            {
+                strTemp = printToAStr("(%d)", arrayInt[0]);
+                writeValue(section, variable, strTemp);
+            }
+            else
+                writeValue(section, variable, DAnsiStr("()"));
+            return arrayInt.size();
         }
 
 

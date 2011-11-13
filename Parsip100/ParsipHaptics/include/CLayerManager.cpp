@@ -1626,15 +1626,12 @@ void CLayerManager::resetAllMeshes()
 
 bool CLayerManager::saveAsVolumeData(const char* strDir, int w, int h, int d)
 {
-	char chrTitle[100];
+
 	for(size_t i=0; i< m_lstLayers.size(); i++)
 	{	
-                snprintf(chrTitle, 100, "//LAYERNUM_%d.raw", i);
-		std::string strFileName = chrTitle;
-		std::string strPath = strDir + strFileName;
-		
-		if(!m_lstLayers[i]->saveAsVolumeData(strPath.c_str(), w, h, d))
-			return false;			
+            DAnsiStr strPath = DAnsiStr(strDir) + printToAStr("//LAYERNUM_%d.raw", i);
+            if(!m_lstLayers[i]->saveAsVolumeData(strPath.ptr(), w, h, d))
+                return false;
 	}
 	return true;
 }

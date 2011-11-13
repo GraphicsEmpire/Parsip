@@ -988,14 +988,7 @@ bool CMeshVV::open(const DAnsiStr& strFileName, STREAM_FORMAT type)
 			return false;
 		}
 		break;
-	case STEVEN_OFF:
-		if (!openStevenOFF(strFileName))
-		{
-			MarkError();
 
-			return false;
-		}
-		break;
 	case OBJ:
 		if (!openOBJ(strFileName))
 		{
@@ -1017,14 +1010,7 @@ bool CMeshVV::open(const DAnsiStr& strFileName, STREAM_FORMAT type)
 		MarkError();
 
 		return false;
-	case CRYSTAL_STRUCTURE_DISLOCATIONS:
-		if (!openCrystalStructureDislocation(strFileName))
-		{
-			MarkError();
 
-			return false;
-		}
-		break;
 	}
 
 	return true;
@@ -1116,38 +1102,6 @@ bool CMeshVV::save(const DAnsiStr& strFileName, STREAM_FORMAT type) const
 	  {
 		  modelFile << primitiveSize << " ";
 
-		  for (i=primitiveSize; i--; )
-			  modelFile << *element++ << " ";
-
-		  modelFile << endl;
-	  }
-	  break;
-  case STEVEN_OFF:
-	  if (!color)
-	  {
-		  MarkError();
-
-		  return false;
-	  }
-
-	  modelFile.open(strFileName.c_str());
-
-	  modelFile << vertexCount << " " << primitiveCount << endl;
-
-	  for ( ; vertexCount--; )
-	  {
-		  for (i=0; i!=m_szUnitVertex; i++)
-			  modelFile << *vertex++ << " ";
-
-		  modelFile << (*color) << " ";
-
-		  color += m_szUnitColor;
-
-		  modelFile << endl;
-	  }
-
-	  for ( ; primitiveCount--; )
-	  {
 		  for (i=primitiveSize; i--; )
 			  modelFile << *element++ << " ";
 
@@ -1620,6 +1574,7 @@ bool CMeshVV::saveToSURFELFile(const DAnsiStr& fileName) const
 
 bool CMeshVV::openOBJ(const DAnsiStr& name)
 {	
+    return false;
     /*
     initMesh(TRIANGLES, 3, 3, 1, 2);
 
@@ -2021,220 +1976,6 @@ bool CMeshVV::openOFF(const DAnsiStr& fileName)
 	*/
 }
 
-/**
-*/
-bool CMeshVV::openStevenOFF(const DAnsiStr& fileName)
-{
-    /*
-	FILE *fileStream;
-	int fileStatus,
-		vertexCount,
-		cellCount,
-		i,
-		j;
-	unsigned int dummyInt[4];		
-	float dummyFloat[4];
-
-	errno_t res = fopen_s(&fileStream, fileName.c_str(), "r");
-	if (res != 0)
-	{
-		MarkError();
-
-		return false;
-	}
-
-	fileStatus = fscanf_s(fileStream, "%i", &vertexCount);
-
-	if ((fileStatus == EOF) || (fileStatus == 0))
-	{
-		MarkError();
-
-		return false;
-	}
-
-	fileStatus = fscanf_s(fileStream, "%i", &cellCount);
-
-	if ((fileStatus == EOF) || (fileStatus == 0))
-	{
-		MarkError();
-
-		return false;
-	}
-
-	removeAll();
-
-	for (i=0; i<vertexCount; ++i)
-	{
-		for (j=0; j<4; ++j)
-		{
-			fileStatus = fscanf_s(fileStream, "%f", dummyFloat + j);
-
-			if ((fileStatus == EOF) || (fileStatus == 0))
-			{
-				MarkError();
-
-				return false;
-			}
-		}
-
-		addVertex(dummyFloat, dummyFloat + 3);
-
-		addColor(vec4f(*(dummyFloat + 3), *(dummyFloat + 3), *(dummyFloat + 3), *(dummyFloat + 3)));
-	}
-
-	for (i=0; i<cellCount; ++i)
-	{
-		for (j=0; j<3; ++j)
-		{
-			fileStatus = fscanf_s(fileStream, "%i", dummyInt + j);
-
-			if ((fileStatus == EOF) || (fileStatus == 0))
-			{
-				MarkError();
-
-				return false;
-			}
-		}
-
-		addFaceArray(dummyInt, dummyInt + 4);
-	}
-
-	fclose(fileStream);
-
-	return true;
-        */
-}
-
-/**
-*/
-bool CMeshVV::openCrystalStructureDislocation(const DAnsiStr& fileName)
-{
-    /*
-	FILE *fileStream;
-	char token[128];
-	int fileStatus,
-		lineSizeCount,
-		dummyInt,
-		j;
-	float dummyFloat[3],
-		texCoord[3],
-		vertexCoord[3];
-
-	errno_t res = fopen_s(&fileStream, fileName.c_str(), "r");
-	if (res != 0)
-	{
-		MarkError();
-
-		return false;
-	}
-
-	// Ignores the header of the file.
-	do 
-	{
-		fileStatus = fscanf_s(fileStream, "%s", token);
-
-		if ((fileStatus == EOF) || (fileStatus == 0))
-		{
-			MarkError();
-
-			return false;
-		}
-
-		// Searches for the end of the line.
-		if (token[0] == '#')
-		{
-			lineSizeCount = 0;
-
-			while (fgetc(fileStream) != '\n')
-				if (++lineSizeCount > 2048)
-				{
-					MarkError();
-
-					return false;
-				}
-		}
-		else
-			break;
-	} while ((fileStatus != EOF) && (fileStatus != 0));
-
-	dummyFloat[0] = float(atof(token));
-
-	initMesh(POINTS, 3, 3, 1, 3);
-
-	while ((fileStatus != EOF) && (fileStatus != 0))
-	{
-		// number (readed from file in the previous iteration), type and mass.
-		for (j=1; j!=3; ++j)
-		{
-			fileStatus = fscanf_s(fileStream, "%f", texCoord + j);
-
-			if ((fileStatus == EOF) || (fileStatus == 0))
-			{
-				MarkError();
-
-				return false;
-			}
-		}
-
-		// x, y and z.
-		for (j=0; j!=3; ++j)
-		{
-			fileStatus = fscanf_s(fileStream, "%f", vertexCoord + j);
-
-			if ((fileStatus == EOF) || (fileStatus == 0))
-			{
-				MarkError();
-
-				return false;
-			}
-		}
-
-		// vx, vy and vz.
-		for (j=0; j!=3; ++j)
-		{
-			fileStatus = fscanf_s(fileStream, "%f", dummyFloat + j);
-
-			if ((fileStatus == EOF) || (fileStatus == 0))
-			{
-				MarkError();
-
-				return false;
-			}
-		}
-
-		// Crist.
-		fileStatus = fscanf_s(fileStream, "%i", &dummyInt);
-
-		if ((fileStatus == EOF) || (fileStatus == 0))
-		{
-			MarkError();
-
-			return false;
-		}
-
-		// Discards red points (points along planes).
-		if (dummyInt != 1)
-		{
-			addLabel(dummyInt);
-
-			addTexCoord(0, vec3f(texCoord));
-
-			addVertex(vertexCoord, vertexCoord + 3);
-
-			// Color computed from crist.
-			addColor(vec3f(float(dummyInt&1), float((dummyInt&2)>>1), float((dummyInt&4)>>2)));
-
-			addFace(getFaceArraySize());
-		}
-
-		fileStatus = fscanf_s(fileStream, "%f", dummyFloat);
-	}
-
-	fclose(fileStream);
-
-	return true;
-        */
-}
 
 bool CMeshVV::fitTo(vec3f minCorner, vec3f maxCorner)
 {

@@ -4,10 +4,11 @@
 #ifndef DX_DEVICE11_H
 #define DX_DEVICE11_H
 
-#ifdef WIN32
+#ifdef WIN32DXSDK
 
 #include <d3d11.h>
 #include <d3dx11.h>
+
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
