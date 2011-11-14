@@ -12,46 +12,23 @@ namespace BLOBTREE{
 class  CPcm : public CBlobTree
 {
 private:
-	CBlobTree* m_otherObj;
-	COctree* m_otherOct;
-
-	float m_w;
-	float m_alpha;
+	CBlobTree* m_lpLeftChild;
+	CBlobTree* m_lpRightChild;
 
 
 public:
 	CPcm() {;}
-	CPcm(CBlobTree * child)
+	CPcm(CBlobTree* lpLeftChild, CBlobTree* lpRightChild)
 	{
-		addChild(child);
+		m_lpLeftChild = lpLeftChild;
+		m_lpRightChild = lpRightChild;
 	}
-
-	CPcm(CBlobTree * child, CBlobTree* otherBlob, COctree* otherOct, float w, float alpha)
-	{
-		addChild(child);
-		m_otherObj = otherBlob;
-		m_otherOct = otherOct;
-		m_w		= w;
-		m_alpha = alpha;
-	}
-
 		
 	//FieldValue computation
 	float fieldValue(vec3f p)
 	{		
-		float f1 = m_children[0]->fieldValue(p);
-		float f2 = m_otherObj->fieldValue(p);
-
-		float g1;
-		//Check if we are in inter-penetration region
-		if((f1 >= ISO_VALUE)&&(f2 >= ISO_VALUE))
-		{
-			g1 = -1.0f * f2;
-
-			return f1 + g1;
-		}
-		else
-			return f1;
+		//1. 
+		return 0.0f;
 	}
 
 	float curvature(vec3f p)

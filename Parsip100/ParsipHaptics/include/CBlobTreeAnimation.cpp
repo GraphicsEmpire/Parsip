@@ -40,6 +40,7 @@ void CAnimObject::advance(float animTime)
 
 	vec3f displace = path->position(t) - model->getOctree().center();
 
+	/*
 	//Frenet Frame to realign object with path
 	vec3f pathTangent = path->tangent(t);
 	vec3f prevAxis;
@@ -63,7 +64,7 @@ void CAnimObject::advance(float animTime)
 			model->getLock().release();
 		}
 	}
-
+	*/
 	
 	if(bTranslate && (path->getArcTable().size() > 0))
 	{
@@ -119,6 +120,7 @@ void CAnimObject::drawPathCurve()
 {
 	std::vector<vec3f> arcPoints;
 	path->getArcPoints(arcPoints);
+
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glLineWidth(1.0f);
 		glBegin(GL_LINE_STRIP);
