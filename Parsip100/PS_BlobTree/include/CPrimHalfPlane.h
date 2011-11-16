@@ -5,80 +5,80 @@
 #include "CBlobTree.h"
 
 namespace PS{
-	namespace BLOBTREE{
+namespace BLOBTREE{
 
-		class  CHalfPlane : public CBlobTree
-		{
-		private:
-			vec3f m_position;
-			vec3f m_normal;
-		public:
-			CHalfPlane() {;}
-			CHalfPlane(vec3f p, vec3f n)
-			{
-				m_position = p;
-				m_normal = n;
-				m_normal.normalize();
-			}
+class  CHalfPlane : public CBlobTree
+{
+private:
+    vec3f m_position;
+    vec3f m_normal;
+public:
+    CHalfPlane() {;}
+    CHalfPlane(vec3f p, vec3f n)
+    {
+        m_position = p;
+        m_normal = n;
+        m_normal.normalize();
+    }
 
-			void setPosition(vec3f p)
-			{
-				m_position = p;
-			}
+    void setPosition(vec3f p)
+    {
+        m_position = p;
+    }
 
-			void setNormal(vec3f n)
-			{
-				m_normal = n;
-				m_normal.normalize();
-			}
+    void setNormal(vec3f n)
+    {
+        m_normal = n;
+        m_normal.normalize();
+    }
 
-			float fieldValue(vec3f p)
-			{
-				vec3f d = p - m_position;
-				d.normalize();
-				
-				if(Absolutef(d.getAngleDeg(m_normal)) <= 90.0f)
-					return ISO_VALUE;
-				else
-					return 0.0f;				
-			}
+    float fieldValue(vec3f p)
+    {
+        vec3f d = p - m_position;
+        d.normalize();
 
-			float curvature(vec3f p)
-			{
-				return 0.0f;
-			}
+        if(Absolutef(d.getAngleDeg(m_normal)) <= 90.0f)
+            return ISO_VALUE;
+        else
+            return 0.0f;
+    }
 
-			vec4f baseColor(vec3f p)
-			{		
-				return m_color;
-			}
+    float curvature(vec3f p)
+    {
+        return 0.0f;
+    }
 
-			CMaterial baseMaterial(vec3f p)
-			{
-				return m_material;
-			}
+    vec4f baseColor(vec3f p)
+    {
+        return m_color;
+    }
 
-			void getName(char * chrName)
-			{
-				strcpy_s(chrName, MAX_NAME_LEN, "HALFPLANE");		
-			}
+    CMaterial baseMaterial(vec3f p)
+    {
+        return m_material;
+    }
 
-			//Octree manipulation
-			COctree computeOctree()
-			{
-				m_octree = m_children[0]->getOctree();
-				for(size_t i = 1; i < m_children.size(); i++)
-					m_octree.csgUnion(m_children[i]->getOctree());		
+    void getName(char * chrName)
+    {
+        strcpy_s(chrName, MAX_NAME_LEN, "HALFPLANE");
+    }
 
-				return m_octree;
-			}
+    //Octree manipulation
+    COctree computeOctree()
+    {
+        m_octree = m_children[0]->getOctree();
+        for(size_t i = 1; i < m_children.size(); i++)
+            m_octree.csgUnion(m_children[i]->getOctree());
+
+        return m_octree;
+    }
 
 
-			bool isOperator() { return false;}
-			BlobNodeType getNodeType() {return bntPrimHalfPlane;}
-		};
+    bool isOperator() { return false;}
+    BlobNodeType getNodeType() {return bntPrimHalfPlane;}
+};
 
-	}
+}
 }
 
 #endif

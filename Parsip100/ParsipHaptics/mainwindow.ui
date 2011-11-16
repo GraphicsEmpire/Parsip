@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1111</width>
+    <width>994</width>
     <height>905</height>
    </rect>
   </property>
@@ -37,8 +37,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>805</width>
-         <height>712</height>
+         <width>688</width>
+         <height>694</height>
         </rect>
        </property>
       </widget>
@@ -59,7 +59,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tsTools">
        <attribute name="title">
@@ -1170,8 +1170,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1111</width>
-     <height>21</height>
+     <width>994</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1206,11 +1206,14 @@
     <addaction name="actAddBlend"/>
     <addaction name="actAddRicciBlend"/>
     <addaction name="actAddSmoothDif"/>
+    <addaction name="actAddPCM"/>
+    <addaction name="separator"/>
     <addaction name="actAddCache"/>
     <addaction name="separator"/>
     <addaction name="actAddTwist"/>
     <addaction name="actAddTaper"/>
     <addaction name="actAddBend"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1277,6 +1280,7 @@
     <addaction name="actEditCopy"/>
     <addaction name="actEditField"/>
     <addaction name="actEditConvert"/>
+    <addaction name="actEditFieldProbe"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1320,6 +1324,7 @@
    <addaction name="actEditCopy"/>
    <addaction name="separator"/>
    <addaction name="actEditField"/>
+   <addaction name="actEditFieldProbe"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBarBlobTree">
@@ -1360,6 +1365,7 @@
    <addaction name="actAddSmoothDif"/>
    <addaction name="actAddBlend"/>
    <addaction name="actAddRicciBlend"/>
+   <addaction name="actAddPCM"/>
    <addaction name="actAddTwist"/>
    <addaction name="actAddTaper"/>
    <addaction name="actAddBend"/>
@@ -1889,6 +1895,19 @@
     <string>Insert Mesh...</string>
    </property>
   </action>
+  <action name="actAddPCM">
+   <property name="text">
+    <string>PCM Animation</string>
+   </property>
+  </action>
+  <action name="actEditFieldProbe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Field Probe</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
@@ -1903,11 +1922,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>993</x>
-     <y>401</y>
+     <y>426</y>
     </hint>
     <hint type="destinationlabel">
      <x>1054</x>
-     <y>404</y>
+     <y>429</y>
     </hint>
    </hints>
   </connection>
@@ -1919,11 +1938,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1054</x>
-     <y>404</y>
+     <y>429</y>
     </hint>
     <hint type="destinationlabel">
      <x>993</x>
-     <y>401</y>
+     <y>426</y>
     </hint>
    </hints>
   </connection>
@@ -1935,11 +1954,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1054</x>
-     <y>404</y>
+     <y>429</y>
     </hint>
     <hint type="destinationlabel">
      <x>993</x>
-     <y>401</y>
+     <y>426</y>
     </hint>
    </hints>
   </connection>
@@ -1951,11 +1970,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>993</x>
-     <y>352</y>
+     <y>377</y>
     </hint>
     <hint type="destinationlabel">
      <x>1053</x>
-     <y>355</y>
+     <y>380</y>
     </hint>
    </hints>
   </connection>
@@ -1967,11 +1986,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1053</x>
-     <y>355</y>
+     <y>380</y>
     </hint>
     <hint type="destinationlabel">
      <x>993</x>
-     <y>352</y>
+     <y>377</y>
     </hint>
    </hints>
   </connection>
@@ -1982,8 +2001,8 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1052</x>
-     <y>642</y>
+     <x>1088</x>
+     <y>681</y>
     </hint>
     <hint type="destinationlabel">
      <x>1045</x>
@@ -1998,12 +2017,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>956</x>
-     <y>441</y>
+     <x>993</x>
+     <y>470</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1008</x>
-     <y>439</y>
+     <x>1054</x>
+     <y>473</y>
     </hint>
    </hints>
   </connection>
@@ -2014,12 +2033,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1018</x>
-     <y>446</y>
+     <x>1054</x>
+     <y>473</y>
     </hint>
     <hint type="destinationlabel">
-     <x>976</x>
-     <y>436</y>
+     <x>993</x>
+     <y>470</y>
     </hint>
    </hints>
   </connection>

@@ -141,6 +141,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actAddTwist, SIGNAL(triggered()), m_glWidget, SLOT(actAddWarpTwist()));
     connect(ui->actAddTaper, SIGNAL(triggered()), m_glWidget, SLOT(actAddWarpTaper()));
     connect(ui->actAddBend, SIGNAL(triggered()), m_glWidget, SLOT(actAddWarpBend()));
+    connect(ui->actAddPCM, SIGNAL(triggered()), m_glWidget, SLOT(actAddPCM()));
 
 
     connect(ui->actEditSelect, SIGNAL(triggered()), m_glWidget, SLOT(actEditSelect()));
@@ -154,6 +155,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actEditDeletePrimitive, SIGNAL(triggered()), m_glWidget, SLOT(actEditDelete()));
     connect(ui->actEditTransformSkeleton, SIGNAL(triggered(bool)), m_glWidget, SLOT(actEditTransformSkeleton(bool)));
     connect(ui->actEditConvert, SIGNAL(triggered()), m_glWidget, SLOT(actEditConvertToBinaryTree()));
+    connect(ui->actEditFieldProbe, SIGNAL(triggered(bool)), m_glWidget, SLOT(actEditProbe(bool)));
+
 
 
     connect(ui->actEditUndo, SIGNAL(triggered()), m_glWidget, SLOT(actEditUndo()));

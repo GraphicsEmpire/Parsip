@@ -31,7 +31,7 @@ CBlobTree* cloneNode(CBlobTree* node, int id = 0);
 CBlobTree* cloneBlobTree(CBlobTree* input, int rootID = 0, int* lpCtClonned = NULL);
 
 
-__inline bool intersects(const vec4f& lo1, const vec4f& hi1, const vec4f& lo2, const vec4f& hi2)
+inline bool intersects(const vec4f& lo1, const vec4f& hi1, const vec4f& lo2, const vec4f& hi2)
 {
 	if ((lo1.x >= hi2.x) || (hi1.x <= lo2.x))
 		return false;

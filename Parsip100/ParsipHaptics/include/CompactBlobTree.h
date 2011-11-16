@@ -25,7 +25,7 @@ struct TreeNodeCache
 //Compact Structure for all primitives
 struct BlobPrimitive
 {
-	int parent;
+        int orgID;
 	SkeletonType skelet;
 	vec4f color;
 	vec4f pos;
@@ -45,7 +45,7 @@ struct BlobPrimitive
 struct BlobOperator
 {
 	BlobNodeType type;
-	int parent;
+        int orgID;
 	int ctKids;
 	//int kidIds[MAX_COMPACT_KIDS_COUNT];
 	DVec<int> kidIds;
@@ -55,15 +55,29 @@ struct BlobOperator
 //	TreeNodeCache fvCache;
 };
 
+struct PCMCONTEXT
+{
+    int idPCM;
+    float maxCompressionLeft;
+    float maxCompressionRight;
+
+    vec4f forceLeft;
+    vec4f forceRight;
+};
+
 //Compact BlobTree
 class COMPACTBLOBTREE
 {
 public:
 	int ctPrims;
-
 	BlobPrimitive prims[MAX_BLOB_ENTRIES];
-	int ctOps;
+
+        int ctOps;
 	BlobOperator ops[MAX_BLOB_ENTRIES];
+
+        int ctPCMNodes;
+        PCMCONTEXT pcmCONTEXT;
+public:
 	
 	COMPACTBLOBTREE()
 	{
@@ -87,6 +101,24 @@ public:
 	float fieldvalue(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);	
 	float fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPrim = NULL);
 	float fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
+        vec4f gradientAtNode(bool isOp, int id, const vec4f& p, float fp, float delta );
+        float fieldAtNode(bool isOp, int id, const vec4f& p);
+        int   getID(bool isOp, int treeOrgID);
+        //float fieldValueAndGradientAtNodecopyFrom(int id, const vec4f& p, vec4f& grad, float delta );
+
+        float computePCM(const vec4f& p,
+                         const vec4f& pcmParam,
+                         const vec4f& oct1Lo,
+                         const vec4f& oct1Hi,
+                         const vec4f& oct2Lo,
+                         const vec4f& oct2Hi,
+                         int idSelf,
+                         int idChild1, int idChild2,
+                         float fp1, float fp2);
+
+        vec3f marchTowardNode(bool isOp, int id, const vec3f& p, const vec3f& grad, float& fp);
+        //vec3f marchTowardNode(bool isOp, int id, vec3f& p, float& fp);
+        float computePropagationDeformation(float dist, float k, float a0, float w);
 
 	//Base Color	
 	vec4f baseColor(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);		
@@ -101,7 +133,8 @@ public:
 	void reset()
 	{
 		ctPrims = 0; 
-		ctOps = 0;
+		ctOps = 0;                
+                ctPCMNodes = 0;
 	}
 
 	int convert(CBlobTree* root);
@@ -122,6 +155,22 @@ private:
 	vec4f warpShear(const vec4f& pin, float factor, MajorAxices axisAlong, MajorAxices axisDependent);
 
 };
+
+/*!
+ * Return true if two bounding boxes intersect.
+ */
+/*
+inline bool intersects( const vec4f& lo1, const vec4f& hi1, const vec4f& lo2, const vec4f& hi2 )
+{
+        if ((lo1.x >= hi2.x) || (hi1.x <= lo2.x))
+                return false;
+        if ((lo1.y >= hi2.y) || (hi1.y <= lo2.y))
+                return false;
+        if ((lo1.z >= hi2.z) || (hi1.z <= lo2.z))
+                return false;
+        return true;
+}
+*/
 
 //////////////////////////////////////////////////////////////////////////
 /*

@@ -29,7 +29,8 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/DSystem/include/DUtils.h \
            Parsip100/DSystem/include/DUtils_Base.h \
            Parsip100/DSystem/include/DUtils_Files.h \
-           Parsip100/DSystem/include/DUtils_MemFile.h \
+           Parsip100/DSystem/include/DUtils_MemFile.h \           
+           Parsip100/ParsipHaptics/include/AppSettings.h \
            Parsip100/ParsipHaptics/include/_GlobalFunctions.h \
            Parsip100/ParsipHaptics/include/_GlobalSettings.h \
            Parsip100/ParsipHaptics/include/_LookupTables.h \
@@ -150,6 +151,7 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
            Parsip100/DSystem/include/DUtils.cpp \
            Parsip100/DSystem/include/DUtils_Files.cpp \
            Parsip100/DSystem/include/DUtils_MemFile.cpp \
+           Parsip100/ParsipHaptics/include/AppSettings.cpp \
            Parsip100/ParsipHaptics/include/_GlobalFunctions.cpp \
            Parsip100/ParsipHaptics/include/CBlobTreeAnimation.cpp \
            Parsip100/ParsipHaptics/include/CBlobTreeNetwork.cpp \

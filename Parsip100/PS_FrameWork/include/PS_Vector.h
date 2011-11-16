@@ -1085,7 +1085,7 @@ public:
 	Type dot(const Vector4d<Type> &a) const        
 	{
 		return (x * a.x + y * a.y + z * a.z + w * a.w);
-	};
+        }
 
 	Type dist2(const Vector4d<Type> &a) const
 	{
@@ -1095,13 +1095,13 @@ public:
 		d.z = a.z - z;
 		d.w = a.w - w;
 		return (d.x*d.x + d.y*d.y + d.z*d.z + d.w*d.w);
-	};
+        }
 
 	Vector4d& operator = (const Vector4d& A)          // ASSIGNMENT (=)
 	{ 
 		x=A.x; y=A.y; z=A.z; w=A.w; 			
 		return(*this);  
-	};	
+        }
 
 	Type* ptr() {return &x;}
 	Type & operator [] (const int i)

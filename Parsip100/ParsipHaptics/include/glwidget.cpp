@@ -92,6 +92,7 @@ GLWidget::GLWidget(QWidget *parent)
 
     m_idxRibbonSelection = 0;
     m_bTransformSkeleton = false;
+    m_bProbing = false;
 
     //Undo/Redo
     m_curUndoLevel = 0;
@@ -278,12 +279,35 @@ void GLWidget::paintGL()
     //Draw Ground
     if(AppSettingsSingleton::Instance().setDisplay.bDrawChessboardGround)
     {
-        glCallList(m_glChessBoard);
-        //glCallList(m_glTopCornerCube);
+        glCallList(m_glChessBoard);       
     }
 
+    if(m_bProbing)
+    {
+        glPushMatrix();
+        glTranslatef(m_probePoint.x, m_probePoint.y, m_probePoint.z);
+        glScalef(0.1f, 0.1f, 0.1f);
+            glCallList(m_glTopCornerCube);
+        glPopMatrix();
+
+        glPushAttrib(GL_ALL_ATTRIB_BITS);
+            glPointSize(3.0f);
+            glColor3f(1.0f, 1.0f, 1.0f);
+            glBegin(GL_POINTS);
+                glVertex3fv(m_probeProjected.ptr());
+            glEnd();
+
+            glLineWidth(2.0f);
+            glBegin(GL_LINES);
+                glVertex3fv(m_probePoint.ptr());
+                glVertex3fv(m_probeProjected.ptr());
+            glEnd();
+        glPopAttrib();
+    }
+
+
     //Draw based on current UI mode    
-	U32 ctAnimObjects = CAnimManagerSingleton::Instance().countObjects();
+    U32 ctAnimObjects = CAnimManagerSingleton::Instance().countObjects();
     if((AppSettingsSingleton::Instance().setDisplay.bShowAnimCurves)&&(ctAnimObjects > 0))
     {
         for(U32 i=0; i<ctAnimObjects; i++)
@@ -296,20 +320,26 @@ void GLWidget::paintGL()
     if(m_uiMode == uimSketch)
         drawPolygon(m_lstSketchControlPoints);
     else if(m_uiMode == uimTransform)
-    {
+    {        
         glDisable(GL_DEPTH_TEST);
         drawLineSegment(m_uiTransform.mouseDown, m_uiTransform.mouseDown + m_uiTransform.mouseMove, vec4f(0,0,0,1));
 
-        //CQuaternion q;
-        if(m_layerManager.hasActiveSelOctree())
-            c = m_layerManager.getActiveSelOctree().center();
-        else if(CAnimManagerSingleton::Instance().hasSelectedCtrlPoint())
+        if(m_bProbing)
         {
-            CAnimObject* obj = CAnimManagerSingleton::Instance().getActiveObject();
-            c = obj->path->getControlPoints()[obj->idxSelCtrlPoint];
+            c = m_probePoint;
         }
         else
-            c = m_uiTransform.mouseDown;
+        {
+            if(m_layerManager.hasActiveSelOctree())
+                c = m_layerManager.getActiveSelOctree().center();
+            else if(CAnimManagerSingleton::Instance().hasSelectedCtrlPoint())
+            {
+                CAnimObject* obj = CAnimManagerSingleton::Instance().getActiveObject();
+                c = obj->path->getControlPoints()[obj->idxSelCtrlPoint];
+            }
+            else
+                c = m_uiTransform.mouseDown;
+        }
 
         if(m_uiTransform.type == uitTranslate)
             drawMapTranslate(c);
@@ -563,6 +593,14 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                 m_uiTransform.rotate.fromAngleAxis(angle, axis);
             }
 
+            //Probing
+            if(m_bProbing)
+            {
+                m_probePoint += m_uiTransform.translate;
+                updateProbe();
+                return;
+            }
+
             //Now apply tranform to the selected object
             CLayer* active = m_layerManager.getActiveLayer();
             size_t ctSelected = active->selCountItems();
@@ -813,34 +851,31 @@ GLuint GLWidget::drawDefaultColoredCube()
 
 GLuint GLWidget::drawTopCornerCube()
 {
-    static const GLfloat colorGray[4] = {0.45f, 0.45f, 0.45f, 1.0f};
-    /*
- FTPixmapFont font("C:\\Windows\\Fonts\\Calibri.ttf");
- if(font.Error()) return -1;
- font.FaceSize(14);
+    static const GLfloat colorRed[4] = { 0.8f, 0.1f, 0.0f, 1.0f }; //Red
+    static const GLfloat colorGreen[4] = { 0.0f, 0.8f, 0.2f, 1.0f }; //Green
+    static const GLfloat colorBlue[4] = { 0.2f, 0.2f, 1.0f, 1.0f }; //Blue
 
- font.Render("Salam", -1, FTPoint(10, 10, -10));
- */
     //Creating and compiling a list of objects
     GLuint list = glGenLists(1);
     glNewList(list, GL_COMPILE);
     glShadeModel(GL_SMOOTH);
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colorGray);
-    drawCubePolygon(0, 3, 2, 1);
-    drawCubePolygon(4, 5, 6, 7);
+    //glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colorRed);
+    glColor4fv(colorRed);
+    drawCubePolygon(2, 3, 7, 6);
+    drawCubePolygon(5, 4, 0, 1);
 
-
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colorGray);
+    //glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colorGray);
+    glColor4fv(colorGreen);
     drawCubePolygon(3, 0, 4, 7);
     drawCubePolygon(1, 2, 6, 5);
     //font.Render("Left", -1, FTPoint(-1, 1));
 
+    //glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colorGray);
+    glColor4fv(colorBlue);
+    drawCubePolygon(0, 3, 2, 1);
+    drawCubePolygon(4, 5, 6, 7);
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colorGray);
-    drawCubePolygon(2, 3, 7, 6);
-    drawCubePolygon(5, 4, 0, 1);
 
     glEndList();
 
@@ -1511,6 +1546,30 @@ QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobTree* lpNode)
     {
         switch (lpNode->getNodeType())
         {
+        case(bntOpPCM):
+        {
+            CPcm* pcm = reinterpret_cast<CPcm*>(lpNode);
+            lstRow.push_back(new QStandardItem(QString("Propagate Left")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getPropagateLeft())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            lstRow.clear();
+
+            lstRow.push_back(new QStandardItem(QString("Propagate Right")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getPropagateRight())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            lstRow.clear();
+
+            lstRow.push_back(new QStandardItem(QString("Attenuate Left")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getAlphaLeft())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            lstRow.clear();
+
+            lstRow.push_back(new QStandardItem(QString("Attenuate Right")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getAlphaRight())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            lstRow.clear();
+            break;
+        }
         case(bntOpRicciBlend):
         {
             CRicciBlend* ricci = reinterpret_cast<CRicciBlend*>(lpNode);
@@ -1592,6 +1651,16 @@ QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobTree* lpNode)
         vec3f axis;
         float angle;
         qq.getAxisAngle(axis, angle);
+
+        if(m_bProbing)
+        {
+            lstRow.clear();
+            lstRow.push_back(new QStandardItem(QString("Field Probe")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.3f", m_probeValue)));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+        }
+
+        lstRow.clear();
         lstRow.push_back(new QStandardItem(QString("Scale")));
         lstRow.push_back(new QStandardItem(QString(Vec3ToString(s).ptr())));
         lstRow[0]->setToolTip(QString("Scale along x, y and z - Format: Scale Factor [x y z]"));
@@ -1690,6 +1759,21 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
     {
         switch(m_lpSelectedBlobNode->getNodeType())
         {
+        case(bntOpPCM):
+        {
+            CPcm* lpPCM = reinterpret_cast<CPcm*>(m_lpSelectedBlobNode);
+            if(row == 0)
+                lpPCM->setPropagateLeft(atof(strValue.toAscii()));
+            else if(row == 1)
+                lpPCM->setPropagateRight(atof(strValue.toAscii()));
+            else if(row == 2)
+                lpPCM->setAlphaLeft(atof(strValue.toAscii()));
+            else if(row == 3)
+                lpPCM->setAlphaRight(atof(strValue.toAscii()));
+
+
+            break;
+        }
         case(bntOpRicciBlend):
         {
             CRicciBlend* ricci = reinterpret_cast<CRicciBlend*>(m_lpSelectedBlobNode);
@@ -2350,6 +2434,11 @@ void GLWidget::actAddUnion()
     addBlobOperator(bntOpUnion);
 }
 
+void GLWidget::actAddPCM()
+{
+    addBlobOperator(bntOpPCM);
+}
+
 void GLWidget::actAddIntersection()
 {
     addBlobOperator(bntOpIntersect);
@@ -2927,7 +3016,7 @@ void GLWidget::drawRay( const CRay& ray, vec4f color )
 }
 
 void GLWidget::drawLineSegment( vec3f s, vec3f e, vec4f color )
-{
+{  
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glBegin(GL_LINES);
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color.ptr());
@@ -3623,15 +3712,6 @@ void GLWidget::switchToProjection()
     glLoadIdentity();
 }
 
-void GLWidget::benchmarkSIMD()
-{
-    //COMPACTBLOBTREE s;
-    int i = offsetof(BlobPrimitive, parent);
-    i = offsetof(BlobPrimitive, skelet);
-    i = offsetof(BlobPrimitive, color);
-    i = offsetof(BlobPrimitive, pos);
-}
-
 void GLWidget::drawString( const char* str, float x, float y )
 {
     /*
@@ -4022,6 +4102,65 @@ void GLWidget::actEditConvertToBinaryTree()
     m_layerManager.getActiveLayer()->bumpRevision();
     actMeshPolygonize(m_layerManager.getActiveLayerIndex());
     emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
+}
+
+void GLWidget::actEditProbe(bool bEnable)
+{
+    m_bProbing = bEnable;
+    m_probePoint.zero();
+    m_probeValue = 0.0f;
+
+    m_uiMode = uimTransform;
+    m_uiTransform.type = uitTranslate;
+    updateProbe();
+    updateGL();
+}
+
+void GLWidget::updateProbe()
+{
+    CLayer* active = m_layerManager.getActiveLayer();
+    if(active == NULL) return;
+
+    CBlobTree* root = active->selGetItem();
+    if(root == NULL)
+        return;
+
+    bool bIsOp = root->isOperator();
+    int id = active->getCompactTree()->getID(bIsOp, root->getID());
+    m_probeValue = active->getCompactTree()->fieldAtNode(bIsOp, id, vec4f(m_probePoint, 0.0f));
+
+    //Compute P0: closest point to fp2
+    if(m_probeValue > FIELD_VALUE_EPSILON)
+    {
+        vec3f grad = active->getCompactTree()->gradientAtNode(bIsOp, id, vec4f(m_probePoint, 0.0f), m_probeValue, NORMAL_DELTA).xyz();
+
+        int dir = (m_probeValue < ISO_VALUE)?1:-1;
+        float step = ISO_DISTANCE;
+
+        //Uses shrink-wrap method to converge to surface
+        //float d = (ISO_VALUE - m_probeValue) / (grad.dot(grad));
+        //m_probeProjected = m_probePoint + (grad * d);
+        int ctSteps = 0;
+
+        m_probeProjected = m_probePoint;
+        float f = m_probeValue;
+        while(!FLOAT_EQ(f, ISO_VALUE, FIELD_VALUE_EPSILON))
+        {
+            m_probeProjected += step * dir * grad;
+            f = active->getCompactTree()->fieldAtNode(bIsOp, id , vec4f(m_probeProjected, 0.0f));
+            int dir2 = (f < ISO_VALUE)?1:-1;
+            if(dir != dir2)
+                step *= 0.5f;
+            dir = dir2;
+            ctSteps++;
+        }
+    }
+    else
+        m_probeProjected.zero();
+
+    //Update
+    emit sig_showPrimitiveProperty(getModelPrimitiveProperty(root));
+    updateGL();
 }
 
 void GLWidget::actAnimSetStartLoc()

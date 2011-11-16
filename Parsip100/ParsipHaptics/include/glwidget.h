@@ -117,6 +117,7 @@ public slots:
     void actAddWarpTwist();
     void actAddWarpTaper();
     void actAddWarpBend();
+    void actAddPCM();
 
     //Animation
     void actAnimSetStartLoc();
@@ -147,7 +148,7 @@ public slots:
     void actEditPaste();
     void actEditFieldEditor();
     void actEditConvertToBinaryTree();
-
+    void actEditProbe(bool bEnable);
 
     void actTestStart();
     void actTestSetRuns(int value);
@@ -165,6 +166,7 @@ public slots:
     //
     void setMouseDragScale(int k);
     void userInterfaceReady();
+    void updateProbe();
 
     //Animation functions
     void advanceAnimation();
@@ -249,32 +251,36 @@ private:
         vec3f mouseMove;
     };
 
-    QTimer*			m_timer;
+    QTimer*	m_timer;
 
     PS::CArcBallCamera m_camera;
-    PS::CArcBallCamera::MOUSEBUTTONSTATE m_mouseButton;  
+    PS::CArcBallCamera::MOUSEBUTTONSTATE m_mouseButton;
     vec2i	m_mouseLastPos;
     vec2i	m_scrDim;
     CLayerManager	m_layerManager;
-    //CParsipServer	m_parsip;
-    //CParsipOptimized m_optParsip;
 
-    int				m_uniformTime;
+    int                 m_uniformTime;
     CMaterial		m_materials[8];
-    int				m_idxRibbonSelection;
+    int			m_idxRibbonSelection;
 
     //Sketching variables
-    UIMODE			m_uiMode;
+    UIMODE		m_uiMode;
     UITRANSFORM		m_uiTransform;
-    vec3f			m_globalPan;
-    bool			m_bEnablePan;
-    bool			m_bEnableMultiSelect;
-    bool			m_bTransformSkeleton;
+    vec3f		m_globalPan;
+    bool		m_bEnablePan;
+    bool		m_bEnableMultiSelect;
+    bool		m_bTransformSkeleton;
 
+    //Variables for field Probing
+    vec3f               m_probePoint;
+    vec3f               m_probeProjected;
 
-    float			m_animTime;
-    float			m_animSpeed;
-    SkeletonType	  m_sketchSkeletType;
+    float               m_probeValue;
+    bool                m_bProbing;
+
+    float		m_animTime;
+    float		m_animSpeed;
+    SkeletonType	m_sketchSkeletType;
     //Reference to object. created using makeObject()
     GLuint			  m_glChessBoard;
     GLuint			  m_glTopCornerCube;
@@ -327,6 +333,7 @@ private:
     void drawMapRotate(vec3f pos);
     void drawMapScale(vec3f pos);
     void drawOctree(vec3 lo, vec3 hi, vec4f color, bool bSelected = false);
+
     void drawPolygon(const DVec<vec3>& lstPoints);
     void drawRay(const CRay& ray, vec4f color);
     void drawLineSegment(vec3f s, vec3f e, vec4f color);
@@ -340,10 +347,9 @@ private:
     //It is much more efficient if you create all the objects in a scene
     //in one place and group them in a list. Then this will be plugged into graphics hardware at runtime.
     GLuint drawDefaultColoredCube();
-    void	drawChessBoard();
+    void   drawChessBoard();
     GLuint drawTopCornerCube();
 
-    void benchmarkSIMD();
 
     void switchToOrtho();
     void switchToProjection();
