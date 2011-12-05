@@ -1,5 +1,5 @@
-#ifndef CBlend_H
-#define CBlend_H
+#ifndef CGRADIENTBLEND_H
+#define CGRADIENTBLEND_H
 
 #include <math.h>
 #include "CBlobTree.h"
@@ -7,24 +7,24 @@
 namespace PS{
 namespace BLOBTREE{
 
-class  CBlend : public CBlobTree
+class  CGradientBlend : public CBlobTree
 {
 
 public:
-        CBlend() {;}
-        CBlend(CBlobTree * child)
+        CGradientBlend() {;}
+        CGradientBlend(CBlobTree * child)
         {
                 addChild(child);
         }
 
-        CBlend(CBlobTree * child1, CBlobTree * child2)
+        CGradientBlend(CBlobTree * child1, CBlobTree * child2)
         {
                 addChild(child1);
                 addChild(child2);
         }
 
 
-        CBlend(BLOBTREECHILDREN children)
+        CGradientBlend(BLOBTREECHILDREN children)
         {
                 addChild(children);
         }
@@ -130,13 +130,13 @@ public:
 
         CBlobTree* operator +(CBlobTree* other)
         {
-                CBlend * blend = new CBlend(this, other);
+                CGradientBlend * blend = new CGradientBlend(this, other);
                 return blend;
         }
 
         void getName(char * chrName)
         {
-            strncpy(chrName, "BLEND", MAX_NAME_LEN);
+            strncpy(chrName, "GRADIENT BLEND", MAX_NAME_LEN);
         }
 
         COctree computeOctree()
@@ -150,7 +150,7 @@ public:
 
         bool isOperator() { return true;}
 
-        BlobNodeType getNodeType() {return bntOpBlend;}
+        BlobNodeType getNodeType() {return bntOpGradientBlend;}
 };
 }
 }

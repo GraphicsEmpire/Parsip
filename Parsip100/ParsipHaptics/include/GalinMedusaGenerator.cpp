@@ -87,7 +87,7 @@ public:
 		m_eType = eType;
 
 		m_pTopLevelPointSet = NULL;
-		m_pTopLevelBlend = new CBlend();	
+                m_pTopLevelBlend = new CBlend();
 		
 		if (m_eType == OneFastQuadricPointSet) 
 		{
@@ -113,7 +113,7 @@ public:
 		Polynomial pz = Polynomial::Hermite(a[2],b[2],na[2],nb[2]);
 		Polynomial r = Polynomial::Hermite(ra,rb,fa,fb);
 
-		CBlend * pNestedBlend = (m_eType == NestedSumBlendsOfQuadricPoints) ? new CBlend() : NULL;
+                CBlend * pNestedBlend = (m_eType == NestedSumBlendsOfQuadricPoints) ? new CBlend() : NULL;
 		FastQuadricPointSet * pPointSet = (m_eType == SumBlendOfFastQuadricPointSets) ? new FastQuadricPointSet() : NULL;
 
 		for (int i = 0; i < n; ++i) 
@@ -152,14 +152,14 @@ public:
 			m_pTopLevelBlend->addChild( pPointSet );
 	}
 
-	CBlend * getField() { return m_pTopLevelBlend; }
+        CBlend * getField() { return m_pTopLevelBlend; }
 
 	unsigned int getNumPointPrimitives() { return m_nPointPrimitives; }
 
 protected:
 	Type m_eType;
 
-	CBlend * m_pTopLevelBlend;
+        CBlend * m_pTopLevelBlend;
 	FastQuadricPointSet * m_pTopLevelPointSet;
 	unsigned int m_nPointPrimitives;
 

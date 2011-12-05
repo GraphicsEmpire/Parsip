@@ -25,7 +25,7 @@ namespace BLOBTREE{
 enum MajorAxices {xAxis, yAxis, zAxis};
 enum WarpOrder {woLinear, woQuadratic};
 enum BlobNodeType{bntPrimSkeleton, bntPrimQuadricPoint, bntPrimFastQuadraticPointSet, bntPrimHalfPlane,
-                  bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend,
+                  bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend, bntOpGradientBlend,
                   bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
 
 //This will help for managing different properties that each BlobTree Node exposes

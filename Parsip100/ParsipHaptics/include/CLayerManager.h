@@ -332,7 +332,7 @@ public:
 	
 };
 
-typedef SingletonHolder<CLayerManager, CreateUsingNew, PhoenixSingleton> LayerManagerSingleton;
+typedef SingletonHolder<CLayerManager, CreateUsingNew, PhoenixSingleton> TheLayerManager;
 
 }
 }

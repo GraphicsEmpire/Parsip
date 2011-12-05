@@ -50,7 +50,6 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/ParsipHaptics/include/CPolyContinuation.h \
            Parsip100/ParsipHaptics/include/CPolyHashGridEdgeTables.h \
            Parsip100/ParsipHaptics/include/CPolyInterface.h \
-           Parsip100/ParsipHaptics/include/CPolyOpenCL.h \
            Parsip100/ParsipHaptics/include/CPolyParsipOptimized.h \
            Parsip100/ParsipHaptics/include/CPolyParsipServer.h \
            Parsip100/ParsipHaptics/include/CUIWidgets.h \
@@ -139,7 +138,9 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/PS_FrameWork/include/PS_String.h \
            Parsip100/PS_FrameWork/include/PS_StringBase.h \
            Parsip100/PS_FrameWork/include/PS_Vector.h \
-           Parsip100/PS_FrameWork/include/TaskManager.h
+           Parsip100/PS_FrameWork/include/TaskManager.h \
+    Parsip100/PS_BlobTree/include/CGradientBlend.h \
+    Parsip100/ParsipHaptics/include/PS_OclPolygonizer.h
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
          Parsip100/ParsipHaptics/mainwindow.ui
@@ -207,7 +208,8 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
            Parsip100/PS_FrameWork/include/PS_ShaderManager.cpp \
            Parsip100/PS_FrameWork/include/PS_SplineCatmullRom.cpp \
            Parsip100/PS_FrameWork/include/PS_String.cpp \
-           Parsip100/PS_FrameWork/include/TaskManager.cpp
+           Parsip100/PS_FrameWork/include/TaskManager.cpp \
+    Parsip100/ParsipHaptics/include/CUIWidgets.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -244,18 +246,29 @@ else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc
 win32:INCLUDEPATH += D:\Projects\Dependencies\TBB\include \
                      D:\Projects\Dependencies\LOKI\include \
                      D:\Projects\Dependencies\GLEW\include \
+                     D:\Projects\Dependencies\OPENCL\common\inc \
                      C:\Program Files\Microsoft DirectX SDK (June 2010)\Include
 
 else:unix:INCLUDEPATH += $$PWD/../Dependencies/TBB/include \
+                         /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                          /home/pourya/Desktop/Projects/Dependencies/LOKI/include
 
 win32:DEPENDPATH += D:\Projects\Dependencies\TBB\include \
                     D:\Projects\Dependencies\LOKI\include \
                     D:\Projects\Dependencies\GLEW\include \
+                    D:\Projects\Dependencies\OPENCL\common\inc \
                     C:\Program Files\Microsoft DirectX SDK (June 2010)\Include
 
 else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
+                        /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                         /home/pourya/Desktop/Projects/Dependencies/LOKI/include
 
-unix:!symbian: LIBS += -lGLEW
+unix:!symbian: LIBS += -lGLEW \
+                       -lOpenCL
+
+
+
+
+
+
 

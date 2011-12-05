@@ -104,6 +104,14 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
 
             break;
         }
+        case(bntOpGradientBlend):
+        {
+            CGradientBlend* gradBlend = dynamic_cast<CGradientBlend*>(root);
+            //cfg->writeFloat(strNodeName, "power", ricci->getN());
+
+            break;
+        }
+
         case(bntOpWarpTwist):
         {
             CWarpTwist* twist = dynamic_cast<CWarpTwist*>(root);

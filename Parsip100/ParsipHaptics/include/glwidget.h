@@ -22,6 +22,7 @@
 #include "CBlobTreeNetwork.h"
 #include "DlgFieldFunctionEditor.h"
 #include "AppSettings.h"
+#include "CUIWidgets.h"
 
 using namespace PS;
 using namespace PS::MATH;
@@ -113,11 +114,13 @@ public slots:
     void actAddSmoothDif();
     void actAddBlend();
     void actAddRicciBlend();
+    void actAddGradientBlend();
     void actAddCacheNode();
     void actAddWarpTwist();
     void actAddWarpTaper();
     void actAddWarpBend();
     void actAddPCM();
+
 
     //Animation
     void actAnimSetStartLoc();
@@ -237,19 +240,6 @@ protected:
 
 private:
     enum UIMODE {uimSelect, uimSketch, uimTransform, uimAnimation};
-    enum UITRANSFORMTYPE {uitTranslate, uitRotate, uitScale};
-    enum UITRANSFORMAXIS {uiaX, uiaY, uiaZ, uiaFree};
-
-    struct UITRANSFORM{
-        UITRANSFORMTYPE type;
-        UITRANSFORMAXIS axis;
-        vec3f		translate;
-        vec3f		scale;
-        CQuaternion rotate;
-        size_t		nStep;
-        vec3f mouseDown;
-        vec3f mouseMove;
-    };
 
     QTimer*	m_timer;
 
@@ -264,8 +254,8 @@ private:
     int			m_idxRibbonSelection;
 
     //Sketching variables
-    UIMODE		m_uiMode;
-    UITRANSFORM		m_uiTransform;
+    CUIWidget*          m_lpUIWidget;
+    UIMODE		m_uiMode;    
     vec3f		m_globalPan;
     bool		m_bEnablePan;
     bool		m_bEnableMultiSelect;

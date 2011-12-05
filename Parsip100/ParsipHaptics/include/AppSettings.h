@@ -87,6 +87,6 @@ public:
 	SettingsSketch setSketch;
 };
 
-typedef SingletonHolder<AppSettings, CreateUsingNew, PhoenixSingleton> AppSettingsSingleton;
+typedef SingletonHolder<AppSettings, CreateUsingNew, PhoenixSingleton> TheAppSettings;
 
 #endif

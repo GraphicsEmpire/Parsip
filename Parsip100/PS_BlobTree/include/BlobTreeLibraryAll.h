@@ -23,6 +23,7 @@
 #include "CIntersection.h"
 //#include "CPcm.h"
 #include "CRicciBlend.h"
+#include "CGradientBlend.h"
 #include "CSmoothDifference.h"
 #include "CUnion.h"
 #include "CWarpBend.h"

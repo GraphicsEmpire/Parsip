@@ -36,15 +36,15 @@ namespace PS {
 
 class GalinMedusaGenerator {
 public:
-	static CBlend * Medusa_Neck();
-	static CBlend * Medusa_Tail();
-	static CBlend * Medusa_Body();
-	static CBlend * Medusa_LeftHand();
-	static CBlend * Medusa_Breast();
-	static CBlend * Medusa_Hair();
+        static CBlend * Medusa_Neck();
+        static CBlend * Medusa_Tail();
+        static CBlend * Medusa_Body();
+        static CBlend * Medusa_LeftHand();
+        static CBlend * Medusa_Breast();
+        static CBlend * Medusa_Hair();
 
 	// [RMS NOTE: this was not ported exactly. see code..]
-	static CBlend * Medusa_Tete();
+        static CBlend * Medusa_Tete();
 };
 
 

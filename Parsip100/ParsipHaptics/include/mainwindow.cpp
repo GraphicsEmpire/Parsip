@@ -142,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actAddTaper, SIGNAL(triggered()), m_glWidget, SLOT(actAddWarpTaper()));
     connect(ui->actAddBend, SIGNAL(triggered()), m_glWidget, SLOT(actAddWarpBend()));
     connect(ui->actAddPCM, SIGNAL(triggered()), m_glWidget, SLOT(actAddPCM()));
+    connect(ui->actAddGradientBlend, SIGNAL(triggered()), m_glWidget, SLOT(actAddGradientBlend()));
 
 
     connect(ui->actEditSelect, SIGNAL(triggered()), m_glWidget, SLOT(actEditSelect()));
@@ -302,15 +303,15 @@ void MainWindow::resetStatusBar()
 
 void MainWindow::readApplySetting()
 {
-	AppSettingsSingleton::Instance().loadSettings();
-	AppSettings::SettingsParsip setParsip;
-	AppSettings::SettingsDisplay setDisplay;
-	AppSettings::SettingsSketch setSketch;
+    TheAppSettings::Instance().loadSettings();
+    AppSettings::SettingsParsip setParsip;
+    AppSettings::SettingsDisplay setDisplay;
+    AppSettings::SettingsSketch setSketch;
 
-	AppSettingsSingleton::Instance().copySettings(AppSettings::stParsip, &setParsip, sizeof(setParsip));
-	AppSettingsSingleton::Instance().copySettings(AppSettings::stDisplay, &setDisplay, sizeof(setDisplay));
-	AppSettingsSingleton::Instance().copySettings(AppSettings::stSketch, &setSketch, sizeof(setSketch));
-	
+    TheAppSettings::Instance().copySettings(AppSettings::stParsip, &setParsip, sizeof(setParsip));
+    TheAppSettings::Instance().copySettings(AppSettings::stDisplay, &setDisplay, sizeof(setDisplay));
+    TheAppSettings::Instance().copySettings(AppSettings::stSketch, &setSketch, sizeof(setSketch));
+
     //ui->sliderThreadsCount->setValue(setParsip.ctThreads);
     ui->cboGridDim->setCurrentIndex(setParsip.griddim > 0?(Log2i(setParsip.griddim) - 3):0);
     ui->udNormalsAngle->setValue(setParsip.adaptiveParam);

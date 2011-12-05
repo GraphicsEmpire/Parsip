@@ -104,7 +104,7 @@ CBlobTree* cloneNode(CBlobTree* node, int id)
 			output = new CUnion();
 			break;
 		case(bntOpBlend):
-			output = new CBlend();
+			output = new CGradientBlend();
 			break;		
 		case(bntOpRicciBlend):
 			output = new CRicciBlend(reinterpret_cast<CRicciBlend*>(node)->getN());

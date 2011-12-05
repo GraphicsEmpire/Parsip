@@ -26,6 +26,10 @@ CBlobTree* createBlobOperator( BlobNodeType opType )
     case bntOpRicciBlend:
         op = new CRicciBlend();
         break;
+    case bntOpGradientBlend:
+        op = new CGradientBlend();
+        break;
+
     case bntOpWarpTwist:
         op = new CWarpTwist();
         break;

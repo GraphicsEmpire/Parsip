@@ -1205,6 +1205,7 @@
     <addaction name="actAddDifference"/>
     <addaction name="actAddBlend"/>
     <addaction name="actAddRicciBlend"/>
+    <addaction name="actAddGradientBlend"/>
     <addaction name="actAddSmoothDif"/>
     <addaction name="actAddPCM"/>
     <addaction name="separator"/>
@@ -1364,6 +1365,7 @@
    <addaction name="actAddDifference"/>
    <addaction name="actAddSmoothDif"/>
    <addaction name="actAddBlend"/>
+   <addaction name="actAddGradientBlend"/>
    <addaction name="actAddRicciBlend"/>
    <addaction name="actAddPCM"/>
    <addaction name="actAddTwist"/>
@@ -1906,6 +1908,11 @@
    </property>
    <property name="text">
     <string>Field Probe</string>
+   </property>
+  </action>
+  <action name="actAddGradientBlend">
+   <property name="text">
+    <string>Gradient Blend</string>
    </property>
   </action>
  </widget>

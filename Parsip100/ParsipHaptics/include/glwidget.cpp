@@ -31,6 +31,7 @@
 #include "GalinMedusaGenerator.h"
 #include "CBlobTreeNetwork.h"
 #include "CBlobTreeAnimation.h"
+#include "PS_OclPolygonizer.h"
 
 using namespace PS::FILESTRINGUTILS;
 using namespace PS::BLOBTREEANIMATION;
@@ -58,6 +59,9 @@ GLfloat vertices [][3] = {{-1.0, -1.0, 1.0}, {-1.0, 1.0, 1.0}, {1.0, 1.0, 1.0},
 GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent)
 {
+    runOclPolygonizer();
+
+
     this->setMouseTracking(true);
 
     //Setup TBB Task Scheduling system
@@ -78,17 +82,18 @@ GLWidget::GLWidget(QWidget *parent)
     m_animSpeed			= 1.0f;
     m_glChessBoard		= 0;
     m_uiMode			= uimSketch;
-    m_sketchSkeletType  = sktPoint;
+    m_sketchSkeletType          = sktPoint;
     m_bEnablePan		= false;
-    m_bEnableMultiSelect = false;
+    m_bEnableMultiSelect        = false;
 
-    m_mouseButton			= CArcBallCamera::mbNone;
-    m_modelBlobTree			= NULL;
-    m_modelLayerManager		= NULL;
-    m_modelBlobNodeProperty = NULL;
-    m_modelStats			= NULL;
+    m_mouseButton		= CArcBallCamera::mbNone;
+    m_modelBlobTree		= NULL;
+    m_modelLayerManager         = NULL;
+    m_modelBlobNodeProperty     = NULL;
+    m_modelStats                = NULL;
     m_modelColorRibbon		= NULL;
     m_lpSelectedBlobNode	= NULL;
+    m_lpUIWidget                = NULL;
 
     m_idxRibbonSelection = 0;
     m_bTransformSkeleton = false;
@@ -125,6 +130,7 @@ GLWidget::~GLWidget()
     SAFE_DELETE(m_modelBlobNodeProperty);
     SAFE_DELETE(m_modelStats);
     SAFE_DELETE(m_modelColorRibbon);
+    SAFE_DELETE(m_lpUIWidget);
 
 
     SAFE_DELETE(m_glShaderNormalMesh);
@@ -138,7 +144,7 @@ GLWidget::~GLWidget()
 void GLWidget::initializeGL()
 {
     //Background color will be gray
-    if(AppSettingsSingleton::Instance().setDisplay.bDarkBackground)
+    if(TheAppSettings::Instance().setDisplay.bDarkBackground)
         glClearColor(0.45f, 0.45f, 0.45f, 1.0f);
     else
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -277,7 +283,7 @@ void GLWidget::paintGL()
     drawLayerManager();
 
     //Draw Ground
-    if(AppSettingsSingleton::Instance().setDisplay.bDrawChessboardGround)
+    if(TheAppSettings::Instance().setDisplay.bDrawChessboardGround)
     {
         glCallList(m_glChessBoard);       
     }
@@ -308,7 +314,7 @@ void GLWidget::paintGL()
 
     //Draw based on current UI mode    
     U32 ctAnimObjects = CAnimManagerSingleton::Instance().countObjects();
-    if((AppSettingsSingleton::Instance().setDisplay.bShowAnimCurves)&&(ctAnimObjects > 0))
+    if((TheAppSettings::Instance().setDisplay.bShowAnimCurves)&&(ctAnimObjects > 0))
     {
         for(U32 i=0; i<ctAnimObjects; i++)
         {
@@ -322,7 +328,9 @@ void GLWidget::paintGL()
     else if(m_uiMode == uimTransform)
     {        
         glDisable(GL_DEPTH_TEST);
-        drawLineSegment(m_uiTransform.mouseDown, m_uiTransform.mouseDown + m_uiTransform.mouseMove, vec4f(0,0,0,1));
+        drawLineSegment(TheUITransform::Instance().mouseDown,
+                        TheUITransform::Instance().mouseDown +
+                        TheUITransform::Instance().mouseMove, vec4f(0,0,0,1));
 
         if(m_bProbing)
         {
@@ -338,20 +346,19 @@ void GLWidget::paintGL()
                 c = obj->path->getControlPoints()[obj->idxSelCtrlPoint];
             }
             else
-                c = m_uiTransform.mouseDown;
+                c = TheUITransform::Instance().mouseDown;
         }
 
-        if(m_uiTransform.type == uitTranslate)
-            drawMapTranslate(c);
-        else if(m_uiTransform.type == uitRotate)
-            drawMapRotate(c);
-        else if(m_uiTransform.type == uitScale)
-            drawMapScale(c);
 
+        if(m_lpUIWidget)
+        {
+            m_lpUIWidget->setPos(c);
+            m_lpUIWidget->draw();
+        }
         glEnable(GL_DEPTH_TEST);
     }
 
-    if(AppSettingsSingleton::Instance().setDisplay.bShowGraph)
+    if(TheAppSettings::Instance().setDisplay.bShowGraph)
     {
         drawGraph();
     }
@@ -382,29 +389,27 @@ void GLWidget::keyPressEvent( QKeyEvent *event )
     {
     //Translate
     case(Key_G):
-        m_uiTransform.type = uitTranslate;
-        m_uiTransform.axis	  = uiaFree;
+        actEditTranslate();
         break;
 
         //Scale
     case(Key_S):
-        m_uiTransform.type = uitScale;
-        m_uiTransform.axis	  = uiaFree;
+        actEditScale();
         break;
 
         //Rotate
     case(Key_R):
-        m_uiTransform.type = uitRotate;
-        m_uiTransform.axis	  = uiaFree;
+        actEditRotate();
         break;
+
     case(Key_X):
-        m_uiTransform.axis	  = uiaX;
+        actEditAxisX();
         break;
     case(Key_Y):
-        m_uiTransform.axis	  = uiaY;
+        actEditAxisY();
         break;
     case(Key_Z):
-        m_uiTransform.axis	  = uiaZ;
+        actEditAxisZ();
         break;
     }
 
@@ -467,7 +472,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     {
         m_mouseButton = PS::CArcBallCamera::mbLeft;
         if(m_uiMode == uimTransform)
-            m_uiTransform.mouseDown = posTransNear;
+            TheUITransform::Instance().mouseDown = posTransNear;
         else if((m_uiMode == uimSketch)||(m_uiMode == uimAnimation))
         {
             vec3 c(0.0f, 0.0f, 0.0f);
@@ -524,9 +529,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
                 CAnimManagerSingleton::Instance().getObject(idxPath)->idxSelCtrlPoint = idxCtrlPoint;
                 CAnimManagerSingleton::Instance().setActiveObject(idxPath);
 
-                m_uiMode = uimTransform;
-                m_uiTransform.type = uitTranslate;
-                m_uiTransform.translate.zero();
+                actEditTranslate();
             }
             else
             {
@@ -548,137 +551,159 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     int dx = x - m_mouseLastPos.x;
     int dy = m_mouseLastPos.y - y;
 
-    if((m_mouseButton == CArcBallCamera::mbLeft)&&(m_uiMode == uimTransform))
+    if(m_uiMode == uimTransform)
     {
-        if(windowToObject(vec3f(x, m_scrDim.y - y, 0.0f), m_uiTransform.mouseMove))
+        if((m_mouseButton == CArcBallCamera::mbNone) && m_lpUIWidget)
         {
-            //Capture undo level for the first step in tranform
-            if(m_uiTransform.nStep == 0)
-                addUndoLevel();
-            m_uiTransform.nStep++;
+            vec3f posNear(x, m_scrDim.y - y, 0.0f);
+            vec3f posFar(x, m_scrDim.y - y, 1.0f);
+            vec3f posTransNear;
+            vec3f posTransFar;
+            CRay  ray;
 
-            vec3 displacement = mask(m_uiTransform.mouseMove - m_uiTransform.mouseDown, m_uiTransform.axis);
-            displacement *= static_cast<float>(AppSettingsSingleton::Instance().setSketch.mouseDragScale);
-            m_uiTransform.mouseDown = m_uiTransform.mouseMove;
-
-            if(m_uiTransform.type == uitTranslate)
-                m_uiTransform.translate = displacement;
-            else if(m_uiTransform.type == uitScale)
-                m_uiTransform.scale = displacement;
-            else if(m_uiTransform.type == uitRotate)
+            if(windowToObject(posNear, posTransNear) && windowToObject(posFar, posTransFar))
             {
-                vec3f axis;
-                float angle;
-
-                //Setting ergonomic displacements for affine rotation
-                switch(m_uiTransform.axis)
-                {
-                case(uiaX):
-                    axis = vec3f(1.0f, 0.0f, 0.0f);
-                    angle = displacement.x;
-                    break;
-                case(uiaY):
-                    axis = vec3f(0.0f, 1.0f, 0.0f);
-                    angle = displacement.y;
-                    break;
-                case(uiaZ):
-                    axis = vec3f(0.0f, 0.0f, 1.0f);
-                    angle = displacement.z;
-                    break;
-                default:
-                    axis = vec3f(1.0f, 1.0f, 1.0f);
-                    angle = displacement.x;
-                }
-
-                m_uiTransform.rotate.fromAngleAxis(angle, axis);
+                vec3f dir = posTransFar - posTransNear;
+                dir.normalize();
+                ray.set(posTransNear, dir);
             }
 
-            //Probing
-            if(m_bProbing)
-            {
-                m_probePoint += m_uiTransform.translate;
-                updateProbe();
-                return;
-            }
-
-            //Now apply tranform to the selected object
-            CLayer* active = m_layerManager.getActiveLayer();
-            size_t ctSelected = active->selCountItems();
-            if((ctSelected > 0) && (displacement.isZero() == false))
-            {
-                active->bumpRevision();
-                for(size_t i=0; i<ctSelected; i++)
-                {
-                    CBlobTree* node = active->selGetItem(i);
-                    if(node && node->getLock().acquire())
-                    {
-                        //actNetSendCommand(cmdLock, node, vec4f(0.0f, 0.0f, 0.0f, 0.0f));
-
-                        //Increment version for polygonizer
-                        //COctree selOct = node->getOctree();
-
-                        //Apply affine transform to internal affine node inside each skeletal primitive
-                        if(m_uiTransform.type == uitTranslate)
-                        {
-                            if(m_bTransformSkeleton && (node->getNodeType() == bntPrimSkeleton))
-                            {
-                                CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(node);
-                                sprim->getSkeleton()->translate(m_uiTransform.translate);
-                            }
-                            else
-                                node->getTransform().addTranslate(m_uiTransform.translate);
-                            //selOct.translate(m_uiTransform.translate);
-
-                            //Send Message
-                            actNetSendCommand(cmdMove, node, vec4f(m_uiTransform.translate, 0.0f));
-                        }
-                        else if(m_uiTransform.type == uitScale)
-                        {
-                            node->getTransform().addScale(m_uiTransform.scale);
-                            //selOct.scale(m_uiTransform.scale);
-                            //selOct.scale(node->getTransform().getScale());
-
-                            //Send Message
-                            actNetSendCommand(cmdScale, node, vec4f(m_uiTransform.scale, 1.0f));
-                        }
-                        else if(m_uiTransform.type == uitRotate)
-                        {
-                            node->getTransform().addRotate(m_uiTransform.rotate);
-                            //selOct.rotate(m_uiTransform.rotate);
-
-                            //Send Message
-                            actNetSendCommand(cmdRotate, node, m_uiTransform.rotate.getAsVec4f());
-                        }
-
-                        node->getLock().release();
-                    }
-                }
-
-                //Repolygonize and update Screen
-                actMeshPolygonize(m_layerManager.getActiveLayerIndex());
-
-            }//IF BlobNode Selected
-            else
-            {
-                CAnimObject* obj = CAnimManagerSingleton::Instance().getActiveObject();
-
-                if(obj)
-                {
-                    std::vector<vec3f> lstCtrlPoints = obj->path->getControlPoints();
-                    if(obj->path->isCtrlPointIndex(obj->idxSelCtrlPoint))
-                    {
-                        vec3f c = lstCtrlPoints[obj->idxSelCtrlPoint] + m_uiTransform.translate;
-                        obj->path->setPoint(obj->idxSelCtrlPoint, c);
-                        obj->path->populateTableAdaptive();
-                        updateGL();
-                    }
-                }
-            }
-
+            if(m_lpUIWidget->selectAxis(ray, Z_NEAR, Z_FAR) != uiaFree)
+                updateGL();
         }
-    }
+        else if(m_mouseButton == CArcBallCamera::mbLeft)
+        {
+            if(windowToObject(vec3f(x, m_scrDim.y - y, 0.0f), TheUITransform::Instance().mouseMove))
+            {
+                //Capture undo level for the first step in tranform
+                if(TheUITransform::Instance().nStep == 0)
+                    addUndoLevel();
+                TheUITransform::Instance().nStep++;
+
+                vec3 displacement = mask(TheUITransform::Instance().mouseMove - TheUITransform::Instance().mouseDown, TheUITransform::Instance().axis);
+                displacement *= static_cast<float>(TheAppSettings::Instance().setSketch.mouseDragScale);
+                TheUITransform::Instance().mouseDown = TheUITransform::Instance().mouseMove;
+
+                if(TheUITransform::Instance().type == uitTranslate)
+                    TheUITransform::Instance().translate = displacement;
+                else if(TheUITransform::Instance().type == uitScale)
+                    TheUITransform::Instance().scale = displacement;
+                else if(TheUITransform::Instance().type == uitRotate)
+                {
+                    vec3f axis;
+                    float angle;
+
+                    //Setting ergonomic displacements for affine rotation
+                    switch(TheUITransform::Instance().axis)
+                    {
+                    case(uiaX):
+                        axis = vec3f(1.0f, 0.0f, 0.0f);
+                        angle = displacement.x;
+                        break;
+                    case(uiaY):
+                        axis = vec3f(0.0f, 1.0f, 0.0f);
+                        angle = displacement.y;
+                        break;
+                    case(uiaZ):
+                        axis = vec3f(0.0f, 0.0f, 1.0f);
+                        angle = displacement.z;
+                        break;
+                    default:
+                        axis = vec3f(1.0f, 1.0f, 1.0f);
+                        angle = displacement.x;
+                    }
+
+                    TheUITransform::Instance().rotate.fromAngleAxis(angle, axis);
+                }
+
+                //Probing
+                if(m_bProbing)
+                {
+                    m_probePoint += TheUITransform::Instance().translate;
+                    updateProbe();
+                    return;
+                }
+
+                //Now apply tranform to the selected object
+                CLayer* active = m_layerManager.getActiveLayer();
+                size_t ctSelected = active->selCountItems();
+                if((ctSelected > 0) && (displacement.isZero() == false))
+                {
+                    active->bumpRevision();
+                    for(size_t i=0; i<ctSelected; i++)
+                    {
+                        CBlobTree* node = active->selGetItem(i);
+                        if(node && node->getLock().acquire())
+                        {
+                            //actNetSendCommand(cmdLock, node, vec4f(0.0f, 0.0f, 0.0f, 0.0f));
+
+                            //Increment version for polygonizer
+                            //COctree selOct = node->getOctree();
+
+                            //Apply affine transform to internal affine node inside each skeletal primitive
+                            if(TheUITransform::Instance().type == uitTranslate)
+                            {
+                                if(m_bTransformSkeleton && (node->getNodeType() == bntPrimSkeleton))
+                                {
+                                    CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(node);
+                                    sprim->getSkeleton()->translate(TheUITransform::Instance().translate);
+                                }
+                                else
+                                    node->getTransform().addTranslate(TheUITransform::Instance().translate);
+                                //selOct.translate(TheUITransform::Instance().translate);
+
+                                //Send Message
+                                actNetSendCommand(cmdMove, node, vec4f(TheUITransform::Instance().translate, 0.0f));
+                            }
+                            else if(TheUITransform::Instance().type == uitScale)
+                            {
+                                node->getTransform().addScale(TheUITransform::Instance().scale);
+                                //selOct.scale(TheUITransform::Instance().scale);
+                                //selOct.scale(node->getTransform().getScale());
+
+                                //Send Message
+                                actNetSendCommand(cmdScale, node, vec4f(TheUITransform::Instance().scale, 1.0f));
+                            }
+                            else if(TheUITransform::Instance().type == uitRotate)
+                            {
+                                node->getTransform().addRotate(TheUITransform::Instance().rotate);
+                                //selOct.rotate(TheUITransform::Instance().rotate);
+
+                                //Send Message
+                                actNetSendCommand(cmdRotate, node, TheUITransform::Instance().rotate.getAsVec4f());
+                            }
+
+                            node->getLock().release();
+                        }
+                    }
+
+                    //Repolygonize and update Screen
+                    actMeshPolygonize(m_layerManager.getActiveLayerIndex());
+
+                }//IF BlobNode Selected
+                else
+                {
+                    CAnimObject* obj = CAnimManagerSingleton::Instance().getActiveObject();
+
+                    if(obj)
+                    {
+                        std::vector<vec3f> lstCtrlPoints = obj->path->getControlPoints();
+                        if(obj->path->isCtrlPointIndex(obj->idxSelCtrlPoint))
+                        {
+                            vec3f c = lstCtrlPoints[obj->idxSelCtrlPoint] + TheUITransform::Instance().translate;
+                            obj->path->setPoint(obj->idxSelCtrlPoint, c);
+                            obj->path->populateTableAdaptive();
+                            updateGL();
+                        }
+                    }
+                }
+
+            }
+        }
+    }//Transform
+
     //Control Camera in Select Mode
-    else if(m_mouseButton == PS::CArcBallCamera::mbMiddle)
+    if(m_mouseButton == PS::CArcBallCamera::mbMiddle)
     {
         if(m_bEnablePan)
         {
@@ -884,9 +909,9 @@ GLuint GLWidget::drawTopCornerCube()
 
 void GLWidget::setParsipCellSize(float value)
 {
-    if(AppSettingsSingleton::Instance().setParsip.cellSize != value)
+    if(TheAppSettings::Instance().setParsip.cellSize != value)
     {
-        AppSettingsSingleton::Instance().setParsip.cellSize = value;
+        TheAppSettings::Instance().setParsip.cellSize = value;
         m_layerManager.bumpRevisions();
     }
 }
@@ -895,16 +920,16 @@ void GLWidget::setParsipGridDim( int nComboItem )
 {
     if(nComboItem >=0 && nComboItem < 3)
     {
-        AppSettingsSingleton::Instance().setParsip.griddim = (1 << (nComboItem + 3));
+        TheAppSettings::Instance().setParsip.griddim = (1 << (nComboItem + 3));
         m_layerManager.bumpRevisions();
     }
 }
 
 void GLWidget::setParsipNormalsGeodesicAngle( float value )
 {
-    if(AppSettingsSingleton::Instance().setParsip.adaptiveParam != value)
+    if(TheAppSettings::Instance().setParsip.adaptiveParam != value)
     {
-        AppSettingsSingleton::Instance().setParsip.adaptiveParam = value;
+        TheAppSettings::Instance().setParsip.adaptiveParam = value;
         m_layerManager.bumpRevisions();
     }
 }
@@ -913,103 +938,103 @@ void GLWidget::setParsipThreadsCount(int value)
 {
     TaskManager::getTaskManager()->shutdown();
     TaskManager::getTaskManager()->init(value);
-    AppSettingsSingleton::Instance().setParsip.ctThreads = TaskManager::getTaskManager()->getThreadCount();
+    TheAppSettings::Instance().setParsip.ctThreads = TaskManager::getTaskManager()->getThreadCount();
 }
 
 void GLWidget::setParsipUseTBB(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setParsip.bUseTBB = bEnable;
+    TheAppSettings::Instance().setParsip.bUseTBB = bEnable;
 }
 
 void GLWidget::setParsipUseComputeShaders(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setParsip.bUseComputeShaders = bEnable;
+    TheAppSettings::Instance().setParsip.bUseComputeShaders = bEnable;
 }
 
 void GLWidget::setParsipUseAdaptiveSubDivision( bool bEnable )
 {
-    AppSettingsSingleton::Instance().setParsip.bUseAdaptiveSubDivision = bEnable;
+    TheAppSettings::Instance().setParsip.bUseAdaptiveSubDivision = bEnable;
     m_layerManager.bumpRevisions();
 }
 
 void GLWidget::setParsipCellShapeTetraHedra(bool bTetra)
 {
-    if(bTetra) AppSettingsSingleton::Instance().setParsip.cellShape = csTetrahedra;
+    if(bTetra) TheAppSettings::Instance().setParsip.cellShape = csTetrahedra;
     m_layerManager.bumpRevisions();
 }
 
 void GLWidget::setParsipCellShapeCube(bool bCube)
 {
-    if(bCube) AppSettingsSingleton::Instance().setParsip.cellShape = csCube;
+    if(bCube) TheAppSettings::Instance().setParsip.cellShape = csCube;
     m_layerManager.bumpRevisions();
 }
 
 void GLWidget::setDisplayMeshNone(bool bEnable)
 {
     if(bEnable)
-        AppSettingsSingleton::Instance().setDisplay.showMesh = smNone;
+        TheAppSettings::Instance().setDisplay.showMesh = smNone;
     updateGL();
 }
 
 void GLWidget::setDisplayMeshWireFrame(bool bEnable)
 {
     if(bEnable)
-        AppSettingsSingleton::Instance().setDisplay.showMesh = smWireFrame;
+        TheAppSettings::Instance().setDisplay.showMesh = smWireFrame;
     updateGL();
 }
 
 void GLWidget::setDisplayMeshSurface(bool bEnable)
 {
     if(bEnable)
-        AppSettingsSingleton::Instance().setDisplay.showMesh = smSurface;
+        TheAppSettings::Instance().setDisplay.showMesh = smSurface;
     updateGL();
 }
 
 void GLWidget::setDisplayBoxLayer(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowBoxLayer = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowBoxLayer = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayBoxPrimitive(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowBoxPrimitive = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowBoxPrimitive = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayBoxPoly(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowBoxPoly = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowBoxPoly = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplaySeedPoints(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowSeedPoints = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowSeedPoints = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayNormalsLength(int length)
 {
-    AppSettingsSingleton::Instance().setDisplay.normalLength = length;
+    TheAppSettings::Instance().setDisplay.normalLength = length;
     updateGL();
 }
 
 void GLWidget::setDisplayNormals(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowNormals = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowNormals = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayChessBoard(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setDisplay.bDrawChessboardGround = bEnable;
+    TheAppSettings::Instance().setDisplay.bDrawChessboardGround = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayMtrlMeshWires(int index)
 {
-    AppSettingsSingleton::Instance().setDisplay.mtrlMeshWires = CMaterial::getMaterialFromList(index);
+    TheAppSettings::Instance().setDisplay.mtrlMeshWires = CMaterial::getMaterialFromList(index);
     updateGL();
 }
 
@@ -1072,7 +1097,7 @@ void GLWidget::drawLayerManager()
             glEnable(GL_LIGHTING);
 
             //Draw mesh in WireFrame Mode
-            if(AppSettingsSingleton::Instance().setDisplay.showMesh == smWireFrame)
+            if(TheAppSettings::Instance().setDisplay.showMesh == smWireFrame)
             {
                 glPushAttrib(GL_ALL_ATTRIB_BITS);
                 //Draw WireFrame Mesh
@@ -1083,7 +1108,7 @@ void GLWidget::drawLayerManager()
                     alayer->getPolygonizer()->drawMesh();
                 glPopAttrib();
             }
-            else if(AppSettingsSingleton::Instance().setDisplay.showMesh == smSurface)
+            else if(TheAppSettings::Instance().setDisplay.showMesh == smSurface)
             {
                 glPushMatrix();
                 glShadeModel(GL_SMOOTH);
@@ -1101,7 +1126,7 @@ void GLWidget::drawLayerManager()
             m_glShaderNormalMesh->release();
 
             //Draw SeedPoints
-            if(AppSettingsSingleton::Instance().setDisplay.bShowSeedPoints)
+            if(TheAppSettings::Instance().setDisplay.bShowSeedPoints)
             {
                 //CMeshVV::setOglMaterial(CMaterial::mtrlGreen());
                 glColor3f(0.0f, 1.0f, 0.0f);
@@ -1114,26 +1139,26 @@ void GLWidget::drawLayerManager()
             }
 
             //Draw Normals
-            if(AppSettingsSingleton::Instance().setDisplay.bShowNormals)
+            if(TheAppSettings::Instance().setDisplay.bShowNormals)
             {
-                //m_parsip.drawNormals(iLayer, AppSettingsSingleton::Instance().setDisplay.normalLength);
-                //m_optParsip.drawNormals(AppSettingsSingleton::Instance().setDisplay.normalLength);
+                //m_parsip.drawNormals(iLayer, TheAppSettings::Instance().setDisplay.normalLength);
+                //m_optParsip.drawNormals(TheAppSettings::Instance().setDisplay.normalLength);
                 if(alayer->getMesh())
-                    alayer->getMesh()->drawNormals(AppSettingsSingleton::Instance().setDisplay.normalLength);
+                    alayer->getMesh()->drawNormals(TheAppSettings::Instance().setDisplay.normalLength);
                 else
-                    alayer->getPolygonizer()->drawNormals(AppSettingsSingleton::Instance().setDisplay.normalLength);
+                    alayer->getPolygonizer()->drawNormals(TheAppSettings::Instance().setDisplay.normalLength);
             }
 
 
             //Draw Layer Octree
-            if(AppSettingsSingleton::Instance().setDisplay.bShowBoxLayer)
+            if(TheAppSettings::Instance().setDisplay.bShowBoxLayer)
             {
                 COctree octree = alayer->getOctree();
                 drawOctree(octree.lower, octree.upper, clOrange, true);
             }
 
             //Draw Primitive Octrees
-            if(AppSettingsSingleton::Instance().setDisplay.bShowBoxPrimitive)
+            if(TheAppSettings::Instance().setDisplay.bShowBoxPrimitive)
             {
                 size_t ctItems = alayer->queryCountItems();
                 if(ctItems > 0)
@@ -1181,7 +1206,7 @@ void GLWidget::drawLayerManager()
 
 
             //Draw Polygonization Boxes
-            if(AppSettingsSingleton::Instance().setDisplay.bShowBoxPoly)
+            if(TheAppSettings::Instance().setDisplay.bShowBoxPoly)
             {
                 vec3f lo, hi;
                 //size_t ctMPUs = m_parsip.countMPUs();
@@ -1212,7 +1237,7 @@ void GLWidget::actOpenProject(QString strFile)
     DAnsiStr strFilePath(strFile.toAscii().data());
     DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
     DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::ExtractFileExt(strFilePath);
-    //AppSettingsSingleton::Instance().setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
+    //TheAppSettings::Instance().setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
 
     //m_optParsip.removeAllMPUs();
     if(strFileExt.toUpper() == "SCENE")
@@ -1359,9 +1384,9 @@ void GLWidget::actMeshPolygonize()
 
     //These values will be set upon each polygonization
     m_layerManager.resetAllMeshes();
-    m_layerManager.setCellSize(AppSettingsSingleton::Instance().setParsip.cellSize);
-    m_layerManager.setCellShape(AppSettingsSingleton::Instance().setParsip.cellShape);
-    m_layerManager.setAdaptiveParam(AppSettingsSingleton::Instance().setParsip.adaptiveParam);
+    m_layerManager.setCellSize(TheAppSettings::Instance().setParsip.cellSize);
+    m_layerManager.setCellShape(TheAppSettings::Instance().setParsip.cellShape);
+    m_layerManager.setAdaptiveParam(TheAppSettings::Instance().setParsip.adaptiveParam);
 
     CLayer* aLayer = NULL;
     double totalProcessTime = 0.0;
@@ -1390,8 +1415,8 @@ void GLWidget::actMeshPolygonize()
             //Setup polygonizer and run
             //Remove only the MPUs pertaining to this layer
             //m_parsip.removeLayerMPUs(iLayer);
-            //m_parsip.setForceMC(AppSettingsSingleton::Instance().setParsip.bForceMC);
-            //m_parsip.setAdaptiveSubdivision(AppSettingsSingleton::Instance().setParsip.bUseAdaptiveSubDivision);
+            //m_parsip.setForceMC(TheAppSettings::Instance().setParsip.bForceMC);
+            //m_parsip.setAdaptiveSubdivision(TheAppSettings::Instance().setParsip.bUseAdaptiveSubDivision);
 
             //Create MPUs from layer if it is visible
             if(aLayer->isVisible())
@@ -1411,7 +1436,7 @@ void GLWidget::actMeshPolygonize()
         totalProcessTime += aLayer->getPolygonizer()->statsPolyTime();
     }
 
-    if(AppSettingsSingleton::Instance().setDisplay.bShowGraph)
+    if(TheAppSettings::Instance().setDisplay.bShowGraph)
     {
         emit sig_setTimeFPS(totalProcessTime, static_cast<int>(1000.0 / totalProcessTime));
         emit sig_showStats(getModelStats());
@@ -1429,9 +1454,9 @@ void GLWidget::actMeshPolygonize(int idxLayer)
 
     //These values will be set upon each polygonization
     aLayer->setMesh();
-    aLayer->setCellSize(AppSettingsSingleton::Instance().setParsip.cellSize);
-    aLayer->setAdaptiveParam(AppSettingsSingleton::Instance().setParsip.adaptiveParam);
-    aLayer->setCellShape(AppSettingsSingleton::Instance().setParsip.cellShape);
+    aLayer->setCellSize(TheAppSettings::Instance().setParsip.cellSize);
+    aLayer->setAdaptiveParam(TheAppSettings::Instance().setParsip.adaptiveParam);
+    aLayer->setCellShape(TheAppSettings::Instance().setParsip.cellShape);
 
     //Reset stats
     aLayer->getPolygonizer()->resetStats();
@@ -1449,8 +1474,8 @@ void GLWidget::actMeshPolygonize(int idxLayer)
         aLayer->queryBlobTree(true, false);
 
         //m_parsip.removeLayerMPUs(idxLayer);
-        //m_parsip.setForceMC(AppSettingsSingleton::Instance().setParsip.bForceMC);
-        //m_parsip.setAdaptiveSubdivision(AppSettingsSingleton::Instance().setParsip.bUseAdaptiveSubDivision);
+        //m_parsip.setForceMC(TheAppSettings::Instance().setParsip.bForceMC);
+        //m_parsip.setAdaptiveSubdivision(TheAppSettings::Instance().setParsip.bUseAdaptiveSubDivision);
         if(aLayer->isVisible())
         {
             aLayer->setupCompactTree(aLayer->getBlob());
@@ -1465,7 +1490,7 @@ void GLWidget::actMeshPolygonize(int idxLayer)
         aLayer->getPolygonizer()->run();
     }
 
-    if(AppSettingsSingleton::Instance().setDisplay.bShowGraph)
+    if(TheAppSettings::Instance().setDisplay.bShowGraph)
     {
         double total = aLayer->getPolygonizer()->statsSetupTime() +
                 aLayer->getPolygonizer()->statsPolyTime();
@@ -2268,13 +2293,10 @@ void GLWidget::selectBlobNode(int iLayer, CBlobTree* aNode)
     //if MultiSelection is disabled then clear all selection lists
     if(!m_bEnableMultiSelect)
         m_layerManager.selRemoveItems();
-
     m_layerManager[iLayer]->selAddItem(aNode);
 
-    //Goto Transform -> Translate mode
-    m_uiMode = uimTransform;
-    m_uiTransform.type = uitTranslate;
-    m_uiTransform.translate.zero();
+    //GOto Translate mode
+    actEditTranslate();
 
     //Show Properties
     emit sig_showPrimitiveProperty(getModelPrimitiveProperty(aNode));
@@ -2295,9 +2317,7 @@ void GLWidget::selectBlobNode(QModelIndex idx)
         selectBlobNode(m_layerManager.getActiveLayerIndex(), lpNode);
 
     //Goto transform mode
-    m_uiMode = uimTransform;
-    m_uiTransform.type = uitTranslate;
-    m_uiTransform.translate.zero();
+    actEditTranslate();
 }
 
 
@@ -2439,6 +2459,11 @@ void GLWidget::actAddPCM()
     addBlobOperator(bntOpPCM);
 }
 
+void GLWidget::actAddGradientBlend()
+{
+    addBlobOperator(bntOpGradientBlend);
+}
+
 void GLWidget::actAddIntersection()
 {
     addBlobOperator(bntOpIntersect);
@@ -2483,48 +2508,66 @@ void GLWidget::actEditMultiSelect(bool bEnable)
 void GLWidget::actEditTranslate()
 {
     m_uiMode = uimTransform;
-    m_uiTransform.type = uitTranslate;
-    m_uiTransform.axis = uiaFree;
+    TheUITransform::Instance().type = uitTranslate;
+    TheUITransform::Instance().axis = uiaFree;
+    TheUITransform::Instance().translate.zero();
+
+    SAFE_DELETE(m_lpUIWidget);
+    m_lpUIWidget = new CMapTranslate();
     updateGL();
 }
 
 void GLWidget::actEditRotate()
 {
     m_uiMode = uimTransform;
-    m_uiTransform.type = uitRotate;
-    m_uiTransform.axis = uiaFree;
+    TheUITransform::Instance().type = uitRotate;
+    TheUITransform::Instance().axis = uiaFree;
+
+    SAFE_DELETE(m_lpUIWidget);
+    m_lpUIWidget = new CMapRotate();
     updateGL();
 }
 
 void GLWidget::actEditScale()
 {
     m_uiMode = uimTransform;
-    m_uiTransform.type = uitScale;
-    m_uiTransform.axis = uiaFree;
+    TheUITransform::Instance().type = uitScale;
+    TheUITransform::Instance().axis = uiaFree;
+
+    SAFE_DELETE(m_lpUIWidget);
+    m_lpUIWidget = new CMapScale();
     updateGL();
 }
 
 void GLWidget::actEditAxisX()
 {
-    m_uiTransform.axis = uiaX;
+    TheUITransform::Instance().axis = uiaX;
+    if(m_lpUIWidget)
+        m_lpUIWidget->createWidget();
     updateGL();
 }
 
 void GLWidget::actEditAxisY()
 {
-    m_uiTransform.axis = uiaY;
+    TheUITransform::Instance().axis = uiaY;
+    if(m_lpUIWidget)
+        m_lpUIWidget->createWidget();
     updateGL();
 }
 
 void GLWidget::actEditAxisZ()
 {
-    m_uiTransform.axis = uiaZ;
+    TheUITransform::Instance().axis = uiaZ;
+    if(m_lpUIWidget)
+        m_lpUIWidget->createWidget();
     updateGL();
 }
 
 void GLWidget::actEditAxisFree()
 {
-    m_uiTransform.axis = uiaFree;
+    TheUITransform::Instance().axis = uiaFree;
+    if(m_lpUIWidget)
+        m_lpUIWidget->createWidget();
     updateGL();
 }
 
@@ -2767,241 +2810,7 @@ bool GLWidget::windowToObject( vec3f window, vec3f& object )
     return false;
 }
 
-void GLWidget::drawMapTranslate( vec3f pos )
-{
-    vec3f ptEnd[3];
 
-    float len = 0.8f;
-    ptEnd[0] = pos + len*vec3f(1.0f, 0.0f, 0.0f);
-    ptEnd[1] = pos + len*vec3f(0.0f, 1.0f, 0.0f);
-    ptEnd[2] = pos + len*vec3f(0.0f, 0.0f, 1.0f);
-
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glLineWidth(3.0f);
-    glBegin(GL_LINES);
-    maskMaterial(uiaX);
-    glVertex3fv(pos.ptr());
-    glVertex3fv(ptEnd[0].ptr());
-
-    maskMaterial(uiaY);
-    glVertex3fv(pos.ptr());
-    glVertex3fv(ptEnd[1].ptr());
-
-    maskMaterial(uiaZ);
-    glVertex3fv(pos.ptr());
-    glVertex3fv(ptEnd[2].ptr());
-    glEnd();
-
-
-    //Draw end points
-    vec3f v;
-    float theta;
-    float r = 0.05f;
-
-    //X
-    v = ptEnd[0] + vec3f(0.1f, 0.0f, 0.0f);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBegin(GL_TRIANGLE_FAN);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
-    maskMaterial(uiaX);
-    glVertex3fv(v.ptr());
-    for(int i=0; i<=8; i++)
-    {
-        theta = static_cast<float>(i) * (TwoPi / 8.0f);
-        v.x = 0.0f;
-        v.y = r * sin(theta);
-        v.z = r * cos(theta);
-
-        v += ptEnd[0];
-        glVertex3fv(v.ptr());
-    }
-    glEnd();
-
-    //Y
-    v = ptEnd[1] + vec3f(0.0f, 0.1f, 0.0f);
-    glBegin(GL_TRIANGLE_FAN);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, green);
-    maskMaterial(uiaY);
-    glVertex3fv(v.ptr());
-    for(int i=0; i<=8; i++)
-    {
-        theta = static_cast<float>(i) * (TwoPi / 8.0f);
-        v.x = r * cos(theta);
-        v.y = 0.0f;
-        v.z = r * sin(theta);
-        v += ptEnd[1];
-        glVertex3fv(v.ptr());
-    }
-    glEnd();
-
-    //Z
-    v = ptEnd[2] + vec3f(0.0f, 0.0f, 0.1f);
-    glBegin(GL_TRIANGLE_FAN);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blue);
-    maskMaterial(uiaZ);
-    glVertex3fv(v.ptr());
-    for(int i=0; i<=8; i++)
-    {
-        theta = static_cast<float>(i) * (TwoPi / 8.0f);
-        v.x = r * cos(theta);
-        v.y = r * sin(theta);
-        v.z = 0.0f;
-
-        v += ptEnd[2];
-        glVertex3fv(v.ptr());
-    }
-    glEnd();
-
-
-    glPopAttrib();
-}
-
-void GLWidget::drawMapScale(vec3f pos)
-{
-    vec3f ptEnd[3];
-    float len = 0.8f;
-    ptEnd[0] = pos + len*vec3f(1.0f, 0.0f, 0.0f);
-    ptEnd[1] = pos + len*vec3f(0.0f, 1.0f, 0.0f);
-    ptEnd[2] = pos + len*vec3f(0.0f, 0.0f, 1.0f);
-
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glLineWidth(3.0f);
-    glBegin(GL_LINES);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
-    maskMaterial(uiaX);
-    glVertex3fv(pos.ptr());
-    glVertex3fv(ptEnd[0].ptr());
-
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, green);
-    maskMaterial(uiaY);
-    glVertex3fv(pos.ptr());
-    glVertex3fv(ptEnd[1].ptr());
-
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blue);
-    maskMaterial(uiaZ);
-    glVertex3fv(pos.ptr());
-    glVertex3fv(ptEnd[2].ptr());
-    glEnd();
-    glPopAttrib();
-
-
-    //Draw end points
-    vec3f v;
-    float r = 0.05f;
-
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    //X
-    glPushMatrix();
-    glTranslated(ptEnd[0].x, ptEnd[0].y, ptEnd[0].z);
-    glScalef(r, r, r);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
-    maskMaterial(uiaX);
-    drawCubePolygon(0, 3, 2, 1);
-    drawCubePolygon(4, 5, 6, 7);
-    drawCubePolygon(3, 0, 4, 7);
-    drawCubePolygon(1, 2, 6, 5);
-    drawCubePolygon(2, 3, 7, 6);
-    drawCubePolygon(5, 4, 0, 1);
-    glPopMatrix();
-
-
-    //Y
-    glPushMatrix();
-    glTranslated(ptEnd[1].x, ptEnd[1].y, ptEnd[1].z);
-    glScalef(r, r, r);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, green);
-    maskMaterial(uiaY);
-    drawCubePolygon(0, 3, 2, 1);
-    drawCubePolygon(4, 5, 6, 7);
-    drawCubePolygon(3, 0, 4, 7);
-    drawCubePolygon(1, 2, 6, 5);
-    drawCubePolygon(2, 3, 7, 6);
-    drawCubePolygon(5, 4, 0, 1);
-    glPopMatrix();
-
-
-    //Z
-    glPushMatrix();
-    glTranslated(ptEnd[2].x, ptEnd[2].y, ptEnd[2].z);
-    glScalef(r, r, r);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blue);
-    maskMaterial(uiaZ);
-    drawCubePolygon(0, 3, 2, 1);
-    drawCubePolygon(4, 5, 6, 7);
-    drawCubePolygon(3, 0, 4, 7);
-    drawCubePolygon(1, 2, 6, 5);
-    drawCubePolygon(2, 3, 7, 6);
-    drawCubePolygon(5, 4, 0, 1);
-    glPopMatrix();
-
-    glPopAttrib();
-}
-
-void GLWidget::drawMapRotate( vec3f pos )
-{
-    //Draw end points
-    vec3f v;
-    float theta;
-    float r = 0.5f;
-    int n = 31;
-
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-    //X
-    glLineWidth(3.0f);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
-    glBegin(GL_LINE_STRIP);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
-    maskMaterial(uiaX);
-    for(int i=0; i<=n; i++)
-    {
-        theta = static_cast<float>(i) * (TwoPi / (float)n);
-        v.x = 0.0f;
-        v.y = r * sin(theta);
-        v.z = r * cos(theta);
-
-        v += pos;
-        glVertex3fv(v.ptr());
-    }
-    glEnd();
-
-    //Y
-    glBegin(GL_LINE_STRIP);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, green);
-    maskMaterial(uiaY);
-    for(int i=0; i<=n; i++)
-    {
-        theta = static_cast<float>(i) * (TwoPi / (float)n);
-        v.x = r * cos(theta);
-        v.y = 0.0f;
-        v.z = r * sin(theta);
-
-        v += pos;
-        glVertex3fv(v.ptr());
-    }
-    glEnd();
-
-    //Z
-    glBegin(GL_LINE_STRIP);
-    //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blue);
-    maskMaterial(uiaZ);
-    for(int i=0; i<=n; i++)
-    {
-        theta = static_cast<float>(i) * (TwoPi / (float)n);
-        v.x = r * cos(theta);
-        v.y = r * sin(theta);
-        v.z = 0.0f;
-
-        v += pos;
-        glVertex3fv(v.ptr());
-    }
-    glEnd();
-
-    glPopAttrib();
-}
 
 void GLWidget::drawRay( const CRay& ray, vec4f color )
 {
@@ -3046,7 +2855,7 @@ void GLWidget::maskMaterial( UITRANSFORMAXIS axis )
     static const GLfloat green[] = {0.0f, 1.0f, 0.0f, 1.0f};
     static const GLfloat blue[] = {0.0f, 0.0f, 1.0f, 1.0f};
     static const GLfloat white[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    if((m_uiTransform.axis == uiaFree)||((m_uiTransform.axis != uiaFree)&&(m_uiTransform.axis != axis)))
+    if((TheUITransform::Instance().axis == uiaFree)||((TheUITransform::Instance().axis != uiaFree)&&(TheUITransform::Instance().axis != axis)))
     {
         if(axis == uiaX)
             glColor3fv(red);
@@ -3065,18 +2874,18 @@ void GLWidget::maskMaterial( UITRANSFORMAXIS axis )
 
 void GLWidget::resetTransformState()
 {
-    //m_uiTransform.axis = uiaFree;
-    m_uiTransform.nStep = 0;
-    m_uiTransform.scale = vec3f(1.0f, 1.0f, 1.0f);
-    m_uiTransform.rotate.identity();
-    m_uiTransform.translate.zero();
-    m_uiTransform.mouseDown.zero();
-    m_uiTransform.mouseMove.zero();
+    //TheUITransform::Instance().axis = uiaFree;
+    TheUITransform::Instance().nStep = 0;
+    TheUITransform::Instance().scale = vec3f(1.0f, 1.0f, 1.0f);
+    TheUITransform::Instance().rotate.identity();
+    TheUITransform::Instance().translate.zero();
+    TheUITransform::Instance().mouseDown.zero();
+    TheUITransform::Instance().mouseMove.zero();
 }
 
 void GLWidget::setMouseDragScale( int k )
 {
-   AppSettingsSingleton::Instance().setSketch.mouseDragScale  = k;
+   TheAppSettings::Instance().setSketch.mouseDragScale  = k;
 }
 
 void GLWidget::userInterfaceReady()
@@ -3104,19 +2913,19 @@ void GLWidget::userInterfaceReady()
 
 void GLWidget::setDisplayColorCodedMPUs( bool bEnable )
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowColorCodedMPUs = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowColorCodedMPUs = bEnable;
     //m_parsip.setColorCodedMPUs(bEnable);
 }
 
 void GLWidget::setDisplayGraph( bool bEnable )
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowGraph = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowGraph = bEnable;
     updateGL();
 }
 
 void GLWidget::setDisplayAnimCurves(bool bEnable)
 {
-    AppSettingsSingleton::Instance().setDisplay.bShowAnimCurves = bEnable;
+    TheAppSettings::Instance().setDisplay.bShowAnimCurves = bEnable;
     updateGL();
 }
 
@@ -3127,7 +2936,7 @@ void GLWidget::actEditTransformSkeleton( bool bEnable )
 
 void GLWidget::setParsipForceMC( bool bEnable )
 {
-    AppSettingsSingleton::Instance().setParsip.bForceMC = bEnable;
+    TheAppSettings::Instance().setParsip.bForceMC = bEnable;
     m_layerManager.bumpRevisions();
 }
 
@@ -3388,7 +3197,7 @@ void GLWidget::getFrustumPlane( float z, vec3f& bottomleft, vec3f& topRight )
 
 void GLWidget::actTestSetRuns( int value )
 {
-    AppSettingsSingleton::Instance().setParsip.testRuns = value;
+    TheAppSettings::Instance().setParsip.testRuns = value;
 }
 
 void GLWidget::actTestStart()
@@ -3420,9 +3229,9 @@ void GLWidget::actTestPerformUtilizationTest()
     DVec<double> arrUtilization;
 
 
-    for(int i=0; i<AppSettingsSingleton::Instance().setParsip.testRuns; i++)
+    for(int i=0; i<TheAppSettings::Instance().setParsip.testRuns; i++)
     {
-        emit sig_setProgress(1, AppSettingsSingleton::Instance().setParsip.testRuns, i+1);
+        emit sig_setProgress(1, TheAppSettings::Instance().setParsip.testRuns, i+1);
 
         //Process Messages
         qApp->processEvents();
@@ -3524,12 +3333,12 @@ void GLWidget::actTestPerformIncreasingThreads()
         setParsipThreadsCount(iCore);
 
         //Run experiments with this amount of threads
-        for(int i=0; i<AppSettingsSingleton::Instance().setParsip.testRuns; i++)
+        for(int i=0; i<TheAppSettings::Instance().setParsip.testRuns; i++)
         {
             actMeshPolygonize();
 
             //Test Number
-            testNumber = (iCore - 1) * AppSettingsSingleton::Instance().setParsip.testRuns + i + 1;
+            testNumber = (iCore - 1) * TheAppSettings::Instance().setParsip.testRuns + i + 1;
 
             //Cores Utilization
             strOut = printToAStr("%d,", testNumber);
@@ -3555,7 +3364,7 @@ void GLWidget::actTestPerformIncreasingThreads()
             //m_parsip.getTimingStats(tsSetup, tsPoly);
             //m_parsip.getMeshStats(ctV, ctT);
             str = printToAStr("%d,%d,%d,%d,", testNumber, TaskManager::getTaskManager()->getThreadCount(), ctPrims, ctOperators);
-            str += printToAStr("%.2f,%.2f,%.2f,", AppSettingsSingleton::Instance().setParsip.cellSize, tsSetup, tsPoly);
+            str += printToAStr("%.2f,%.2f,%.2f,", TheAppSettings::Instance().setParsip.cellSize, tsSetup, tsPoly);
             str += printToAStr("%d,%d,", parsip->statsTotalFieldEvals(), parsip->statsTotalFieldEvals() / ctT);
             str += printToAStr("%d,%d,%d,%d,",
                                parsip->countMPUs(),
@@ -3629,9 +3438,9 @@ void GLWidget::actTestPerformStd()
 
     double tsSetup, tsPoly;
     size_t ctV, ctT;
-    for(int i=0; i<AppSettingsSingleton::Instance().setParsip.testRuns; i++)
+    for(int i=0; i<TheAppSettings::Instance().setParsip.testRuns; i++)
     {
-        emit sig_setProgress(0, AppSettingsSingleton::Instance().setParsip.testRuns, i+1);
+        emit sig_setProgress(0, TheAppSettings::Instance().setParsip.testRuns, i+1);
 
         //Process Messages
         qApp->processEvents();
@@ -3645,7 +3454,7 @@ void GLWidget::actTestPerformStd()
 
         parsip->statsMeshInfo(ctV, ctT);
         str = printToAStr("%d,%d,%d,%d,", i+1, TaskManager::getTaskManager()->getThreadCount(), ctPrims, ctOperators);
-        str += printToAStr("%.2f,%.2f,%.2f,", AppSettingsSingleton::Instance().setParsip.cellSize, tsSetup, tsPoly);
+        str += printToAStr("%.2f,%.2f,%.2f,", TheAppSettings::Instance().setParsip.cellSize, tsSetup, tsPoly);
         str += printToAStr("%d,%d,", parsip->statsTotalFieldEvals(), parsip->statsTotalFieldEvals() / ctT);
         str += printToAStr("%d,%d,%d,%d,",
                            parsip->countMPUs(),
@@ -4110,8 +3919,7 @@ void GLWidget::actEditProbe(bool bEnable)
     m_probePoint.zero();
     m_probeValue = 0.0f;
 
-    m_uiMode = uimTransform;
-    m_uiTransform.type = uitTranslate;
+    actEditTranslate();
     updateProbe();
     updateGL();
 }

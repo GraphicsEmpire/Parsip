@@ -662,7 +662,7 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobTree* parent, int id
         }
         else if(strOp == PS_BLEND)
         {
-            opNode = new CBlend();
+            opNode = new CGradientBlend();
         }
         else if(strOp == PS_RICCIBLEND)
         {
@@ -865,7 +865,7 @@ int CLayer::recursive_ReadBlobNodeV0( CSketchConfig* cfg, CBlobTree* parent, int
         }
         else if(strOp == PS_BLEND)
         {
-            opNode = new CBlend();
+            opNode = new CGradientBlend();
         }
         else if(strOp == PS_RICCIBLEND)
         {
