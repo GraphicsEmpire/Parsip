@@ -28,7 +28,7 @@ enum VertexState {vsCold = 0, vsHot = 1};
 struct SUBVOL_RAY_TEST_RESULT
 {
 	float fieldValue;
-	vec3 pos;
+	vec3f pos;
 	int  ctIterations;
 	bool bSuccess;
 };
@@ -39,14 +39,14 @@ struct SUBVOL_RAY_TEST_RESULT
 //OK. if value is of correct sign
 struct TEST 
 {		   
-	vec3 pos;			   
+	vec3f pos;			   
 	float value;		   
 	int ok;			   
 };
 
 struct CORNER {		   
 	int i, j, k;		   
-	vec3 pos;		   
+	vec3f pos;		   
 	float value;		   
 };
 
@@ -58,7 +58,7 @@ struct CELL
 //////////////////////////////////////////////////////////////////////////
 struct MPUCORNER{
 	int i, j, k;		   
-	vec3 pos;		   
+	vec3f pos;		   
 	float value;		   	
 };
 

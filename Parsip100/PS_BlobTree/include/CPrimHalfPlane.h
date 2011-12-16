@@ -7,7 +7,7 @@
 namespace PS{
 namespace BLOBTREE{
 
-class  CHalfPlane : public CBlobTree
+class  CHalfPlane : public CBlobNode
 {
 private:
     vec3f m_position;
@@ -53,7 +53,7 @@ public:
         return m_color;
     }
 
-    CMaterial baseMaterial(vec3f p)
+    CMaterial getMaterial(vec3f p)
     {
         return m_material;
     }

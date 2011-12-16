@@ -22,6 +22,18 @@
 //NORMAL DELTA
 const float NORMAL_DELTA = 0.001f;
 
+#define BLOBTREE_DEFINITIONS
+typedef enum SkeletonType {sktCylinder, sktDisc, sktLine, sktPoint, sktRing, sktPolygon, sktCube, sktTriangle, sktCatmullRomCurve};
+typedef enum OperatorType {opUnion, opIntersect, opDif, opSmoothDif, opBlend, opRicciBlend, opGradientBlend,
+                           opAffine, opWarpTwist, opWarpTaper, opWarpBend, opWarpShear};
+
+typedef enum BlobNodeType{bntPrimCylinder, bntPrimDisc, bntPrimLine, bntPrimPoint, bntPrimRing, bntPrimPolygon,
+                          bntPrimCube, bntPrimTriangle, bntPrimCatmullRomCurve,
+                          bntPrimSkeleton, bntPrimQuadricPoint, bntPrimFastQuadraticPointSet, bntPrimHalfPlane,
+                          bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend, bntOpGradientBlend,
+                          bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
+
+
 //typedef enum BlobNodeType{bntPrimitive, bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend,
 //	bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
 

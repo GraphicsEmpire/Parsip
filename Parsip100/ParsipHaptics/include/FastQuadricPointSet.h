@@ -27,7 +27,9 @@
 
 #include "PS_BlobTree/include/CSkeletonPrimitive.h"
 #include "PS_BlobTree/include/CQuadricPoint.h"
+#include <vector>
 
+using namespace std;
 
 //#include <WmlVector3.h>
 //#include <WmlMatrix3.h>
@@ -42,176 +44,170 @@ namespace BLOBTREE{
 class FastQuadricPointSet : public CSkeletonPrimitive
 {
 public:
-	struct IPoint {
-		IPoint() {}
-		vec3f ptPosition;
-		float fFieldScale;
-		float fRadius;
+    struct IPoint {
+        IPoint() {}
+        vec3f ptPosition;
+        float fFieldScale;
+        float fRadius;
 
 #if FQPS_USE_DOUBLES
-		double fRadiusSqr;
-		double fCoeff1;
-		double fCoeff2;
-		double fCoeff3;
+        double fRadiusSqr;
+        double fCoeff1;
+        double fCoeff2;
+        double fCoeff3;
 
-		IPoint( const vec3f & vPos, float fieldScale, float radius ) 
-			{ ptPosition = vPos; fFieldScale = fieldScale; fRadius = radius; 
-				fRadiusSqr = (double)radius*(double)radius;
-				fCoeff1 = (double)fieldScale / (fRadiusSqr*fRadiusSqr);
-				fCoeff2 = (-2.0 * (double)fieldScale) / fRadiusSqr;
-				fCoeff3 = (double)fFieldScale;
-			}
+        IPoint( const vec3f & vPos, float fieldScale, float radius )
+        { ptPosition = vPos; fFieldScale = fieldScale; fRadius = radius;
+            fRadiusSqr = (double)radius*(double)radius;
+            fCoeff1 = (double)fieldScale / (fRadiusSqr*fRadiusSqr);
+            fCoeff2 = (-2.0 * (double)fieldScale) / fRadiusSqr;
+            fCoeff3 = (double)fFieldScale;
+        }
 #else
-		float fRadiusSqr;
-		float fCoeff1;
-		float fCoeff2;
-		float fCoeff3;
+        float fRadiusSqr;
+        float fCoeff1;
+        float fCoeff2;
+        float fCoeff3;
 
-		IPoint( const vec3f & vPos, float fieldScale, float radius ) 
-			{ ptPosition = vPos; fFieldScale = fieldScale; fRadius = radius; 
-				fRadiusSqr = radius*radius;
-				fCoeff1 = fieldScale / (radius*radius*radius*radius);
-				fCoeff2 = (-2.0f * fieldScale) / (radius*radius);
-				fCoeff3 = fFieldScale;
-			}
+        IPoint( const vec3f & vPos, float fieldScale, float radius )
+        { ptPosition = vPos; fFieldScale = fieldScale; fRadius = radius;
+            fRadiusSqr = radius*radius;
+            fCoeff1 = fieldScale / (radius*radius*radius*radius);
+            fCoeff2 = (-2.0f * fieldScale) / (radius*radius);
+            fCoeff3 = fFieldScale;
+        }
 #endif
-	};
+    };
 
-	FastQuadricPointSet( bool bUsePerPointColors = false )
-		: m_bUsePerPointColors(bUsePerPointColors)
-	{
-		if (!m_bUsePerPointColors) 
-		{
-			m_vColors.push_back( vec3f(1.0, 0.0, 0.0) );
-		}
-		m_bValidOctree = false;
-	}
+    FastQuadricPointSet( bool bUsePerPointColors = false )
+        : m_bUsePerPointColors(bUsePerPointColors)
+    {
+        if (!m_bUsePerPointColors)
+        {
+            m_vColors.push_back( vec3f(1.0, 0.0, 0.0) );
+        }
+        m_bValidOctree = false;
+    }
 
-	~FastQuadricPointSet()
-	{
-		m_vPoints.clear();
-		m_vColors.clear();
-	}
+    ~FastQuadricPointSet()
+    {
+        m_vPoints.clear();
+        m_vColors.clear();
+    }
 
-	unsigned int getPointCount() const
-	{
-		return (unsigned int)m_vPoints.size();
-	}
+    unsigned int getPointCount() const
+    {
+        return (unsigned int)m_vPoints.size();
+    }
 
-	void addPoint( const IPoint & point, 
-				   const vec3f & color)
-	{
-		m_vPoints.push_back(point);
-		if (m_bUsePerPointColors)
-			m_vColors.push_back(color);
-		m_bValidOctree = false;
-	}
+    void addPoint( const IPoint & point,
+                   const vec3f & color)
+    {
+        m_vPoints.push_back(point);
+        if (m_bUsePerPointColors)
+            m_vColors.push_back(color);
+        m_bValidOctree = false;
+    }
 
-	void addPoint( CQuadricPoint & point,
-				   const vec3f & color)
-	{
-		IPoint pt(point.getPosition(), point.getFieldScale(), point.getFieldRadius());
-		m_vPoints.push_back(pt);
-		if (m_bUsePerPointColors)
-			m_vColors.push_back(color);
-		m_bValidOctree = false;
-	}
+    void addPoint( CQuadricPoint & point,
+                   const vec3f & color)
+    {
+        IPoint pt(point.getPosition(), point.getFieldScale(), point.getFieldRadius());
+        m_vPoints.push_back(pt);
+        if (m_bUsePerPointColors)
+            m_vColors.push_back(color);
+        m_bValidOctree = false;
+    }
 
-	void clearPoints() 
-	{
-		m_vPoints.resize(0);
-		if (m_bUsePerPointColors)
-			m_vColors.resize(0);
-		m_bValidOctree = false;
-	}
+    void clearPoints()
+    {
+        m_vPoints.resize(0);
+        if (m_bUsePerPointColors)
+            m_vColors.resize(0);
+        m_bValidOctree = false;
+    }
 
-	const IPoint & getPoint( unsigned int nPoint ) const
-	{
-		//ASSERT(nPoint < GetPointCount());
-		return m_vPoints[nPoint];
-	}
+    const IPoint & getPoint( unsigned int nPoint ) const
+    {
+        //ASSERT(nPoint < GetPointCount());
+        return m_vPoints[nPoint];
+    }
 
-	IPoint & getPoint( unsigned int nPoint )
-	{
-		//ASSERT(nPoint < GetPointCount());
-		return m_vPoints[nPoint];
-	}
+    IPoint & getPoint( unsigned int nPoint )
+    {
+        //ASSERT(nPoint < GetPointCount());
+        return m_vPoints[nPoint];
+    }
 
-	const vec3f & getPointColor( unsigned int nPoint ) const
-	{
-		//ASSERT(nPoint < GetPointCount());
-		if (m_bUsePerPointColors) {
-			return m_vColors[nPoint];
-		} else {
-			return m_vColors[0];
-		}
-	}
+    const vec3f & getPointColor( unsigned int nPoint ) const
+    {
+        //ASSERT(nPoint < GetPointCount());
+        if (m_bUsePerPointColors) {
+            return m_vColors[nPoint];
+        } else {
+            return m_vColors[0];
+        }
+    }
 
-	vec3f & getPointColor( unsigned int nPoint )
-	{
-		//ASSERT(nPoint < GetPointCount());
-		if (m_bUsePerPointColors) {
-			return m_vColors[nPoint];
-		} else {
-			return m_vColors[0];
-		}
-	}
-	
-	//void ApplyFrame( const Wml::Frame & frame );
-	//void ApplyFrameInverse( const Wml::Frame & frame );
+    vec3f & getPointColor( unsigned int nPoint )
+    {
+        //ASSERT(nPoint < GetPointCount());
+        if (m_bUsePerPointColors) {
+            return m_vColors[nPoint];
+        } else {
+            return m_vColors[0];
+        }
+    }
 
-	// must be relative!
-	void translate( const vec3f & bTranslate );
-	
-	void getPointFieldBox( unsigned int nPoint, COctree& dest );
+    //void ApplyFrame( const Wml::Frame & frame );
+    //void ApplyFrameInverse( const Wml::Frame & frame );
 
-	virtual void getSeedPoints( std::vector<vec3f> & seedPoints );
+    // must be relative!
+    void translate( const vec3f & bTranslate );
 
-/*
+    void getPointFieldBox( unsigned int nPoint, COctree& dest );
+
+    virtual void getSeedPoints( std::vector<vec3f> & seedPoints );
+
+    /*
  * ScalarField interface
  */
-	float fieldValue(vec3f p);
+    float fieldValue(vec3f p);
 
-	int fieldValueAndGradient(vec3 p, float delta, vec3 &outGradient, float &outField);
+    int fieldValueAndGradient(vec3f p, float delta, vec3f &outGradient, float &outField);
 
-	COctree computeOctree();
+    COctree computeOctree();
 
-	CMaterial baseMaterial(vec3f p) {return m_material;}
+    BlobNodeType getNodeType() {return bntPrimFastQuadraticPointSet;}
 
-	//Color weighted by fieldvalue at point p
-	vec4f baseColor(vec3f p) {return vec4f(0.0f, 1.0f, 0.0f, 1.0f);}
+    string getName()
+    {
+        return "FASTQUADRATICPOINTSET";
+    }
 
+    bool isOperator()
+    {
+        return false;
+    }
 
-	BlobNodeType getNodeType() {return bntPrimFastQuadraticPointSet;}
+    vec3f getPolySeedPoint()
+    {
+        vec3f c;
+        if(m_vPoints.size() > 0)
+            c = m_vPoints[0].ptPosition;
+        c = m_transform.applyForwardTransform(c);
+        return c;
 
-	void getName(char * chrName)
-	{
-            strncpy(chrName, "FASTQUADRATICPOINTSET", MAX_NAME_LEN);
-	}
-
-	bool isOperator() 
-	{
-		return false;
-	}
-
-	vec3f getPolySeedPoint()
-	{
-		vec3f c;
-		if(m_vPoints.size() > 0)
-			c = m_vPoints[0].ptPosition;		
-		c = m_transform.applyForwardTransform(c);
-		return c;
-
-	}
+    }
 
 protected:
-	DVec<IPoint> m_vPoints;
-	DVec<vec3f> m_vColors;
-	
-	bool m_bUsePerPointColors;	
-	bool m_bValidOctree;
-	//Wml::AxisAlignedBox3f m_fieldBoundsCache;
-	//const Wml::AxisAlignedBox3f & GetCachedFieldBounds();
+    vector<IPoint> m_vPoints;
+    vector<vec3f> m_vColors;
+
+    bool m_bUsePerPointColors;
+    bool m_bValidOctree;
+    //Wml::AxisAlignedBox3f m_fieldBoundsCache;
+    //const Wml::AxisAlignedBox3f & GetCachedFieldBounds();
 };
 
 

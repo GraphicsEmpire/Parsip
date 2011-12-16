@@ -42,7 +42,7 @@ public:
 
 	bool isValid() const { return ((m_vCtrlPoints.size() >= 4) && (m_vArcTable.size() > 0)); }
 	bool isCtrlPointIndex(int index) const {return (index >=0 && index < (int)m_vCtrlPoints.size());}
-	std::vector<vec3>& getControlPoints() {return m_vCtrlPoints;}
+	std::vector<vec3f>& getControlPoints() {return m_vCtrlPoints;}
 	std::vector<ARCLENGTHPARAM>& getArcTable() {return m_vArcTable;}
 	void getArcPoints(std::vector<vec3f>& lstPoints) const;
 	COctree getOctree() const;

@@ -13,14 +13,14 @@ namespace Vol{
 		class  CVolume
 		{
 		public:
-			float Min(vec3 v);
+			float Min(vec3f v);
 
-			float Max(vec3 v);
+			float Max(vec3f v);
 
 			vec3f vectorMin(vec3f a, vec3f b);
 			vec3f vectorMax(vec3f a, vec3f b);			
 
-			vec3 vectorAbs(vec3 v) const;
+			vec3f vectorAbs(vec3f v) const;
 
 		public:	
 			static CVolume* newFrom(const CVolume* other);
@@ -38,11 +38,11 @@ namespace Vol{
 
 			virtual void tranform(const CMatrix& m) = 0;
 
-			virtual CVolume* scale(vec3 scaleVector) = 0;		
-			virtual void scaleSelf(vec3 scaleVector) = 0;
+			virtual CVolume* scale(vec3f scaleVector) = 0;		
+			virtual void scaleSelf(vec3f scaleVector) = 0;
 			virtual CVolume* rotate(quat rot) = 0;			
-			virtual CVolume* translate(vec3 translateVector) = 0;			
-			virtual void translateSelf(vec3 translateVector) = 0;
+			virtual CVolume* translate(vec3f translateVector) = 0;			
+			virtual void translateSelf(vec3f translateVector) = 0;
 
 			
 

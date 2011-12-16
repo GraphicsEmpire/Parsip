@@ -160,7 +160,7 @@ bool CVoxelTracker::testface (int i, int j, int k, CELL* old,
 
 
 // find: search for point with value of given sign (0: neg, 1: pos)
-TEST CVoxelTracker::find (int sign, vec3 start)
+TEST CVoxelTracker::find (int sign, vec3f start)
 {
 	int i;
 	TEST test;
@@ -256,7 +256,7 @@ bool CVoxelTracker::march(bool bParallel)
 			
 	//Compute first intersection point aka Seed Point
 	float field = 0.0f;
-	m_ptSeed = vec3(0.0f, 0.0f, 0.0f);
+	m_ptSeed = vec3f(0.0f, 0.0f, 0.0f);
 	m_ctFieldEvalPhase1 += m_lpFinder->findRoot(in.pos, out.pos, in.value, out.value, m_ptSeed, field);
 
 	//push initial cube on stack:
@@ -363,7 +363,7 @@ void CVoxelTracker::getTimerValues(int &pass1, int &pass2)
 //Class VoxelTriangulation Body
 //Create a Triangle and set each vertex to the proper index
 CVoxelTriangulationBody::CVoxelTriangulationBody(std::vector<CELL*> * plstCubes,					   
-												 CBlobTree * root,
+												 CBlobNode * root,
 												 CRootFinder * finder,
 												 float delta,
 												 CellShape mode)
@@ -428,7 +428,7 @@ int CVoxelTriangulationBody::vertid (CORNER* c1, CORNER* c2)
 	//For Normal Calculation we have 3 more field calculations
 	m_ctFieldEval += 3;
 
-	CMaterial mtrl = m_root->baseMaterial(output);
+        CMaterial mtrl = m_root->getMaterial();
 	//Send material of each vertex as texture coordinates
 	//Last entry is shine power + Unit Size of Ambient, Diffused, Speculer
 	vec4f shine = vec4f(mtrl.shininess, 4.0f, 4.0f, 4.0f);

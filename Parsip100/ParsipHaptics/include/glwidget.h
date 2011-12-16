@@ -27,6 +27,7 @@
 using namespace PS;
 using namespace PS::MATH;
 using namespace PS::BLOBTREE;
+//using namespace PS::SIMDPOLY;
 
 
 //This is our OpenGL Component we built it on top of QGLWidget
@@ -73,7 +74,7 @@ public slots:
     void selectLayer(int iLayer);
     void selectLayer(QModelIndex idx);
 
-    void selectBlobNode(int iLayer, CBlobTree* aNode);
+    void selectBlobNode(int iLayer, CBlobNode* aNode);
     void selectBlobNode(QModelIndex idx);
 
     void actOpenMedusa();
@@ -163,7 +164,7 @@ public slots:
 
     //SKETCHNET Interactions
     bool actNetSendAck(SKETCHACK ack, int idxMember, int msgID);
-    bool actNetSendCommand(SKETCHCMD command, CBlobTree* node, vec4f param);
+    bool actNetSendCommand(SKETCHCMD command, CBlobNode* node, vec4f param);
     bool actNetRecvCommand(int idxMember, QString strMsg);
 
     //
@@ -255,7 +256,7 @@ private:
 
     //Sketching variables
     CUIWidget*          m_lpUIWidget;
-    UIMODE		m_uiMode;    
+    UIMODE		m_uiMode;
     vec3f		m_globalPan;
     bool		m_bEnablePan;
     bool		m_bEnableMultiSelect;
@@ -270,12 +271,12 @@ private:
 
     float		m_animTime;
     float		m_animSpeed;
-    SkeletonType	m_sketchSkeletType;
+    BlobNodeType	m_sketchType;
     //Reference to object. created using makeObject()
     GLuint			  m_glChessBoard;
     GLuint			  m_glTopCornerCube;
-    DVec<vec3>		  m_lstSketchControlPoints;
-    CBlobTree*		  m_lpSelectedBlobNode;
+    vector<vec3f>		  m_lstSketchControlPoints;
+    CBlobNode*		  m_lpSelectedBlobNode;
 
     QStandardItemModel*	m_modelBlobNodeProperty;
     QStandardItemModel*	m_modelBlobTree;
@@ -303,13 +304,13 @@ private:
     vec3f mask(vec3f v, UITRANSFORMAXIS axis);
     void maskMaterial(UITRANSFORMAXIS axis);
 
-    CBlobTree* addBlobPrimitive(SkeletonType skeletType, const vec3f& pos, int preferredID = -1, bool bSendToNet = true);
-    CBlobTree* addBlobOperator(BlobNodeType operatorType, int preferredID = -1, bool bSendToNet = true);
+    CBlobNode* addBlobPrimitive(BlobNodeType primitiveType, const vec3f& pos, int preferredID = -1, bool bSendToNet = true);
+    CBlobNode* addBlobOperator(BlobNodeType operatorType, int preferredID = -1, bool bSendToNet = true);
 
     //Display and Management of Scene Data-Structure
     DlgFieldFunctionEditor* m_dlgFieldEditor;
 
-    QStandardItemModel* getModelPrimitiveProperty(CBlobTree* lpNode);
+    QStandardItemModel* getModelPrimitiveProperty(CBlobNode* lpNode);
     QStandardItemModel* getModelBlobTree(int iLayer);
     QStandardItemModel* getModelLayerManager();
     QStandardItemModel* getModelStats();
@@ -322,9 +323,9 @@ private:
     void drawMapTranslate(vec3f pos);
     void drawMapRotate(vec3f pos);
     void drawMapScale(vec3f pos);
-    void drawOctree(vec3 lo, vec3 hi, vec4f color, bool bSelected = false);
+    void drawOctree(vec3f lo, vec3f hi, vec4f color, bool bSelected = false);
 
-    void drawPolygon(const DVec<vec3>& lstPoints);
+    void drawPolygon(const vector<vec3f>& lstPoints);
     void drawRay(const CRay& ray, vec4f color);
     void drawLineSegment(vec3f s, vec3f e, vec4f color);
     void drawString(const char* str, float x, float y);

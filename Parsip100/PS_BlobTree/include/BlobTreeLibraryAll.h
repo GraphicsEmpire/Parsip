@@ -1,6 +1,6 @@
 #pragma once
 #ifndef BLOBTREELIBRARYALL_H
-#define BLOBTREELIBRARYALL_H	1
+#define BLOBTREELIBRARYALL_H
 
 //Skeletons
 #include "CSkeletonCylinder.h"
@@ -16,7 +16,6 @@
 
 //BlobTree Nodes
 #include "CSkeletonPrimitive.h"
-#include "CAffine.h"
 #include "CBlend.h"
 #include "CCache.h"
 #include "CDifference.h"
@@ -35,7 +34,7 @@
 //#include "CVolumeBox.h"
 //#include "CLayerManager.h"
 
-using namespace BLOBTREE;
+//using namespace PS::BLOBTREE;
 
 
 #endif

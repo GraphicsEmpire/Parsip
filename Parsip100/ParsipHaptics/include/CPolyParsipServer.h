@@ -95,7 +95,7 @@ private:
 	float m_adaptiveParam;
 		
 	//Pointer to root blobtree
-	CBlobTree* m_root;
+	CBlobNode* m_root;
 	bool m_bTreeCompacted;
 
 	//Color Code
@@ -170,7 +170,7 @@ public:
 		m_bColorCodeMPU = false;
 	}
 
-	CMpu(vec3i globalAddress, vec3f origin, vec3f upperBound, int dim, int id, float cellsize, float adaptiveParam, CBlobTree* root)
+	CMpu(vec3i globalAddress, vec3f origin, vec3f upperBound, int dim, int id, float cellsize, float adaptiveParam, CBlobNode* root)
 	{	
 		setup(globalAddress, origin, upperBound, dim, id, cellsize, adaptiveParam, root);
 	}
@@ -181,8 +181,8 @@ public:
 	}
 
 	//Compaction
-	void compactBlobTree_Intersect(const COctree& mpuOct, CBlobTree* lpNode);
-	int  compactBlobTree_Recursive( CBlobTree* lpInput, stack<CBlobTree*>& stkOperators, CBlobTree*& lpOutClone);
+	void compactBlobTree_Intersect(const COctree& mpuOct, CBlobNode* lpNode);
+	int  compactBlobTree_Recursive( CBlobNode* lpInput, stack<CBlobNode*>& stkOperators, CBlobNode*& lpOutClone);
 	//int  compactBlobTree_Remove( CBlobTree* lpInput, stack<CBlobTree*>& stkOperators, CBlobTree*& lpOutClone);
 		
 
@@ -234,7 +234,7 @@ public:
 	size_t statIntersectedCells() const {return m_statIntersectedCells;}
 	size_t statGetThreadID() const {return m_threadID;}
 
-	void setup(vec3i globalAddress, vec3f origin, vec3f upperBound, int dim, int id, float cellsize, float adaptiveParam, CBlobTree* root)
+	void setup(vec3i globalAddress, vec3f origin, vec3f upperBound, int dim, int id, float cellsize, float adaptiveParam, CBlobNode* root)
 	{
 		m_globalAddress = globalAddress;
 		m_origin		= origin;

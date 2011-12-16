@@ -4,8 +4,10 @@
 #include "loki/Singleton.h"
 #include "PS_BlobTree/include/CBlobTree.h"
 #include "PS_FrameWork/include/PS_SplineCatmullRom.h"
+#include <vector>
 
 using namespace Loki;
+using namespace std;
 using namespace PS;
 using namespace PS::BLOBTREE;
 
@@ -18,39 +20,39 @@ namespace BLOBTREEANIMATION{
 class CAnimObject
 {
 public:
-	CAnimObject(CBlobTree* lpModel)
-	{
-		model			= lpModel;
-		path			= new CSplineCatmullRom();
-		bTranslate		= true;
-		bScale			= false;
-		startVal		= vec4f(1.0f, 1.0f, 1.0f, 1.0f);
-		endVal			= vec4f(1.0f, 1.0f, 1.0f, 1.0f);
-		idxSelCtrlPoint = -1;
-	}
+    CAnimObject(CBlobNode* lpModel)
+    {
+        model			= lpModel;
+        path			= new CSplineCatmullRom();
+        bTranslate		= true;
+        bScale			= false;
+        startVal		= vec4f(1.0f, 1.0f, 1.0f, 1.0f);
+        endVal			= vec4f(1.0f, 1.0f, 1.0f, 1.0f);
+        idxSelCtrlPoint = -1;
+    }
 
-	~CAnimObject()
-	{
-		model = NULL;
-		SAFE_DELETE(path);
-	}
+    ~CAnimObject()
+    {
+        model = NULL;
+        SAFE_DELETE(path);
+    }
 
-	void advance(float animTime);
+    void advance(float animTime);
 
-	void gotoStart();
-	void gotoEnd();
+    void gotoStart();
+    void gotoEnd();
 
-	void drawPathCtrlPoints();
-	void drawPathCurve();
+    void drawPathCtrlPoints();
+    void drawPathCurve();
 
 public:
-	CBlobTree* model;
-	CSplineCatmullRom* path;
-	bool bTranslate;
-	bool bScale;
-	vec4f startVal;
-	vec4f endVal;	
-	int idxSelCtrlPoint;
+    CBlobNode* model;
+    CSplineCatmullRom* path;
+    bool bTranslate;
+    bool bScale;
+    vec4f startVal;
+    vec4f endVal;
+    int idxSelCtrlPoint;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,49 +62,51 @@ public:
 class CAnimManager
 {
 private:
-	DVec<CAnimObject*> m_lstObjects;
-	float m_selRadius;
-	int m_idxSelObject;
+    vector<CAnimObject*> m_lstObjects;
+    float m_selRadius;
+    int m_idxSelObject;
 
 public:
-	CAnimManager() {
-		m_idxSelObject = -1;
-		m_selRadius = DEFAULT_SEL_RADIUS;
-	}
+    CAnimManager() {
+        m_idxSelObject = -1;
+        m_selRadius = DEFAULT_SEL_RADIUS;
+    }
 
-	~CAnimManager()
-	{
-		removeAll();
-	}
+    ~CAnimManager()
+    {
+        removeAll();
+    }
 
-	size_t countObjects() const { return m_lstObjects.size();}
-	CAnimObject* getObject(CBlobTree* root);
-	CAnimObject* getObject(int index);
+    size_t countObjects() const { return m_lstObjects.size();}
+    CAnimObject* getObject(CBlobNode* root);
+    CAnimObject* getObject(int index);
 
 
-	int queryHitPathOctree(const PS::MATH::CRay& ray, float t0, float t1);
-	bool queryHitPathCtrlPoint(const PS::MATH::CRay& ray, float t0, float t1, int& idxPath, int& idxCtrlPoint);
-	void queryHitSetSelRadius(float radius) {m_selRadius = radius;}
-	void queryHitResetAll();
-	
-	void setActiveObject(int index);
-	CAnimObject* getActiveObject();
-	bool hasSelectedCtrlPoint();
+    int queryHitPathOctree(const PS::MATH::CRay& ray, float t0, float t1);
+    bool queryHitPathCtrlPoint(const PS::MATH::CRay& ray, float t0, float t1, int& idxPath, int& idxCtrlPoint);
+    void queryHitSetSelRadius(float radius) {m_selRadius = radius;}
+    void queryHitResetAll();
 
-	void addModel(CBlobTree* lpModel);
-	bool removeModel(CBlobTree* lpModel);
-	bool remove(int index);
-	void removeAll();
+    void setActiveObject(int index);
+    CAnimObject* getActiveObject();
+    bool hasSelectedCtrlPoint();
 
-	void advanceAnimation(float animTime);
+    void addModel(CBlobNode* lpModel);
+    bool removeModel(CBlobNode* lpModel);
+    bool remove(int index);
+    void removeAll();
 
-	CAnimObject* operator[](const int index) const 
-	{
-		if(m_lstObjects.isItemIndex((size_t)index))
-			return m_lstObjects[index];
-		else 
-			return NULL;	
-	}
+    void advanceAnimation(float animTime);
+
+    CAnimObject* operator[](const int index) const
+    {
+        if(isIndex(index))
+            return m_lstObjects[index];
+        else
+            return NULL;
+    }
+private:
+    bool isIndex(int index) const { return index >= 0 && index < m_lstObjects.size();}
 };
 
 typedef SingletonHolder<CAnimManager, CreateUsingNew, PhoenixSingleton> CAnimManagerSingleton;

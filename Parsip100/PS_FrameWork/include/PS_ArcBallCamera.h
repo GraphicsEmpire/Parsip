@@ -25,10 +25,10 @@ private:
 	//Omega and Phi are horizontal and vertical angles of spherical coordinates respectively
 	//rho is the CCamera distance from scene (Zoom)
 	float m_omega, m_phi, m_rho;
-	vec3 m_origin;
+	vec3f m_origin;
 
 	//Center point in scene to lookAt
-	vec3  m_center;
+	vec3f  m_center;
 	vec2i m_lastPos;	
 public:
 	//Default Constructor
@@ -43,8 +43,8 @@ public:
 	const float getHorizontalAngle() const {return m_omega;}
 	const float getVerticalAngle() const {return m_phi;}
 	const float getCurrentZoom() const {return m_rho;}
-	vec3 getOrigin() {return m_origin;}
-	vec3 getCenter() {return m_center;}
+	vec3f getOrigin() {return m_origin;}
+	vec3f getCenter() {return m_center;}
 
 	//Set our horizontal angle can be any value (Omega)
 	void setHorizontalAngle(float o);
@@ -56,21 +56,21 @@ public:
 	void setZoom(float r);
 
 	//Set Origin
-	void setOrigin(vec3 org);
+	void setOrigin(vec3f org);
 
 	//Set Center point inside scene
-	void setCenter(vec3 c);
+	void setCenter(vec3f c);
 
 	//convert spherical coordinates to Eulerian values
-	vec3 getCoordinates();
+	vec3f getCoordinates();
 
 	//Return Current CCamera Direction
-	vec3 getDirection();
+	vec3f getDirection();
 
 	//Calculate an Up vector
-	vec3 getUp();
+	vec3f getUp();
 
-	vec3 getStrafe();
+	vec3f getStrafe();
 
 	//Set the last position
 	void setLastPos(const vec2i& lastPos)

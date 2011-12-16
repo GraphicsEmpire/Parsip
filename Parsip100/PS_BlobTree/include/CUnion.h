@@ -7,29 +7,29 @@
 namespace PS{
 namespace BLOBTREE{
 
-class  CUnion : public CBlobTree
+class  CUnion : public CBlobNode
 {
 public:
 	CUnion() {;}
-	CUnion(CBlobTree * child)
+	CUnion(CBlobNode * child)
 	{
 		addChild(child);
 	}
 
-	CUnion(CBlobTree * child1, CBlobTree * child2)
+	CUnion(CBlobNode * child1, CBlobNode * child2)
 	{
 		addChild(child1);
 		addChild(child2);
 	}
 
-	CUnion(CBlobTree * child1, CBlobTree * child2, CBlobTree * child3)
+	CUnion(CBlobNode * child1, CBlobNode * child2, CBlobNode * child3)
 	{
 		addChild(child1);
 		addChild(child2);
 		addChild(child3);
 	}
 
-	CUnion(BLOBTREECHILDREN children)
+	CUnion(BLOBNODECHILDREN children)
 	{
 		addChild(children);
 	}
@@ -46,32 +46,14 @@ public:
 
 	float curvature(vec3f p)
 	{
-		CBlobTree * maxNode = getChildMax(p);
+		CBlobNode * maxNode = getChildMax(p);
 		if(maxNode)
 			return maxNode->curvature(p);
 		else
 			return 0.0f;
 	}
 
-	vec4f baseColor(vec3f p)
-	{		
-		CBlobTree * maxNode = getChildMax(p);
-		if(maxNode)
-			return maxNode->baseColor(p);
-		else
-			return m_children[0]->baseColor(p);
-	}
-
-	CMaterial baseMaterial(vec3f p)
-	{
-		CBlobTree * maxNode = getChildMax(p);
-		if(maxNode)
-			return maxNode->baseMaterial(p);
-		else
-			return m_children[0]->baseMaterial(p);
-	}
-
-	CBlobTree * getChildMax(vec3f p)
+	CBlobNode * getChildMax(vec3f p)
 	{
 		if(countChildren() == 0)
 			return NULL;
@@ -91,15 +73,9 @@ public:
 		return m_children[iMax];
 	}
 
-	CBlobTree* operator |(CBlobTree* other)
+        string getName()
 	{
-		CUnion * result = new CUnion(this, other);
-		return result;
-	}
-
-	void getName(char * chrName)
-	{
-            strncpy(chrName, "UNION", MAX_NAME_LEN);
+            return "UNION";
 	}
 
 	//Octree manipulation

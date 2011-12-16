@@ -7,44 +7,44 @@
 namespace PS{
 namespace BLOBTREE{
 
-class  CSmoothDifference : public CBlobTree
+class  CSmoothDifference : public CBlobNode
 {
 private:
 	bool m_bCombineMaterials;
 public:
 	CSmoothDifference() {;}
-	CSmoothDifference(CBlobTree * child)
+	CSmoothDifference(CBlobNode * child)
 	{
 		addChild(child);
 	}
 
-	CSmoothDifference(CBlobTree * child1, CBlobTree * child2)
+	CSmoothDifference(CBlobNode * child1, CBlobNode * child2)
 	{
 		addChild(child1);
 		addChild(child2);
 	}
 
-	CSmoothDifference(CBlobTree * child1, CBlobTree * child2, CBlobTree * child3)
+	CSmoothDifference(CBlobNode * child1, CBlobNode * child2, CBlobNode * child3)
 	{
 		addChild(child1);
 		addChild(child2);
 		addChild(child3);
 	}
 
-	CSmoothDifference(CBlobTree * child, bool bCombineMaterials)
+	CSmoothDifference(CBlobNode * child, bool bCombineMaterials)
 	{
 		addChild(child);
 		m_bCombineMaterials = bCombineMaterials;
 	}
 
-	CSmoothDifference(CBlobTree * child1, CBlobTree * child2, bool bCombineMaterials)
+	CSmoothDifference(CBlobNode * child1, CBlobNode * child2, bool bCombineMaterials)
 	{
 		addChild(child1);
 		addChild(child2);
 		m_bCombineMaterials = bCombineMaterials;
 	}
 
-	CSmoothDifference(CBlobTree * child1, CBlobTree * child2, CBlobTree * child3, bool bCombineMaterials)
+	CSmoothDifference(CBlobNode * child1, CBlobNode * child2, CBlobNode * child3, bool bCombineMaterials)
 	{
 		addChild(child1);
 		addChild(child2);
@@ -52,7 +52,7 @@ public:
 		m_bCombineMaterials = bCombineMaterials;
 	}
 
-	CSmoothDifference(BLOBTREECHILDREN children)
+	CSmoothDifference(BLOBNODECHILDREN children)
 	{
 		addChild(children);
 	}
@@ -62,7 +62,7 @@ public:
 		return m_bCombineMaterials;
 	}
 
-	void setParamFrom(CBlobTree* input)
+	void setParamFrom(CBlobNode* input)
 	{
 		this->m_bCombineMaterials = dynamic_cast<CSmoothDifference*>(input)->m_bCombineMaterials;
 	}
@@ -79,42 +79,14 @@ public:
 
 	float curvature(vec3f p)
 	{
-		CBlobTree * minNode = getChildMinDif(p);
+		CBlobNode * minNode = getChildMinDif(p);
 		if(minNode)
 			return minNode->curvature(p);
 		else
 			return 0.0f;
 	}
 
-	vec4f baseColor(vec3f p)
-	{		
-		if(m_bCombineMaterials)
-		{
-			CBlobTree * minNode = getChildMinDif(p);
-			if(minNode)
-				return minNode->baseColor(p);
-			else
-				return m_children[0]->baseColor(p);
-		}
-		else 
-			return m_children[0]->baseColor(p);
-	}
-
-	CMaterial baseMaterial(vec3f p)
-	{
-		if(m_bCombineMaterials)
-		{
-			CBlobTree * minNode = getChildMinDif(p);
-			if(minNode)
-				return minNode->baseMaterial(p);
-			else
-				return m_children[0]->baseMaterial(p);
-		}
-		else 
-			return m_children[0]->baseMaterial(p);
-	}
-
-	CBlobTree * getChildMinDif(vec3f p)
+	CBlobNode * getChildMinDif(vec3f p)
 	{
 		if(countChildren() == 0)
 			return NULL;
@@ -134,9 +106,9 @@ public:
 		return m_children[iMin];
 	}
 
-	void getName(char * chrName)
+        string getName()
 	{
-            strncpy(chrName, "SMOOTH DIFFERENCE", MAX_NAME_LEN);
+            return "SMOOTH DIFFERENCE";
 	}
 
 	COctree computeOctree()

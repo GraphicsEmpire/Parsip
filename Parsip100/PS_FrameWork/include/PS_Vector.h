@@ -1247,7 +1247,7 @@ typedef std::vector< Vector2d<float> > vec2fArray;
 
 //float vector
 typedef Vector4d<float> vec4;
-typedef Vector3d<float> vec3;
+typedef Vector3d<float> vec3f;
 typedef Vector2d<float> vec2;
 
 //float vector

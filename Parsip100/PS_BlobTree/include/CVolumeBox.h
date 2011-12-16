@@ -22,7 +22,7 @@ namespace BLOBTREE{
 
 			vec3f center();
 
-			void set(vec3 lo, vec3 hi);
+			void set(vec3f lo, vec3f hi);
 			void set(float l, float b, float n, float r, float t, float f);
 
 			vec3f lower() const { return m_minCorner;}
@@ -60,11 +60,11 @@ namespace BLOBTREE{
 			bool intersect(CVolume* bv);
 
 			void tranform(const CMatrix& m);
-			CVolume* scale(vec3 scale);
+			CVolume* scale(vec3f scale);
 			CVolume* rotate(quat rotate);			
-			CVolume* translate(vec3 trans);
-			void scaleSelf(vec3 scaleVector);
-			void translateSelf(vec3 translateVector);
+			CVolume* translate(vec3f trans);
+			void scaleSelf(vec3f scaleVector);
+			void translateSelf(vec3f translateVector);
 
 
 			CVolume* UnionSphere(const CVolume* sphere);

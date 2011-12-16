@@ -48,7 +48,7 @@ struct BlobOperator
         int orgID;
 	int ctKids;
 	//int kidIds[MAX_COMPACT_KIDS_COUNT];
-	DVec<int> kidIds;
+        vector<int> kidIds;
 	vec4f params;	
 	vec4f octLo;
 	vec4f octHi;
@@ -90,7 +90,7 @@ public:
 		copyFrom(rhs);
 	}
 
-	COMPACTBLOBTREE(CBlobTree* root)
+	COMPACTBLOBTREE(CBlobNode* root)
 	{
 		reset();
 		convert(root);
@@ -137,10 +137,10 @@ public:
                 ctPCMNodes = 0;
 	}
 
-	int convert(CBlobTree* root);
+	int convert(CBlobNode* root);
 	void copyFrom(const COMPACTBLOBTREE& rhs);
 private:
-	int convert(CBlobTree* root, int parentID /*, const CMatrix& mtxBranch*/);
+	int convert(CBlobNode* root, int parentID /*, const CMatrix& mtxBranch*/);
 	vec4f warpBend( const vec4f& pin, float bendRate, float bendCenter, const CInterval& bendRegion);
 	vec4f warpTwist(const vec4f& pin, float factor, MajorAxices axis);
 

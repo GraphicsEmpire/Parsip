@@ -32,7 +32,7 @@ private:
 	CMeshVV * m_lpMesh;
 
 	//Blobtree root node
-	CBlobTree* m_root;
+	CBlobNode* m_root;
 
 	//Polygonization mode
 	CellShape m_mode;
@@ -57,10 +57,10 @@ private:
 	int	 m_ctThreads;
 
 	//Seed Point on Surface
-	vec3 m_ptSeed;
+	vec3f m_ptSeed;
 
 	//Search start from here
-	vec3 m_ptSearchStart;
+	vec3f m_ptSearchStart;
 
 	//Timers
 	int m_timerPass1;
@@ -79,7 +79,7 @@ private:
 	CEdgeTable m_edges;
 
 private:
-	TEST find (int sign, vec3 start);
+	TEST find (int sign, vec3f start);
 
 	//Set Center
 	bool setCenter(int i, int j, int k);
@@ -119,7 +119,7 @@ private:
 	//Input Settings
 	std::vector<CELL*> * m_plstCubes;
 	CRootFinder * m_lpFinder;
-	CBlobTree* m_root;
+	CBlobNode* m_root;
 	float m_normalDelta;	
 	size_t m_ctFieldEval;
 	CellShape m_cellShape;
@@ -152,7 +152,7 @@ private:
 
 public:
 	CVoxelTriangulationBody(std::vector<CELL*> * plstCubes,					   
-		CBlobTree * root,
+		CBlobNode * root,
 		CRootFinder * finder,
 		float delta,
 		CellShape mode);

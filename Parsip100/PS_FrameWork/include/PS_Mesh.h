@@ -66,7 +66,7 @@ public:
 	enum FaceType {ftTriangle = 3, ftQuad = 4};
 
 	/*!
-	 * Adds a vec3 v to the destination buffer dest.
+	 * Adds a vec3f v to the destination buffer dest.
 	 * @return designated index of added vertex. This index is the actual vertex number
 	 * not the position in the float array. The position in the float array can be computed as
 	 * index x szUnitVertex

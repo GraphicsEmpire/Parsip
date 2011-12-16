@@ -8,7 +8,7 @@
 #include "PS_FrameWork/include/PS_DateTime.h"
 #include "PS_FrameWork/include/PS_AppConfig.h"
 #include "PS_FrameWork/include/PS_ErrorManager.h"
-
+#include "PS_BlobTree/include/BlobTreeBuilder.h"
 /*
 #include "PS_BlobTree/include/CWarpBend.h"
 #include "PS_BlobTree/include/CWarpShear.h"
@@ -42,7 +42,7 @@ CLayer::CLayer()
     m_idLastBlobNode = 0;
 }
 
-CLayer::CLayer(CBlobTree * node)
+CLayer::CLayer(CBlobNode * node)
 {
     m_lpMesh     = NULL;
     m_lpBlobTree = node;
@@ -110,10 +110,10 @@ int CLayer::queryHitOctree(const CRay& ray, float t0, float t1) const
     return idxClosest;
 }
 //==================================================================
-CBlobTree* CLayer::selGetItem(int index) const
+CBlobNode* CLayer::selGetItem(int index) const
 {
     if(m_lstSelected.isItemIndex(index))
-        return static_cast<CBlobTree*>(m_lstSelected[index].first);
+        return static_cast<CBlobNode*>(m_lstSelected[index].first);
     else
         return NULL;
 }
@@ -145,7 +145,7 @@ void CLayer::selRemoveItem(int index)
     }
 }
 //==================================================================
-bool CLayer::selAddItem(CBlobTree* lpNode)
+bool CLayer::selAddItem(CBlobNode* lpNode)
 {
     if(lpNode == NULL) return false;
 
@@ -186,16 +186,16 @@ size_t CLayer::countSeedPoints()
     return m_lstSeeds.size();
 }
 
-vec3 CLayer::getSeed(size_t index)
+vec3f CLayer::getSeed(size_t index)
 {
     if((index >=0)&&(index < m_lstSeeds.size()))
-        return static_cast<vec3>(m_lstSeeds[index].second);
+        return static_cast<vec3f>(m_lstSeeds[index].second);
     else
         throw "Invalid index passed to fetch a seedpoint";
-    //return vec3(0.0f, 0.0f, 0.0f);
+    //return vec3f(0.0f, 0.0f, 0.0f);
 }
 
-size_t CLayer::getAllSeeds(size_t bufLen, vec3 arrSeeds[])
+size_t CLayer::getAllSeeds(size_t bufLen, vec3f arrSeeds[])
 {
     size_t ctTotal = m_lstSeeds.size();
     if(bufLen < ctTotal) return -1;
@@ -204,7 +204,7 @@ size_t CLayer::getAllSeeds(size_t bufLen, vec3 arrSeeds[])
     return ctTotal;
 }
 
-size_t CLayer::getAllSeeds(DVec<vec3>& lstAllSeeds)
+size_t CLayer::getAllSeeds(DVec<vec3f>& lstAllSeeds)
 {
     size_t ctTotal = m_lstSeeds.size();
     lstAllSeeds.resize(ctTotal);
@@ -223,7 +223,7 @@ void CLayer::setOctreeFromBlobTree()
     m_octree = m_lpBlobTree->getOctree();
 }
 
-CBlobTree* CLayer::recursive_FindNodeByID(int id, CBlobTree* root)
+CBlobNode* CLayer::recursive_FindNodeByID(int id, CBlobNode* root)
 {
     if(root == NULL) return NULL;
 
@@ -234,7 +234,7 @@ CBlobTree* CLayer::recursive_FindNodeByID(int id, CBlobTree* root)
     {
         for(size_t i=0; i<root->countChildren(); i++)
         {
-            CBlobTree* found = recursive_FindNodeByID(id, root->getChild(i));
+            CBlobNode* found = recursive_FindNodeByID(id, root->getChild(i));
             if(found != NULL)
                 return found;
         }
@@ -243,7 +243,7 @@ CBlobTree* CLayer::recursive_FindNodeByID(int id, CBlobTree* root)
     return NULL;
 }
 
-int CLayer::recursive_MaxNodeID(int maxID, CBlobTree* root)
+int CLayer::recursive_MaxNodeID(int maxID, CBlobNode* root)
 {
     if(root == NULL)
         return maxID;
@@ -264,8 +264,8 @@ int CLayer::recursive_MaxNodeID(int maxID, CBlobTree* root)
     return maxID;
 }
 
-bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobTree* root, 
-                                              CBlobTree* lpQueryNode,
+bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobNode* root,
+                                              CBlobNode* lpQueryNode,
                                               cmdBlobTree command,
                                               CmdBlobTreeParams* lpParam)
 {
@@ -283,7 +283,7 @@ bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobTree* root,
         {
             if(lpParam->lpReplacementNode)
             {
-                CBlobTree* replacement = lpParam->lpReplacementNode;
+                CBlobNode* replacement = lpParam->lpReplacementNode;
                 //Prepare Replacement
                 replacement->addChild(root->getChildren());
                 replacement->setID(root->getID());
@@ -317,7 +317,7 @@ bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobTree* root,
             lpParam->depth++;
 
         //Try current children
-        CBlobTree* kid = NULL;
+        CBlobNode* kid = NULL;
         for(size_t i=0; i<ctKids; i++)
         {
             kid = root->getChild(i);
@@ -347,7 +347,7 @@ bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobTree* root,
             {
                 if(lpParam->lpReplacementNode)
                 {
-                    CBlobTree* replacement = lpParam->lpReplacementNode;
+                    CBlobNode* replacement = lpParam->lpReplacementNode;
                     //Prepare Replacement
                     replacement->addChild(kid->getChildren());
                     replacement->setID(kid->getID());
@@ -375,7 +375,7 @@ bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobTree* root,
     return false;
 }
 
-void CLayer::recursive_FlattenTransformations(CBlobTree* node, const CAffineTransformation& transformBranch)
+void CLayer::recursive_FlattenTransformations(CBlobNode* node, const CAffineTransformation& transformBranch)
 {
     if(node == NULL) return;
     if(node->isOperator())
@@ -397,7 +397,7 @@ void CLayer::recursive_FlattenTransformations(CBlobTree* node, const CAffineTran
     }
 }
 
-void CLayer::recursive_RecomputeAllOctrees(CBlobTree* node, const CMatrix& mtxBranch)
+void CLayer::recursive_RecomputeAllOctrees(CBlobNode* node, const CMatrix& mtxBranch)
 {
     if(node == NULL) return;
     if(node->isOperator())
@@ -420,14 +420,14 @@ void CLayer::recursive_RecomputeAllOctrees(CBlobTree* node, const CMatrix& mtxBr
     }
 }
 
-int CLayer::recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobTree* node)
+int CLayer::recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobNode* node)
 {
     if(node)
     {
         if(node->isOperator())
         {
             int res = 0;
-            CBlobTree* kid = NULL;
+            CBlobNode* kid = NULL;
             size_t ctKids = node->countChildren();
             if(bIncludeOps)
             {
@@ -455,499 +455,63 @@ int CLayer::recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobTr
 
 }
 
-int CLayer::recursive_WriteBlobNode(CSketchConfig* cfg, CBlobTree* node, int idOffset)
+int CLayer::recursive_WriteBlobNode(CSketchConfig* cfg, CBlobNode* node, int idOffset)
 {
     if(cfg == NULL) return -1;
     if(node == NULL) return -1;
 
-    DAnsiStr strNodeName;
-    char chrName[MAX_NAME_LEN];
-
-    if(node->isOperator())
-    {
-        size_t ctKids = node->countChildren();
-
-        //First write current operator
-        //Use the same id passed in as parameter for writing the operator
-        strNodeName = printToAStr("BLOBNODE %d", node->getID() + idOffset);
-        node->getName(chrName);
-
-        cfg->writeBool(strNodeName, "IsOperator", node->isOperator());
-        cfg->writeString(strNodeName, "OperatorType", DAnsiStr(chrName));
-        cfg->writeInt(strNodeName, "ChildrenCount", ctKids);
-
-        //Writing Transformation
-        cfg->writeVec3f(strNodeName, "AffineScale", node->getTransform().getScale());
-        cfg->writeVec4f(strNodeName, "AffineRotate", node->getTransform().getRotationVec4());
-        cfg->writeVec3f(strNodeName, "AffineTranslate", node->getTransform().getTranslate());
-
-        //First write all the children
-        vector<int> arrayInt;
-        for(size_t i=0; i<ctKids; i++)
-        {
-            arrayInt.push_back(node->getChild(i)->getID());
-            recursive_WriteBlobNode(cfg, node->getChild(i), idOffset);
-        }
-
-        cfg->writeIntArray(strNodeName, "ChildrenIDs", arrayInt);
-        arrayInt.clear();
-
-        //Write Operator specific properties
-        switch(node->getNodeType())
-        {
-        case(bntOpRicciBlend):
-        {
-            CRicciBlend* ricci = dynamic_cast<CRicciBlend*>(node);
-            cfg->writeFloat(strNodeName, "power", ricci->getN());
-            break;
-        }
-        case(bntOpWarpTwist):
-        {
-            CWarpTwist* twist = dynamic_cast<CWarpTwist*>(node);
-            cfg->writeFloat(strNodeName, "factor", twist->getWarpFactor());
-            cfg->writeInt(strNodeName, "axis", static_cast<int>(twist->getMajorAxis()));
-            break;
-        }
-        case(bntOpWarpTaper):
-        {
-            CWarpTaper* taper = dynamic_cast<CWarpTaper*>(node);
-            cfg->writeFloat(strNodeName, "factor", taper->getWarpFactor());
-            cfg->writeInt(strNodeName, "base axis", static_cast<int>(taper->getAxisAlong()));
-            cfg->writeInt(strNodeName, "taper axis", static_cast<int>(taper->getAxisTaper()));
-            break;
-        }
-        case(bntOpWarpBend):
-        {
-            CWarpBend* bend = dynamic_cast<CWarpBend*>(node);
-            cfg->writeFloat(strNodeName, "rate", bend->getBendRate());
-            cfg->writeFloat(strNodeName, "center", bend->getBendCenter());
-            cfg->writeFloat(strNodeName, "left bound", bend->getBendRegion().left);
-            cfg->writeFloat(strNodeName, "right bound", bend->getBendRegion().right);
-            break;
-        }
-        case(bntOpWarpShear):
-        {
-            CWarpShear* shear = dynamic_cast<CWarpShear*>(node);
-            cfg->writeFloat(strNodeName, "factor", shear->getWarpFactor());
-            cfg->writeInt(strNodeName, "base axis", static_cast<int>(shear->getAxisAlong()));
-            cfg->writeInt(strNodeName, "shear axis", static_cast<int>(shear->getAxisDependent()));
-            break;
-        }
-        }
-
-        return ctKids;
-    }
-    else
-    {
-        strNodeName = printToAStr("BLOBNODE %d", node->getID() + idOffset);
-
-        CSkeletonPrimitive* sprim = dynamic_cast<CSkeletonPrimitive*>(node);
-
-        //General per each prim
-        cfg->writeBool(strNodeName, "IsOperator", sprim->isOperator());
-        //Write skeleton Name
-        sprim->getSkeleton()->getName(chrName);
-        cfg->writeString(strNodeName, "SkeletonType", DAnsiStr(chrName));
-
-        //cfg->writeInt(strNodeName, "FieldFunctionType", sprim->getFieldFunction()->getType());
-        //cfg->writeFloat(strNodeName, "FieldScale", sprim->getScale());
-        //cfg->writeFloat(strNodeName, "Range", sprim->getRange());
-        cfg->writeVec3f(strNodeName, "AffineScale", sprim->getTransform().getScale());
-        cfg->writeVec4f(strNodeName, "AffineRotate", sprim->getTransform().getRotationVec4());
-        cfg->writeVec3f(strNodeName, "AffineTranslate", sprim->getTransform().getTranslate());
-
-        CMaterial m = sprim->baseMaterial(vec3f(0.0f, 0.0f, 0.0f));
-        cfg->writeVec4f(strNodeName, "MtrlAmbient", m.ambient);
-        cfg->writeVec4f(strNodeName, "MtrlDiffused", m.diffused);
-        cfg->writeVec4f(strNodeName, "MtrlSpecular", m.specular);
-        cfg->writeFloat(strNodeName, "MtrlShininess", m.shininess);
-
-
-        switch(sprim->getSkeleton()->getType())
-        {
-        case(sktPoint):
-        {
-            CSkeletonPoint* skeletPoint = dynamic_cast<CSkeletonPoint*>(sprim->getSkeleton());
-            cfg->writeVec3f(strNodeName, "position", skeletPoint->getPosition());
-        }
-            break;
-        case(sktLine):
-        {
-            CSkeletonLine* skeletLine = dynamic_cast<CSkeletonLine*>(sprim->getSkeleton());
-            cfg->writeVec3f(strNodeName, "start", skeletLine->getStartPosition());
-            cfg->writeVec3f(strNodeName, "end", skeletLine->getEndPosition());
-        }
-            break;
-        case(sktRing):
-        {
-            CSkeletonRing* skeletRing = dynamic_cast<CSkeletonRing*>(sprim->getSkeleton());
-            cfg->writeVec3f(strNodeName, "position", skeletRing->getPosition());
-            cfg->writeVec3f(strNodeName, "direction", skeletRing->getDirection());
-            cfg->writeFloat(strNodeName, "radius", skeletRing->getRadius());
-        }
-            break;
-        case(sktDisc):
-        {
-            CSkeletonDisc* skeletDisc = dynamic_cast<CSkeletonDisc*>(sprim->getSkeleton());
-            cfg->writeVec3f(strNodeName, "position", skeletDisc->getPosition());
-            cfg->writeVec3f(strNodeName, "direction", skeletDisc->getDirection());
-            cfg->writeFloat(strNodeName, "radius", skeletDisc->getRadius());
-        }
-            break;
-        case(sktCylinder):
-        {
-            CSkeletonCylinder* skeletCyl = dynamic_cast<CSkeletonCylinder*>(sprim->getSkeleton());
-            cfg->writeVec3f(strNodeName, "position", skeletCyl->getPosition());
-            cfg->writeVec3f(strNodeName, "direction", skeletCyl->getDirection());
-            cfg->writeFloat(strNodeName, "radius", skeletCyl->getRadius());
-            cfg->writeFloat(strNodeName, "height", skeletCyl->getHeight());
-        }
-            break;
-
-        case(sktCube):
-        {
-            CSkeletonCube* skeletCube = dynamic_cast<CSkeletonCube*>(sprim->getSkeleton());
-            cfg->writeVec3f(strNodeName, "position", skeletCube->getPosition());
-            cfg->writeFloat(strNodeName, "side", skeletCube->getSide());
-        }
-            break;
-        case(sktTriangle):
-        {
-            CSkeletonTriangle* skeletTriangle = dynamic_cast<CSkeletonTriangle*>(sprim->getSkeleton());
-            cfg->writeVec3f(strNodeName, "corner0", skeletTriangle->getTriangleCorner(0));
-            cfg->writeVec3f(strNodeName, "corner1", skeletTriangle->getTriangleCorner(1));
-            cfg->writeVec3f(strNodeName, "corner2", skeletTriangle->getTriangleCorner(2));
-        }
-
-        }
-
-        return 1;
-    }
+    return node->saveScript(cfg, idOffset);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobTree* parent, int id, int idOffset)
+int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id, int idOffset)
 {
     if(cfg == NULL) return 0;
+    if(parent == NULL) return 0;
 
     DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
-
     if(cfg->hasSection(strNodeName) < 0)
         return 0;
+
 
     //Read Node Transformation First
-    vec3f affScale = cfg->readVec3f(strNodeName, "AffineScale");
-    vec4f affRotate = cfg->readVec4f(strNodeName, "AffineRotate");
-    quat quatRotation(affRotate);
-    vec3f affTranslate = cfg->readVec3f(strNodeName, "AffineTranslate");
-
     bool bOperator = cfg->readBool(strNodeName, "IsOperator", false);
     if(bOperator)
-    {
-        vector<int> arrayInt;
+    {        
         DAnsiStr strOp = cfg->readString(strNodeName, "OperatorType");
         strOp.toUpper();
+        CBlobNode* opNode = NULL;
 
-
-        int ctKids = cfg->readInt(strNodeName, "ChildrenCount", 0);
-        cfg->readIntArray(strNodeName, "ChildrenIDs", ctKids, arrayInt);
-        CBlobTree* opNode = NULL;
-
-        //typedef enum BlobNodeType{bntPrimitive, bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend,
-        //	bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
-
-        if(strOp == PS_UNION)
-        {
-            opNode = new CUnion();
+        try{
+            opNode = TheBlobNodeFactoryName::Instance().CreateObject(strOp.cptr());
         }
-        else if(strOp == PS_BLEND)
+        catch(exception e)
         {
-            opNode = new CGradientBlend();
-        }
-        else if(strOp == PS_RICCIBLEND)
-        {
-            float power = cfg->readFloat(strNodeName, "power", 1.0f);
-            opNode = new CRicciBlend(power);
-
-        }
-        else if(strOp == PS_INTERSECTION)
-        {
-            opNode = new CIntersection();
-        }
-        else if(strOp == PS_DIFFERENCE)
-        {
-            opNode = new CDifference();
-        }
-        else if(strOp == PS_SMOOTHDIF)
-        {
-            opNode = new CSmoothDifference();
-        }
-        else if(strOp == PS_AFFINE)
-        {
-            opNode = new CAffine();
-        }
-        else if(strOp == PS_WARPTWIST)
-        {
-            float factor = cfg->readFloat(strNodeName, "factor", 1.0f);
-            MajorAxices axis = static_cast<MajorAxices>(cfg->readInt(strNodeName, "axis", 2));
-            opNode = new CWarpTwist(factor, axis);
-        }
-        else if(strOp == PS_WARPTAPER)
-        {
-            float factor = cfg->readFloat(strNodeName, "factor", 1.0f);
-            MajorAxices axisBase = static_cast<MajorAxices>(cfg->readInt(strNodeName, "base axis", 0));
-            MajorAxices axisTaper = static_cast<MajorAxices>(cfg->readInt(strNodeName, "taper axis", 2));
-
-            opNode = new CWarpTaper(factor, axisTaper, axisBase);
-        }
-        else if(strOp == PS_WARPBEND)
-        {
-            float rate	 = cfg->readFloat(strNodeName, "rate", 1.0f);
-            float center = cfg->readFloat(strNodeName, "center", 0.5f);
-            float lbound = cfg->readFloat(strNodeName, "left bound", 0.0f);
-            float rbound = cfg->readFloat(strNodeName, "right bound", 1.0f);
-
-            opNode = new CWarpBend(rate, center, lbound, rbound);
-        }
-        else if(strOp == PS_WARPSHEAR)
-        {
-            float factor = cfg->readFloat(strNodeName, "factor", 1.0f);
-            MajorAxices axisBase  = static_cast<MajorAxices>(cfg->readInt(strNodeName, "base axis", 0));
-            MajorAxices axisShear = static_cast<MajorAxices>(cfg->readInt(strNodeName, "shear axis", 2));
-
-            opNode = new CWarpShear(factor, axisBase, axisShear);
-        }
-        else if(strOp == PS_CACHE)
-        {
-            opNode = new CFieldCache();
-        }
-        else if(strOp == PS_PCM)
-        {
-            opNode = new CPcm();
-        }
-        else
-        {
-            DAnsiStr strMsg = printToAStr("[BlobTree Script] Unknown operator %s: [%s]", strOp.ptr());
+            DAnsiStr strMsg = printToAStr("[BlobTree Script] %s [%s]", e.what(), strOp.ptr());
             ReportError(strMsg.ptr());
             FlushAllErrors();
 
             SAFE_DELETE(cfg);
             SAFE_DELETE(parent);
-
-            return false;
+            return -1;
         }
 
-        int res = 0;
+        //Read Operator params
+        opNode->loadScript(cfg, id);
         opNode->setID(id - idOffset);
-        //Writing Transformation
-        opNode->getTransform().set(affScale, quatRotation, affTranslate);
 
-        //Find all the children for this operator
-        for(size_t i=0; i<arrayInt.size(); i++)
-            res += recursive_ReadBlobNode(cfg, opNode, arrayInt[i], idOffset);
-
-        arrayInt.clear();
-
-        if(parent == NULL)
-            m_lpBlobTree = opNode;
-        else
-            parent->addChild(opNode);
-        return res+1;
-    }
-    else
-    {
-        DAnsiStr strSkelet = cfg->readString(strNodeName, "SkeletonType");
-
-        CMaterial mtrl;
-        mtrl.ambient   = cfg->readVec4f(strNodeName, "MtrlAmbient");
-        mtrl.diffused  = cfg->readVec4f(strNodeName, "MtrlDiffused");
-        mtrl.specular  = cfg->readVec4f(strNodeName, "MtrlSpecular");
-        mtrl.shininess = cfg->readFloat(strNodeName, "MtrlShininess");
-
-
-        CSkeleton* skelet = NULL;
-        if(strSkelet == PS_POINT)
-        {
-            vec3f pos = cfg->readVec3f(strNodeName, "position");
-            skelet = new CSkeletonPoint(pos);
-        }
-        else if(strSkelet == PS_LINE)
-        {
-            vec3f s = cfg->readVec3f(strNodeName, "start");
-            vec3f e = cfg->readVec3f(strNodeName, "end");
-            skelet = new CSkeletonLine(s, e);
-        }
-        else if(strSkelet == PS_RING)
-        {
-            vec3f c = cfg->readVec3f(strNodeName, "position");
-            vec3f d = cfg->readVec3f(strNodeName, "direction");
-            float r = cfg->readFloat(strNodeName, "radius");
-            skelet = new CSkeletonRing(c, d, r);
-        }
-        else if(strSkelet == PS_DISC)
-        {
-            vec3f c = cfg->readVec3f(strNodeName, "position");
-            vec3f d = cfg->readVec3f(strNodeName, "direction");
-            float r = cfg->readFloat(strNodeName, "radius");
-            skelet = new CSkeletonDisc(c, d, r);
-        }
-        else if(strSkelet == PS_CYLINDER)
-        {
-            vec3f p = cfg->readVec3f(strNodeName, "position");
-            vec3f d = cfg->readVec3f(strNodeName, "direction");
-            float r = cfg->readFloat(strNodeName, "radius");
-            float h = cfg->readFloat(strNodeName, "height");
-            skelet = new CSkeletonCylinder(p, d, r, h);
-        }
-        else if(strSkelet == PS_CUBE)
-        {
-            vec3f p = cfg->readVec3f(strNodeName, "position");
-            float s = cfg->readFloat(strNodeName, "side");
-            skelet = new CSkeletonCube(p, s);
-        }
-        else if(strSkelet == PS_TRIANGLE)
-        {
-            vec3f a = cfg->readVec3f(strNodeName, "corner0");
-            vec3f b = cfg->readVec3f(strNodeName, "corner1");
-            vec3f c = cfg->readVec3f(strNodeName, "corner2");
-            skelet = new CSkeletonTriangle(a, b, c);
-        }
-        else
-        {
-            DAnsiStr strMsg = printToAStr("[BlobTree Script] Unknown primitive type: [%s]", strSkelet.ptr());
-            ReportError(strMsg.ptr());
-            FlushAllErrors();
-
-            return 0;
-        }
-
-        CSkeletonPrimitive* sprim = new CSkeletonPrimitive(skelet, fftWyvill, 1.0f);
-        sprim->setID(id - idOffset);
-        sprim->getTransform().set(affScale, quatRotation, affTranslate);
-        sprim->setMaterial(mtrl);
-        sprim->setColor(mtrl.diffused);
-
-        if(parent == NULL)
-            m_lpBlobTree = sprim;
-        else
-            parent->addChild(sprim);
-        return 1;
-    }
-
-}
-
-int CLayer::recursive_ReadBlobNodeV0( CSketchConfig* cfg, CBlobTree* parent, int id, int& idIncremental )
-{
-    if(cfg == NULL) return 0;
-
-    DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
-
-    if(cfg->hasSection(strNodeName) < 0)
-        return 0;
-
-    bool bOperator = cfg->readBool(strNodeName, "IsOperator", false);
-    if(bOperator)
-    {
-        vector<int> arrayInt;
-        DAnsiStr strOp = cfg->readString(strNodeName, "OperatorType");
-        strOp.toUpper();
-
-        int ctKids = cfg->readInt(strNodeName, "ChildrenCount", 0);
-        cfg->readIntArray(strNodeName, "ChildrenIDs", ctKids, arrayInt);
-        CBlobTree* opNode = NULL;
-
-        //typedef enum BlobNodeType{bntPrimitive, bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend,
-        //	bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
-
-        if(strOp == PS_UNION)
-        {
-            opNode = new CUnion();
-        }
-        else if(strOp == PS_BLEND)
-        {
-            opNode = new CGradientBlend();
-        }
-        else if(strOp == PS_RICCIBLEND)
-        {
-            float power = cfg->readFloat(strNodeName, "power", 1.0f);
-            opNode = new CRicciBlend(power);
-
-        }
-        else if(strOp == PS_INTERSECTION)
-        {
-            opNode = new CIntersection();
-        }
-        else if(strOp == PS_DIFFERENCE)
-        {
-            opNode = new CDifference();
-        }
-        else if(strOp == PS_SMOOTHDIF)
-        {
-            opNode = new CSmoothDifference();
-        }
-        else if(strOp == PS_AFFINE)
-        {
-            opNode = new CAffine();
-        }
-        else if(strOp == PS_WARPTWIST)
-        {
-            float factor = cfg->readFloat(strNodeName, "factor", 1.0f);
-            MajorAxices axis = static_cast<MajorAxices>(cfg->readInt(strNodeName, "axis", 2));
-            opNode = new CWarpTwist(factor, axis);
-        }
-        else if(strOp == PS_WARPTAPER)
-        {
-            float factor = cfg->readFloat(strNodeName, "factor", 1.0f);
-            MajorAxices axisBase = static_cast<MajorAxices>(cfg->readInt(strNodeName, "base axis", 0));
-            MajorAxices axisTaper = static_cast<MajorAxices>(cfg->readInt(strNodeName, "taper axis", 2));
-
-            opNode = new CWarpTaper(factor, axisTaper, axisBase);
-        }
-        else if(strOp == PS_WARPBEND)
-        {
-            float rate	 = cfg->readFloat(strNodeName, "rate", 1.0f);
-            float center = cfg->readFloat(strNodeName, "center", 0.5f);
-            float lbound = cfg->readFloat(strNodeName, "left bound", 0.0f);
-            float rbound = cfg->readFloat(strNodeName, "right bound", 1.0f);
-
-            opNode = new CWarpBend(rate, center, lbound, rbound);
-        }
-        else if(strOp == PS_WARPSHEAR)
-        {
-            float factor = cfg->readFloat(strNodeName, "factor", 1.0f);
-            MajorAxices axisBase  = static_cast<MajorAxices>(cfg->readInt(strNodeName, "base axis", 0));
-            MajorAxices axisShear = static_cast<MajorAxices>(cfg->readInt(strNodeName, "shear axis", 2));
-
-            opNode = new CWarpShear(factor, axisBase, axisShear);
-        }
-        else if(strOp == PS_CACHE)
-        {
-            opNode = new CFieldCache();
-        }
-        else if(strOp == PS_PCM)
-        {
-            opNode = new CPcm();
-        }
-        else
-        {
-            DAnsiStr strMsg = printToAStr("[BlobTree Script] Unknown operator %s: [%s]", strOp.ptr());
-            ReportError(strMsg.ptr());
-            FlushAllErrors();
-
-            SAFE_DELETE(cfg);
-            SAFE_DELETE(parent);
-
-            return false;
-        }
-
+        //Build Children
         int res = 0;
-        opNode->setID(idIncremental);
-        idIncremental++;
-        //Find all the children for this operator
-        for(size_t i=0; i<arrayInt.size(); i++)
-            res += recursive_ReadBlobNodeV0(cfg, opNode, arrayInt[i], idIncremental);
+        {
+            vector<int> arrayInt;
+            int ctKids = cfg->readInt(strNodeName, "ChildrenCount", 0);
+            cfg->readIntArray(strNodeName, "ChildrenIDs", ctKids, arrayInt);
 
-        arrayInt.clear();
+            //Find all the children for this operator
+            for(U32 i=0; i<arrayInt.size(); i++)
+                res += recursive_ReadBlobNode(cfg, opNode, arrayInt[i], idOffset);
+            arrayInt.clear();
+        }
 
         if(parent == NULL)
             m_lpBlobTree = opNode;
@@ -956,101 +520,41 @@ int CLayer::recursive_ReadBlobNodeV0( CSketchConfig* cfg, CBlobTree* parent, int
         return res+1;
     }
     else
-    {
+    {        
         DAnsiStr strSkelet = cfg->readString(strNodeName, "SkeletonType");
-        vec3f affScale = cfg->readVec3f(strNodeName, "AffineScale");
-        vec4f affRotate = cfg->readVec4f(strNodeName, "AffineRotate");
-        quat quatRotation(affRotate);
+        CSkeletonPrimitive* sprim = NULL;
 
-        vec3f affTranslate = cfg->readVec3f(strNodeName, "AffineTranslate");
-        CMaterial mtrl;
-        mtrl.ambient   = cfg->readVec4f(strNodeName, "MtrlAmbient");
-        mtrl.diffused  = cfg->readVec4f(strNodeName, "MtrlDiffused");
-        mtrl.specular  = cfg->readVec4f(strNodeName, "MtrlSpecular");
-        mtrl.shininess = cfg->readFloat(strNodeName, "MtrlShininess");
-
-
-        CSkeleton* skelet = NULL;
-        if(strSkelet == PS_POINT)
-        {
-            vec3f pos = cfg->readVec3f(strNodeName, "position");
-            skelet = new CSkeletonPoint(pos);
+        try{
+            sprim = reinterpret_cast<CSkeletonPrimitive*>(TheBlobNodeFactoryName::Instance().CreateObject(strSkelet.cptr()));
         }
-        else if(strSkelet == PS_LINE)
+        catch(exception e)
         {
-            vec3f s = cfg->readVec3f(strNodeName, "start");
-            vec3f e = cfg->readVec3f(strNodeName, "end");
-            skelet = new CSkeletonLine(s, e);
-        }
-        else if(strSkelet == PS_RING)
-        {
-            vec3f c = cfg->readVec3f(strNodeName, "position");
-            vec3f d = cfg->readVec3f(strNodeName, "direction");
-            float r = cfg->readFloat(strNodeName, "radius");
-            skelet = new CSkeletonRing(c, d, r);
-        }
-        else if(strSkelet == PS_DISC)
-        {
-            vec3f c = cfg->readVec3f(strNodeName, "position");
-            vec3f d = cfg->readVec3f(strNodeName, "direction");
-            float r = cfg->readFloat(strNodeName, "radius");
-            skelet = new CSkeletonDisc(c, d, r);
-        }
-        else if(strSkelet == PS_CYLINDER)
-        {
-            vec3f p = cfg->readVec3f(strNodeName, "position");
-            vec3f d = cfg->readVec3f(strNodeName, "direction");
-            float r = cfg->readFloat(strNodeName, "radius");
-            float h = cfg->readFloat(strNodeName, "height");
-            skelet = new CSkeletonCylinder(p, d, r, h);
-        }
-        else if(strSkelet == PS_CUBE)
-        {
-            vec3f p = cfg->readVec3f(strNodeName, "position");
-            float s = cfg->readFloat(strNodeName, "side");
-            skelet = new CSkeletonCube(p, s);
-        }
-        else if(strSkelet == PS_TRIANGLE)
-        {
-            vec3f a = cfg->readVec3f(strNodeName, "corner0");
-            vec3f b = cfg->readVec3f(strNodeName, "corner1");
-            vec3f c = cfg->readVec3f(strNodeName, "corner2");
-            skelet = new CSkeletonTriangle(a, b, c);
-        }
-        else
-        {
-            DAnsiStr strMsg = printToAStr("[BlobTree Script] Unknown primitive type: [%s]", strSkelet.ptr());
+            DAnsiStr strMsg = printToAStr("[BlobTree Script] %s [%s]", e.what(), strSkelet.ptr());
             ReportError(strMsg.ptr());
             FlushAllErrors();
 
             return 0;
         }
 
-        CSkeletonPrimitive* sprim = new CSkeletonPrimitive(skelet, fftWyvill, 1.0f);
-        sprim->setID(idIncremental);
-        idIncremental++;
-
-        sprim->getTransform().set(affScale, quatRotation, affTranslate);
-        sprim->setMaterial(mtrl);
-        sprim->setColor(mtrl.diffused);
-
-
+        //Set Params
+        sprim->getSkeleton()->loadScript(cfg, id);
+        sprim->setID(id - idOffset);
         if(parent == NULL)
             m_lpBlobTree = sprim;
         else
             parent->addChild(sprim);
         return 1;
     }
+
 }
 
-
-int CLayer::recursive_GetBlobTreeSeedPoints(CBlobTree* node, stack<CBlobTree*> &stkOperators)
+int CLayer::recursive_GetBlobTreeSeedPoints(CBlobNode* node, stack<CBlobNode*> &stkOperators)
 {		
     if(node)
     {
         if(node->isOperator())
         {
-            CBlobTree* kid = NULL;
+            CBlobNode* kid = NULL;
             size_t ctKids = 0;
 
             stkOperators.push(node);
@@ -1061,7 +565,7 @@ int CLayer::recursive_GetBlobTreeSeedPoints(CBlobTree* node, stack<CBlobTree*> &
             for(size_t i=0; i<ctKids; i++)
             {
                 kid = node->getChild(i);
-                stack<CBlobTree*> stkLocal(stkOperators);
+                stack<CBlobNode*> stkLocal(stkOperators);
                 res += recursive_GetBlobTreeSeedPoints(kid, stkLocal);
             }
             return res;
@@ -1070,9 +574,9 @@ int CLayer::recursive_GetBlobTreeSeedPoints(CBlobTree* node, stack<CBlobTree*> &
         {
             //It is an Skeletal Primitive
             CSkeletonPrimitive * prim = dynamic_cast<CSkeletonPrimitive*>(node);
-            vec3 seed = prim->getPolySeedPoint();
+            vec3f seed = prim->getPolySeedPoint();
 
-            CBlobTree* op = NULL;
+            CBlobNode* op = NULL;
 
             //Apply All operators on the seed point
             while(!stkOperators.empty())
@@ -1084,9 +588,6 @@ int CLayer::recursive_GetBlobTreeSeedPoints(CBlobTree* node, stack<CBlobTree*> &
 
                 switch(op->getNodeType())
                 {
-                case(bntOpAffine):
-                    seed = dynamic_cast<CAffine*>(op)->applyForwardTransform(seed);
-                    break;
                 case(bntOpWarpTwist):
                     seed = dynamic_cast<CWarpTwist*>(op)->warp(seed);
                     break;
@@ -1122,8 +623,8 @@ bool CLayer::setPolySeedPointAuto()
 {
     removeAllSeeds();
 
-    stack<CBlobTree*> stkOperators;
-    CBlobTree *node = getBlob();
+    stack<CBlobNode*> stkOperators;
+    CBlobNode *node = getBlob();
     int ctRes = recursive_GetBlobTreeSeedPoints(node, stkOperators);
     if(ctRes > 0)
     {
@@ -1135,13 +636,13 @@ bool CLayer::setPolySeedPointAuto()
         return false;
 }
 
-int CLayer::recursive_TranslateSkeleton(CBlobTree* node, vec3f d)
+int CLayer::recursive_TranslateSkeleton(CBlobNode* node, vec3f d)
 {
     if(node == NULL) return 0;
 
     if(node->isOperator())
     {
-        CBlobTree* kid = NULL;
+        CBlobNode* kid = NULL;
         size_t ctKids = node->countChildren();
         int res = 0;
 
@@ -1166,7 +667,7 @@ int CLayer::skeletTranslate(vec3f d)
     return recursive_TranslateSkeleton(m_lpBlobTree, d);
 }
 
-void CLayer::setOctree(vec3 lower, vec3 upper)
+void CLayer::setOctree(vec3f lower, vec3f upper)
 {	
     m_octree.lower = lower;
     m_octree.upper = upper;
@@ -1175,7 +676,7 @@ void CLayer::setOctree(vec3 lower, vec3 upper)
 void CLayer::setOctreeFromMesh()
 {	
     if(m_lpMesh == NULL) return;
-    vec3 lo, hi;
+    vec3f lo, hi;
     m_lpMesh->getExtremes(lo, hi);
     m_octree.lower = lo;
     m_octree.upper = hi;
@@ -1247,7 +748,7 @@ bool CLayer::saveAsVolumeData(const char* strFileName, int w, int h, int d)
 
 bool CLayer::saveAsVolumeData(U8* buffer, int w, int h, int d)
 {
-    CBlobTree* root = getBlob();
+    CBlobNode* root = getBlob();
     if((root == NULL) || (m_lpMesh == NULL) || (buffer == NULL))
     {
 
@@ -1255,8 +756,8 @@ bool CLayer::saveAsVolumeData(U8* buffer, int w, int h, int d)
     }
 
 
-    vec3 lower(0.0f, 0.0f, 0.0f);
-    vec3 upper(0.5f, 0.5f, 0.5f);
+    vec3f lower(0.0f, 0.0f, 0.0f);
+    vec3f upper(0.5f, 0.5f, 0.5f);
 
     m_lpMesh->fitTo(lower, upper);
     m_lpMesh->getExtremes(lower, upper);
@@ -1264,7 +765,7 @@ bool CLayer::saveAsVolumeData(U8* buffer, int w, int h, int d)
     float stepX = (upper.x - lower.x) / w;
     float stepY = (upper.y - lower.y) / h;
     float stepZ = (upper.z - lower.z) / d;
-    vec3 pt;
+    vec3f pt;
 
     for (int i=0; i < w; i++)
     {
@@ -1272,7 +773,7 @@ bool CLayer::saveAsVolumeData(U8* buffer, int w, int h, int d)
         {
             for (int k=0; k < d; k++)
             {
-                pt = lower + vec3(i*stepX, j*stepY, k*stepZ);
+                pt = lower + vec3f(i*stepX, j*stepY, k*stepZ);
                 float fv = root->fieldValue(pt);
                 if(fv > 1.0f)
                     throw "FieldValue overflow!";
@@ -1332,12 +833,12 @@ void CLayer::flattenTransformations()
     recursive_FlattenTransformations(m_lpBlobTree, transformBranch);
 }
 
-CBlobTree* CLayer::findNodeByID( int id )
+CBlobNode* CLayer::findNodeByID( int id )
 {
     return recursive_FindNodeByID(id, m_lpBlobTree);
 }
 
-int CLayer::recursive_convertToBinaryTree( CBlobTree* node, CBlobTree* clonned )
+int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
 {
     if ((node == NULL)||(clonned == NULL))
     {
@@ -1358,11 +859,11 @@ int CLayer::recursive_convertToBinaryTree( CBlobTree* node, CBlobTree* clonned )
         int res = 0;
 
         //Replace nodes with more than 2 kids
-        CBlobTree* clonnedChild = NULL;
+        CBlobNode* clonnedChild = NULL;
         if(node->countChildren() > 2)
         {
-            CBlobTree* cur = NULL;
-            CBlobTree* prev = NULL;
+            CBlobNode* cur = NULL;
+            CBlobNode* prev = NULL;
 
 
             for(size_t i=0; i<node->countChildren() -1; i++)
@@ -1370,10 +871,14 @@ int CLayer::recursive_convertToBinaryTree( CBlobTree* node, CBlobTree* clonned )
                 if(i == 0)
                     cur = clonned;
                 else
-                    cur = cloneNode(clonned, this->fetchIncrementLastNodeID());
+                {
+                    cur = TheBlobNodeCloneFactory::Instance().CreateObject(clonned);
+                    cur->setID(this->fetchIncrementLastNodeID());
+                }
 
                 //Clone child
-                clonnedChild = cloneNode(node->getChild(i), this->fetchIncrementLastNodeID());
+                clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
+                clonnedChild->setID(this->fetchIncrementLastNodeID());
 
                 //Add clonned child to parent
                 cur->addChild(clonnedChild);
@@ -1388,7 +893,10 @@ int CLayer::recursive_convertToBinaryTree( CBlobTree* node, CBlobTree* clonned )
 
             if(prev)
             {
-                clonnedChild = cloneNode(node->getLastChild(), this->fetchIncrementLastNodeID());
+                clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getLastChild());
+                clonnedChild->setID(this->fetchIncrementLastNodeID());
+
+                //Last node has 2 children
                 prev->addChild(clonnedChild);
 
                 //Recurse to child
@@ -1402,7 +910,8 @@ int CLayer::recursive_convertToBinaryTree( CBlobTree* node, CBlobTree* clonned )
                 if(node->getChild(i))
                 {
                     //Clone child
-                    clonnedChild = cloneNode(node->getChild(i), this->fetchIncrementLastNodeID());
+                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
+                    clonnedChild->setID(this->fetchIncrementLastNodeID());
 
                     //Add clone child to clonned parent
                     clonned->addChild(clonnedChild);
@@ -1411,9 +920,8 @@ int CLayer::recursive_convertToBinaryTree( CBlobTree* node, CBlobTree* clonned )
                     res += recursive_convertToBinaryTree(node->getChild(i), clonnedChild);
                 }
                 else
-                {
-                    CSkeletonPoint* point = new CSkeletonPoint(vec3f(0.0f, 0.0f, 0.0f));
-                    clonnedChild = new CSkeletonPrimitive(point);
+                {                    
+                    clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("POINT");
                     clonnedChild->setID(this->fetchIncrementLastNodeID());
 
                     //Add clone child to clonned parent
@@ -1433,7 +941,7 @@ int CLayer::recursive_convertToBinaryTree( CBlobTree* node, CBlobTree* clonned )
         return 1;
 }
 
-int CLayer::recursive_countBinaryTreeErrors( CBlobTree* node )
+int CLayer::recursive_countBinaryTreeErrors( CBlobNode* node )
 {
     if(node == NULL) return 0;
     if(node->isOperator())
@@ -1447,10 +955,7 @@ int CLayer::recursive_countBinaryTreeErrors( CBlobTree* node )
         else if(node->countChildren() == 1)
         {
             res++;
-
-            char chrName[MAX_NAME_LEN];
-            node->getName(chrName);
-            DAnsiStr strMsg = printToAStr("Found a unary node in tree! Name:%s, ID:%d", chrName, node->getID());
+            DAnsiStr strMsg = printToAStr("Found a unary node in tree! Name:%s, ID:%d", node->getName().c_str(), node->getID());
             ReportError(strMsg.ptr());
             FlushAllErrors();
         }
@@ -1465,12 +970,15 @@ int CLayer::recursive_countBinaryTreeErrors( CBlobTree* node )
 
 int CLayer::convertToBinaryTree()
 {
-    CBlobTree* root = this->getBlob();
+    CBlobNode* root = this->getBlob();
     int ctErrors = recursive_countBinaryTreeErrors(root);
     if(ctErrors > 0)
     {
         this->resetLastBlobNodeID();
-        CBlobTree* replacement = cloneNode(root, this->fetchIncrementLastNodeID());
+
+        //Create a clone of the node
+        CBlobNode* replacement = TheBlobNodeCloneFactory::Instance().CreateObject(root);
+        replacement->setID(this->fetchIncrementLastNodeID());
         if(recursive_convertToBinaryTree(root, replacement) > 0)
         {
             SAFE_DELETE(root);
@@ -1575,19 +1083,19 @@ void CLayerManager::setMeshQuality(int quality)
     }
 }
 
-void CLayerManager::addLayer(const CBlobTree* blob, const char* chrLayerName)
+void CLayerManager::addLayer(const CBlobNode* blob, const char* chrLayerName)
 {
     addLayer(blob, NULL, chrLayerName);
 }
 
-void CLayerManager::addLayer(const CBlobTree* blob, 					  	     
+void CLayerManager::addLayer(const CBlobNode* blob,
                              const char* chrMeshFileName,
                              const char* chrLayerName)
 {
-    CLayer * aLayer = new CLayer(const_cast<CBlobTree*>(blob));
+    CLayer * aLayer = new CLayer(const_cast<CBlobNode*>(blob));
     aLayer->setCellSize(DEFAULT_CELL_SIZE);
     aLayer->setPolyBounds(DEFAULT_BOUNDS);
-    aLayer->setPolySeedPoint(vec3(0.0f, 0.0f, 0.0f));
+    aLayer->setPolySeedPoint(vec3f(0.0f, 0.0f, 0.0f));
     aLayer->setVisible(true);
 
     //Load Mesh
@@ -1894,18 +1402,12 @@ bool CLayerManager::loadScript( CSketchConfig* cfg )
         aLayer = new CLayer();
         aLayer->setCellSize(DEFAULT_CELL_SIZE);
         aLayer->setPolyBounds(DEFAULT_BOUNDS);
-        aLayer->setPolySeedPoint(vec3(0.0f, 0.0f, 0.0f));
+        aLayer->setPolySeedPoint(vec3f(0.0f, 0.0f, 0.0f));
         aLayer->setVisible(true);
         aLayer->setGroupName(printToAStr("Layer %d", i));
         if(layersRoot[i] >= 0)
         {
-            if(fileVersion == 0)
-            {
-                int idIncremental = 0;
-                aLayer->recursive_ReadBlobNodeV0(cfg, NULL, layersRoot[i], idIncremental);
-            }
-            else
-                aLayer->recursive_ReadBlobNode(cfg, NULL, layersRoot[i], layersRoot[i]);
+            aLayer->recursive_ReadBlobNode(cfg, NULL, layersRoot[i], layersRoot[i]);
             aLayer->bumpRevision();
         }
 

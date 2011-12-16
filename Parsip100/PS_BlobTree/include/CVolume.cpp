@@ -21,12 +21,12 @@ namespace Vol{
 			return CVolumeBox::emptyVolume();
 		}
 
-		float CVolume::Min(vec3 v)
+		float CVolume::Min(vec3f v)
 		{
 			return min(v.z, min(v.x, v.y));
 		}
 
-		float CVolume::Max(vec3 v)
+		float CVolume::Max(vec3f v)
 		{
 			return max(v.z, max(v.x, v.y));
 		}
@@ -43,9 +43,9 @@ namespace Vol{
 			return c;
 		}
 
-		vec3 CVolume::vectorAbs(vec3 v) const
+		vec3f CVolume::vectorAbs(vec3f v) const
 		{
-			vec3 result;
+			vec3f result;
 			result.x = fabsf(v.x);
 			result.y = fabsf(v.y);
 			result.z = fabsf(v.z);

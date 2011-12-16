@@ -8,7 +8,7 @@ namespace PS{
 namespace BLOBTREE{
 	namespace Vol{
 
-		CVolumeSphere::CVolumeSphere(vec3 center, float radius)
+		CVolumeSphere::CVolumeSphere(vec3f center, float radius)
 		{
 			m_center = center;
 			m_radius = radius;
@@ -30,7 +30,7 @@ namespace BLOBTREE{
 			}
 		}
 
-		void CVolumeSphere::set(vec3 center, float radius)
+		void CVolumeSphere::set(vec3f center, float radius)
 		{
 			m_center = center;
 			m_radius = radius;
@@ -38,7 +38,7 @@ namespace BLOBTREE{
 
 		void CVolumeSphere::setRadius(float radius) { m_radius = radius;}
 
-		void CVolumeSphere::setCenter(vec3 center) { m_center = center;}
+		void CVolumeSphere::setCenter(vec3f center) { m_center = center;}
 
 		float CVolumeSphere::size() 
 		{
@@ -52,12 +52,12 @@ namespace BLOBTREE{
 			return (m_radius == 0.0f);
 		}
 
-		float CVolumeSphere::distance(vec3 v)
+		float CVolumeSphere::distance(vec3f v)
 		{
 			return (v - m_center).length() - m_radius;
 		}
 
-		bool CVolumeSphere::isInside(vec3 pt)
+		bool CVolumeSphere::isInside(vec3f pt)
 		{
 			return ((pt - m_center).length2() <= m_radius* m_radius);
 		}
@@ -65,7 +65,7 @@ namespace BLOBTREE{
 	
 		CVolume* CVolumeSphere::emptyVolume()
 		{
-			vec3 center(0.0f, 0.0f, 0.0f);
+			vec3f center(0.0f, 0.0f, 0.0f);
 			return new CVolumeSphere(center, 0.0f);
 		}
 
@@ -120,7 +120,7 @@ namespace BLOBTREE{
 			SAFE_DELETE(box);
 		}
 
-		CVolume* CVolumeSphere::scale(vec3 s)
+		CVolume* CVolumeSphere::scale(vec3f s)
 		{
 			CVolumeSphere* sphere = new CVolumeSphere(m_center * s, m_radius * Max(s));
 			CVolumeBox* box = new CVolumeBox(this);
@@ -137,19 +137,19 @@ namespace BLOBTREE{
 			}
 		}
 
-		CVolume* CVolumeSphere::translate(vec3 trans)
+		CVolume* CVolumeSphere::translate(vec3f trans)
 		{
 			CVolumeSphere* result = new CVolumeSphere(m_center + trans, m_radius);
 			return result;
 		}
 
-		void CVolumeSphere::scaleSelf(vec3 scaleVector)
+		void CVolumeSphere::scaleSelf(vec3f scaleVector)
 		{
 			m_center = m_center * scaleVector;
 			m_radius = m_radius * Max(scaleVector);
 		}
 
-		void CVolumeSphere::translateSelf(vec3 translateVector)
+		void CVolumeSphere::translateSelf(vec3f translateVector)
 		{
 			m_center = m_center + translateVector;
 		}
@@ -164,7 +164,7 @@ namespace BLOBTREE{
 		CVolume* CVolumeSphere::UnionSphere(const CVolume* sphere)
 		{
 			CVolumeSphere * input = dynamic_cast<CVolumeSphere*>(const_cast<CVolume*>(sphere));
-			vec3 diff = input->center() - this->center();
+			vec3f diff = input->center() - this->center();
 			float l = diff.length();
 			if (l == 0.0f)
 				if (m_radius < input->radius())
@@ -174,15 +174,15 @@ namespace BLOBTREE{
 			else
 			{
 				l = 1.0f/l;
-				vec3 point1 = diff*(-m_radius*l) + m_center;
-				vec3 point2 = diff*input->radius()*l + input->center();
+				vec3f point1 = diff*(-m_radius*l) + m_center;
+				vec3f point2 = diff*input->radius()*l + input->center();
 				if (isInside(point2))
 					return newFrom(this);
 				if (input->isInside(point1))
 					return newFrom(input);
 
 				float rad = (point2 - point1).length()*0.5f;
-				vec3 cent = 0.5f*(point1 + point2);
+				vec3f cent = 0.5f*(point1 + point2);
 				return new CVolumeSphere(cent, rad);
 			}
 		}
@@ -215,7 +215,7 @@ namespace BLOBTREE{
 		CVolume* CVolumeSphere::intersectionSphere(const CVolume* bv)
 		{
 			CVolumeSphere * sphere = dynamic_cast<CVolumeSphere*>(const_cast<CVolume*>(bv));
-			vec3 diff = m_center - sphere->center();
+			vec3f diff = m_center - sphere->center();
 			float d = diff.length();
 			if (d == 0.0f)
 				if (m_radius < sphere->radius())
@@ -239,13 +239,13 @@ namespace BLOBTREE{
 		CVolume* CVolumeSphere::intersectionBox(const CVolume* bv)
 		{
 			CVolumeBox * box = dynamic_cast<CVolumeBox*>(const_cast<CVolume*>(bv));
-			vec3 min = vectorMax(m_center.add(- m_radius), box->lower());
-			vec3 max = vectorMin(m_center.add(  m_radius), box->upper());
+			vec3f min = vectorMax(m_center.add(- m_radius), box->lower());
+			vec3f max = vectorMin(m_center.add(  m_radius), box->upper());
 			if ((min.x > max.x) || (min.y > max.y) || (min.z > max.z))
 				return emptyVolume();
 			else
 			{
-				vec3 cent = min.add(max).multiply(0.5f);
+				vec3f cent = min.add(max).multiply(0.5f);
 				CVolumeBox * b = new CVolumeBox(cent, max.subtract(cent));				
 				if (b->size() <= this->size())
 					return b;

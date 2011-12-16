@@ -465,7 +465,7 @@ std::istream& operator >>( istream& ins, CSplineCatmullRom& curve )
 	int ctCtrlPoints = 0;	
 	ins >> ctCtrlPoints;
 
-	std::vector<vec3> ctrlPoints = curve.getControlPoints();
+	std::vector<vec3f> ctrlPoints = curve.getControlPoints();
 	if(ctCtrlPoints > 0)
 	{
 		ctrlPoints.resize(ctCtrlPoints);

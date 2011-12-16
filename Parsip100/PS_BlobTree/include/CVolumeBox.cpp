@@ -42,7 +42,7 @@ namespace BLOBTREE{
 			return res;
 		}
 
-		void CVolumeBox::set(vec3 lo, vec3 hi)
+		void CVolumeBox::set(vec3f lo, vec3f hi)
 		{
 			m_minCorner = lo;
 			m_maxCorner = hi;
@@ -133,7 +133,7 @@ namespace BLOBTREE{
 
 		CVolume* CVolumeBox::emptyVolume()
 		{
-			vec3 lower(0.0f, 0.0f, 0.0f);
+			vec3f lower(0.0f, 0.0f, 0.0f);
 			return new CVolumeBox(lower, lower);
 		}
 
@@ -204,13 +204,13 @@ namespace BLOBTREE{
 		}
 
 
-		CVolume* CVolumeBox::scale(vec3 scale)
+		CVolume* CVolumeBox::scale(vec3f scale)
 		{
 			CVolumeBox* box = new CVolumeBox(lower()*scale, upper()*scale);
 			return box;
 		}
 
-		CVolume* CVolumeBox::translate(vec3 trans)
+		CVolume* CVolumeBox::translate(vec3f trans)
 		{
 			CVolumeBox* box = new CVolumeBox(lower() + trans, upper() + trans);
 			return box;
@@ -223,13 +223,13 @@ namespace BLOBTREE{
 		}
 
 
-		void CVolumeBox::scaleSelf(vec3 scaleVector)
+		void CVolumeBox::scaleSelf(vec3f scaleVector)
 		{
 			m_minCorner = m_minCorner*scaleVector;
 			m_maxCorner = m_maxCorner*scaleVector;
 		}
 
-		void CVolumeBox::translateSelf(vec3 translateVector)
+		void CVolumeBox::translateSelf(vec3f translateVector)
 		{
 			m_minCorner = m_minCorner + translateVector;
 			m_maxCorner = m_maxCorner + translateVector;
@@ -254,8 +254,8 @@ namespace BLOBTREE{
 
 				diff *= (1.0f / l);
 
-				vec3 point1 = (diff* -sphere2->radius()) +  sphere2->center();
-				vec3 point2 = diff * sphere1->radius() + sphere1->center();
+				vec3f point1 = (diff* -sphere2->radius()) +  sphere2->center();
+				vec3f point2 = diff * sphere1->radius() + sphere1->center();
 
 				if (sphere1->isInside(point1))
 					result = new CVolumeSphere(sphere1);					
@@ -290,8 +290,8 @@ namespace BLOBTREE{
 		CVolume* CVolumeBox::intersectionSphere(const CVolume* sphere)
 		{
 			CVolumeSphere * input = dynamic_cast<CVolumeSphere*>(const_cast<CVolume*>(sphere));
-			vec3 min = vectorMax(input->center().subtract(input->radius()), this->lower());
-			vec3 max = vectorMin(input->center().add(input->radius()), this->upper());
+			vec3f min = vectorMax(input->center().subtract(input->radius()), this->lower());
+			vec3f max = vectorMin(input->center().add(input->radius()), this->upper());
 			if ((min.x > max.x) || (min.y > max.y) || (min.z > max.z))
 				return emptyVolume();
 			else
@@ -307,8 +307,8 @@ namespace BLOBTREE{
 		CVolume* CVolumeBox::intersectionBox(const CVolume* box)
 		{
 			CVolumeBox * input = dynamic_cast<CVolumeBox*>(const_cast<CVolume*>(box));
-			vec3 minV;
-			vec3 maxV;
+			vec3f minV;
+			vec3f maxV;
 			if ((m_minCorner.x > input->upper().x)||( m_maxCorner.x < input->lower().x))
 				return emptyVolume();
 			else

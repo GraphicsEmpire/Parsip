@@ -1,0 +1,3 @@
+[submodule "ParsipCmd"]
+	path = ParsipCmd
+	url = git@github.com:GraphicsEmpire/ParsipCmd.git

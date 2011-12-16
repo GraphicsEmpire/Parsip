@@ -12,13 +12,13 @@ public:
 	typedef enum BOXSIDE {sideX, sideY, sideZ};
 
 	CBoundingBox() { reset();}
-	CBoundingBox(vec3 minCorner, vec3 maxCorner)
+	CBoundingBox(vec3f minCorner, vec3f maxCorner)
 	{
 		m_minCorner = minCorner;
 		m_maxCorner = maxCorner;
 	}
 
-	void expand(vec3 p)
+	void expand(vec3f p)
 	{
 		m_minCorner.x = MATHMIN(m_minCorner.x, p.x);
 		m_minCorner.y = MATHMIN(m_minCorner.y, p.y);
@@ -31,7 +31,7 @@ public:
 
 	BOXSIDE getMinSide()
 	{
-		vec3 sides = m_maxCorner - m_minCorner;
+		vec3f sides = m_maxCorner - m_minCorner;
 		float f = MATHMIN(MATHMIN(sides.x, sides.y), sides.z);
 		if(f == sides.x)
 			return sideX;
@@ -43,7 +43,7 @@ public:
 
 	BOXSIDE getMaxSide()
 	{
-		vec3 sides = m_maxCorner - m_minCorner;
+		vec3f sides = m_maxCorner - m_minCorner;
 		float f = MATHMAX(MATHMAX(sides.x, sides.y), sides.z);
 		if(f == sides.x)
 			return sideX;
@@ -53,18 +53,18 @@ public:
 			return sideZ;
 	}
 
-	vec3 middle()
+	vec3f middle()
 	{
 		return (m_minCorner + m_maxCorner) * 0.5f;
 	}
 
-	vec3 getClosestCorner(vec3 v) const
+	vec3f getClosestCorner(vec3f v) const
 	{
 		//XYZ 000 to 111
 		const int maskX = 1;
 		const int maskY = 2;
 		const int maskZ = 4;
-		vec3 pos, closestPos; 
+		vec3f pos, closestPos; 
 		float dist = FLT_MAX;
 		float len;
 		for(int i=0; i<8; i++)
@@ -94,16 +94,16 @@ public:
 	}
 
 	//Corners Getter and Setters
-	void setMinCorner(vec3 minCorner) { m_minCorner = minCorner;}
-	vec3 getMinCorner() const { return m_minCorner;}
+	void setMinCorner(vec3f minCorner) { m_minCorner = minCorner;}
+	vec3f getMinCorner() const { return m_minCorner;}
 
-	void setMaxCorner(vec3 maxCorner) { m_maxCorner = maxCorner;}
-	vec3 getMaxCorner() const { return m_maxCorner;}
+	void setMaxCorner(vec3f maxCorner) { m_maxCorner = maxCorner;}
+	vec3f getMaxCorner() const { return m_maxCorner;}
 	
 	void reset()
 	{
-		m_minCorner = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-		m_maxCorner = vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		m_minCorner = vec3f(FLT_MAX, FLT_MAX, FLT_MAX);
+		m_maxCorner = vec3f(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	}
 
 	bool correct()
@@ -115,8 +115,8 @@ public:
 		return false;
 	}
 public:
-	vec3 m_minCorner;
-	vec3 m_maxCorner;
+	vec3f m_minCorner;
+	vec3f m_maxCorner;
 
 	//const int L =	0;  /* left direction:	-x, -i */
 	//const int R =	1;  /* right direction:	+x, +i */

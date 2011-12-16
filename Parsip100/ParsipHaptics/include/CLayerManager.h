@@ -30,16 +30,16 @@ using namespace Loki;
 namespace PS{
 namespace BLOBTREE{
 
-typedef pair<CBlobTree*, vec3f> PAIR_NODESEED;
-typedef pair<CBlobTree*, CMeshVV*> PAIR_NODEMESH;
+typedef pair<CBlobNode*, vec3f> PAIR_NODESEED;
+typedef pair<CBlobNode*, CMeshVV*> PAIR_NODEMESH;
 enum cmdBlobTree{cbtDelete, cbtFindParent, cbtFindDepth, cbtTransformOperator};
 
 struct CmdBlobTreeParams
 {	
 	int idxChild;
 	int depth;
-	CBlobTree* lpOutParent;
-	CBlobTree* lpReplacementNode;
+        CBlobNode* lpOutParent;
+        CBlobNode* lpReplacementNode;
 };
 
 class CLayer
@@ -50,7 +50,7 @@ public:
 private:
 
 	//Pointer to a blobTree parent node
-	CBlobTree* m_lpBlobTree;
+        CBlobNode* m_lpBlobTree;
 
 	//Compact Blobtree
 	COMPACTBLOBTREE m_cptBlobTree;
@@ -65,7 +65,7 @@ private:
 	DVec<PAIR_NODEMESH> m_lstSelected;	
 
 	//Keeping a list of nodes
-	DVec<CBlobTree*> m_lstQuery;
+        DVec<CBlobNode*> m_lstQuery;
 
 	//Octree for Collision Detection
 	COctree m_octree;
@@ -94,18 +94,18 @@ private:
 	vec3f m_ptStart;
 	int   m_meshQuality;
 		
-	void recursive_FlattenTransformations(CBlobTree* node, const CAffineTransformation& transformBranch);
-	void recursive_RecomputeAllOctrees(CBlobTree* node, const CMatrix& mtxBranch);
-	int recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobTree* node);
+        void recursive_FlattenTransformations(CBlobNode* node, const CAffineTransformation& transformBranch);
+        void recursive_RecomputeAllOctrees(CBlobNode* node, const CMatrix& mtxBranch);
+        int recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobNode* node);
 	
-	int recursive_GetBlobTreeSeedPoints(CBlobTree* node, stack<CBlobTree*> &stkOperators);	
-	int recursive_TranslateSkeleton(CBlobTree*node, vec3f d);	
-	int recursive_convertToBinaryTree(CBlobTree* node, CBlobTree* clonned);
-	int recursive_countBinaryTreeErrors( CBlobTree* node );
+        int recursive_GetBlobTreeSeedPoints(CBlobNode* node, stack<CBlobNode*> &stkOperators);
+        int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);
+        int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned);
+        int recursive_countBinaryTreeErrors( CBlobNode* node );
 	
 public:
 	CLayer();
-	CLayer(CBlobTree * node);
+        CLayer(CBlobNode * node);
 	CLayer(const CMeshVV& mesh);
 
 	~CLayer();
@@ -116,7 +116,7 @@ public:
 	int convertToBinaryTree();
 
 
-	void setupCompactTree(CBlobTree* root) 
+        void setupCompactTree(CBlobNode* root)
 	{
 		m_cptBlobTree.reset(); 
 		m_cptBlobTree.convert(root);
@@ -127,18 +127,18 @@ public:
 
 	void cleanup();
 	
-	CBlobTree* findNodeByID(int id);
-	CBlobTree* recursive_FindNodeByID(int id, CBlobTree* root);
-	int recursive_MaxNodeID(int maxID, CBlobTree* root);
-	bool recursive_ExecuteCmdBlobtreeNode(CBlobTree* root, CBlobTree* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
-	int recursive_WriteBlobNode(CSketchConfig* cfg, CBlobTree* node, int idOffset = 0);
-	int recursive_ReadBlobNode(CSketchConfig* cfg, CBlobTree* parent, int id, int idOffset = 0);
-	int recursive_ReadBlobNodeV0(CSketchConfig* cfg, CBlobTree* parent, int id, int& idIncremental);
+        CBlobNode* findNodeByID(int id);
+        CBlobNode* recursive_FindNodeByID(int id, CBlobNode* root);
+        int recursive_MaxNodeID(int maxID, CBlobNode* root);
+        bool recursive_ExecuteCmdBlobtreeNode(CBlobNode* root, CBlobNode* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
+        int recursive_WriteBlobNode(CSketchConfig* cfg, CBlobNode* node, int idOffset = 0);
+        int recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id, int idOffset = 0);
+        int recursive_ReadBlobNodeV0(CSketchConfig* cfg, CBlobNode* parent, int id, int& idIncremental);
 
 
 	//Implicit BlobTree
-	CBlobTree* getBlob() const { return m_lpBlobTree; }
-	void setBlob(CBlobTree * blob) {m_lpBlobTree = blob;}
+        CBlobNode* getBlob() const { return m_lpBlobTree; }
+        void setBlob(CBlobNode * blob) {m_lpBlobTree = blob;}
 	bool hasBlob() const { return (m_lpBlobTree != NULL);}
 
 	//Track changes
@@ -168,7 +168,7 @@ public:
 	//Octree for whole model 	
 	bool	hasOctree() const {return m_octree.isValid();}
 	COctree getOctree() const {return m_octree;}
-	void	setOctree(vec3 lower, vec3 upper);
+        void	setOctree(vec3f lower, vec3f upper);
 	void	setOctreeFromMesh();
 	void	setOctreeFromBlobTree();
 
@@ -181,7 +181,7 @@ public:
 	size_t queryCountItems() const { return m_lstQuery.size();}
 		
 	//Actions For All Nodes in the Query List 
-	CBlobTree* queryGetItem(int index) const 
+        CBlobNode* queryGetItem(int index) const
 	{
 		if(m_lstQuery.isItemIndex(index))
 			return m_lstQuery[index];
@@ -193,20 +193,20 @@ public:
 	int queryHitOctree(const CRay& ray, float t0, float t1) const;	
 
 	//Selection
-	CBlobTree* selGetItem(int index = 0) const;
+        CBlobNode* selGetItem(int index = 0) const;
 	CMeshVV* selGetMesh(int index = 0) const;
 	size_t selCountItems() const {return m_lstSelected.size();}
 	void selRemoveItem(int index = -1);
-	bool selAddItem(CBlobTree* lpNode);
+        bool selAddItem(CBlobNode* lpNode);
 
 	//Seed Points
 	size_t countSeedPoints();
-	vec3 getSeed(size_t index);
+        vec3f getSeed(size_t index);
 	bool getSeed(size_t index, PAIR_NODESEED &seed);
-	size_t getAllSeeds(size_t bufLen, vec3 arrSeeds[]);
-	size_t getAllSeeds(DVec<vec3>& lstAllSeeds);
+        size_t getAllSeeds(size_t bufLen, vec3f arrSeeds[]);
+        size_t getAllSeeds(DVec<vec3f>& lstAllSeeds);
 	void removeAllSeeds();	
-	vec3 getPolySeedPoint() const { return m_ptStart;}
+        vec3f getPolySeedPoint() const { return m_ptStart;}
 	void setPolySeedPoint(vec3f ptStart) { m_ptStart = ptStart;}
 	bool setPolySeedPointAuto();	
 	int  skeletTranslate(vec3f d);
@@ -306,8 +306,8 @@ public:
 	void reduceAllBlobTrees();
 	void resetAllMeshes();
 
-	void addLayer(const CBlobTree* blob, const char* chrLayerName = NULL);
-	void addLayer(const CBlobTree* blob, const char* chrMeshFileName, const char* chrLayerName);
+        void addLayer(const CBlobNode* blob, const char* chrLayerName = NULL);
+        void addLayer(const CBlobNode* blob, const char* chrMeshFileName, const char* chrLayerName);
 	void addLayer(CLayer * aLayer);
 
 	void removeLayer(int idxLayer);

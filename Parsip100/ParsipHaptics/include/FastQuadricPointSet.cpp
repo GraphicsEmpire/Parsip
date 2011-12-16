@@ -25,7 +25,7 @@ float FastQuadricPointSet::fieldValue(vec3f p)
 	return fSumValue;
 }
 
-int FastQuadricPointSet::fieldValueAndGradient(vec3 p, float delta, vec3 &outGradient, float &outField)
+int FastQuadricPointSet::fieldValueAndGradient(vec3f p, float delta, vec3f &outGradient, float &outField)
 {
 	outGradient.zero();	
 	outField = 0.0;

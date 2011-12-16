@@ -9,7 +9,7 @@ namespace BLOBTREE{
 
 //***********************************************************
 //PCM: Precise Contact Modeling
-class  CPcm : public CBlobTree
+class  CPcm : public CBlobNode
 {
 private:
     float m_wPropagateLeft;
@@ -62,20 +62,9 @@ public:
         return m_children[0]->curvature(p);
     }
 
-    vec4f baseColor(vec3f p)
+    string getName()
     {
-        return m_children[0]->baseColor(p);
-    }
-
-    CMaterial baseMaterial(vec3f p)
-    {
-        return m_children[0]->baseMaterial(p);
-    }
-
-
-    void getName(char * chrName)
-    {
-        strncpy(chrName, "PCM", MAX_NAME_LEN);
+        return "PCM";
     }
 
     COctree computeOctree()

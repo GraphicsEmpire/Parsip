@@ -16,7 +16,8 @@ INCLUDEPATH += . \
                Parsip100/DSystem/include \
                Parsip100/ParsipHaptics/include \
                Parsip100/PS_FrameWork/include \
-               Parsip100/PS_BlobTree/include
+               Parsip100/PS_BlobTree/include \
+               ParsipCmd/ParsipCmd
 
 # Input
 HEADERS += Parsip100/DSystem/include/DContainers.h \
@@ -46,7 +47,6 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/ParsipHaptics/include/CompactBlobTree.h \
            Parsip100/ParsipHaptics/include/ConversionToActions.h \
            Parsip100/ParsipHaptics/include/CParallelAdaptiveSubdivision.h \
-           Parsip100/ParsipHaptics/include/CParallelCollisionDetector.h \
            Parsip100/ParsipHaptics/include/CPolyContinuation.h \
            Parsip100/ParsipHaptics/include/CPolyHashGridEdgeTables.h \
            Parsip100/ParsipHaptics/include/CPolyInterface.h \
@@ -65,7 +65,6 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/PS_BlobTree/include/BlobTreeLibraryAll.h \
            Parsip100/PS_BlobTree/include/BlobTreeScripting.h \
            Parsip100/PS_BlobTree/include/CAdaptiveUniformGrid3d.h \
-           Parsip100/PS_BlobTree/include/CAffine.h \
            Parsip100/PS_BlobTree/include/CBlend.h \
            Parsip100/PS_BlobTree/include/CBlobTree.h \
            Parsip100/PS_BlobTree/include/CCache.h \
@@ -78,7 +77,6 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/PS_BlobTree/include/CRicciBlend.h \
            Parsip100/PS_BlobTree/include/CRootFinder.h \
            Parsip100/PS_BlobTree/include/CSkeleton.h \
-           Parsip100/PS_BlobTree/include/CSkeletonCatmullRomCurve.h \
            Parsip100/PS_BlobTree/include/CSkeletonCube.h \
            Parsip100/PS_BlobTree/include/CSkeletonCylinder.h \
            Parsip100/PS_BlobTree/include/CSkeletonDisc.h \
@@ -140,7 +138,8 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/PS_FrameWork/include/PS_Vector.h \
            Parsip100/PS_FrameWork/include/TaskManager.h \
     Parsip100/PS_BlobTree/include/CGradientBlend.h \
-    Parsip100/ParsipHaptics/include/PS_OclPolygonizer.h
+    Parsip100/ParsipHaptics/include/PS_OclPolygonizer.h \
+    Parsip100/PS_FrameWork/include/PS_SketchConfig.h
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
          Parsip100/ParsipHaptics/mainwindow.ui
@@ -162,7 +161,6 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
            Parsip100/ParsipHaptics/include/CompactBlobTree.cpp \
            Parsip100/ParsipHaptics/include/ConversionToActions.cpp \
            Parsip100/ParsipHaptics/include/CParallelAdaptiveSubdivision.cpp \
-           Parsip100/ParsipHaptics/include/CParallelCollisionDetector.cpp \
            Parsip100/ParsipHaptics/include/CPolyContinuation.cpp \
            Parsip100/ParsipHaptics/include/CPolyParsipOptimized.cpp \
            Parsip100/ParsipHaptics/include/CPolyParsipServer.cpp \
@@ -173,13 +171,10 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
            Parsip100/ParsipHaptics/include/main.cpp \
            Parsip100/ParsipHaptics/include/mainwindow.cpp \
            Parsip100/ParsipHaptics/include/PS_PerfTest.cpp \
-           Parsip100/ParsipHaptics/include/PS_SketchConfig.cpp \
            Parsip100/PS_BlobTree/include/BlobTreeBuilder.cpp \
            Parsip100/PS_BlobTree/include/CAdaptiveUniformGrid3d.cpp \
            Parsip100/PS_BlobTree/include/CCache.cpp \
-           Parsip100/PS_BlobTree/include/CFieldFunction.cpp \
            Parsip100/PS_BlobTree/include/CRootFinder.cpp \
-           Parsip100/PS_BlobTree/include/CSkeletonCube.cpp \
            Parsip100/PS_BlobTree/include/CSkeletonPrimitive.cpp \
            Parsip100/PS_BlobTree/include/CSkeletonTriangle.cpp \
            Parsip100/PS_BlobTree/include/CVolume.cpp \
@@ -209,7 +204,21 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
            Parsip100/PS_FrameWork/include/PS_SplineCatmullRom.cpp \
            Parsip100/PS_FrameWork/include/PS_String.cpp \
            Parsip100/PS_FrameWork/include/TaskManager.cpp \
-    Parsip100/ParsipHaptics/include/CUIWidgets.cpp
+    Parsip100/ParsipHaptics/include/CUIWidgets.cpp \
+    Parsip100/PS_FrameWork/include/PS_SketchConfig.cpp \
+    Parsip100/PS_BlobTree/include/CBlobTree.cpp \
+    Parsip100/PS_BlobTree/include/CBlend.cpp \
+    Parsip100/PS_BlobTree/include/CUnion.cpp \
+    Parsip100/PS_BlobTree/include/CDifference.cpp \
+    Parsip100/PS_BlobTree/include/CIntersection.cpp \
+    Parsip100/PS_BlobTree/include/CRicciBlend.cpp \
+    Parsip100/PS_BlobTree/include/CGradientBlend.cpp \
+    Parsip100/PS_BlobTree/include/CSkeletonCube.cpp \
+    Parsip100/PS_BlobTree/include/CSkeletonCylinder.cpp \
+    Parsip100/PS_BlobTree/include/CSkeletonLine.cpp \
+    Parsip100/PS_BlobTree/include/CSkeletonRing.cpp \
+    Parsip100/PS_BlobTree/include/CSkeletonDisc.cpp \
+    Parsip100/PS_BlobTree/include/CSkeletonPoint.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -265,6 +274,28 @@ else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
 
 unix:!symbian: LIBS += -lGLEW \
                        -lOpenCL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

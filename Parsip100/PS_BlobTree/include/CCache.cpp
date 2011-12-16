@@ -14,7 +14,7 @@ public:
 
 	virtual float Value( float x, float y, float z )
 	{
-		vec3 v(x,y,z);
+                vec3f v(x,y,z);
 		v = m_frame.FrameMatrix() * v;
 		v += m_frame.Origin();
 		return m_pField->Value( v.X(), v.Y(), v.Z() );
@@ -24,7 +24,7 @@ public:
 	virtual void Color( float x, float y, float z, float & colorR, float & colorG, float & colorB ){abort();}
 	virtual void FieldBounds( Wml::AxisAlignedBox3f & aaBox ) { abort(); m_pField->FieldBounds(aaBox); }
 	virtual void SurfaceBounds( float isoValue, Wml::AxisAlignedBox3f & aaBox ) { abort(); m_pField->SurfaceBounds(isoValue, aaBox); }
-	virtual void GetSeedPoints( std::vector<vec3> & seedPoints ) {abort();}
+        virtual void GetSeedPoints( std::vector<vec3f> & seedPoints ) {abort();}
 
 protected:
 	rmsimplicit::ScalarField * m_pField;
@@ -43,16 +43,16 @@ CFieldCache::CFieldCache()
  * CAdaptiveUniformGrid3D cache
  */
 
-CFieldCache::CFieldCache(CBlobTree * child, CacheType type)
+CFieldCache::CFieldCache(CBlobNode * child, CacheType type)
 {
 	//First copy all parameters inside
 	addChild(child);
 	m_cacheType = type;
 
 	//Compute bounding box and center
-	vec3 center = child->getOctree().center();	
+        vec3f center = child->getOctree().center();
 	m_pCache = new CAdaptiveUniformGrid3D(1.0f, center);
-	m_pCache->SetOrigin(vec3(0.0f, 0.0f, 0.0f));
+        m_pCache->SetOrigin(vec3f(0.0f, 0.0f, 0.0f));
 
 	//FieldValue and Gradient Sample Modes
 	m_eFieldValueSampleMode = CFieldCacheManager::Get()->GetDefaultValueMode();
@@ -65,7 +65,7 @@ CFieldCache::~CFieldCache()
 		delete m_pCache;
 }
 
-float CFieldCache::fieldValue(vec3 p)
+float CFieldCache::fieldValue(vec3f p)
 {
 	if(m_cacheType == PassThrough)
 	{	
@@ -85,7 +85,7 @@ float CFieldCache::fieldValue(vec3 p)
 	}	
 }
 
-vec3 CFieldCache::normal(vec3 p, float delta)
+vec3f CFieldCache::normal(vec3f p, float delta)
 {	
 	if(m_cacheType == PassThrough)
 	{
@@ -95,7 +95,7 @@ vec3 CFieldCache::normal(vec3 p, float delta)
 	{
 		float fGradX, fGradY, fGradZ;
 		float pFieldValue; 
-		CBlobTree* frameField =  m_children[0];
+		CBlobNode* frameField =  m_children[0];
 		switch(m_eGradientSampleMode)
 		{
 		case TriLinear:
@@ -109,15 +109,15 @@ vec3 CFieldCache::normal(vec3 p, float delta)
 			break;
 		}
 
-		vec3 grad(fGradX, fGradY, fGradX);
+                vec3f grad(fGradX, fGradY, fGradX);
 		return grad;		
 	}	
 }
 
 void CFieldCache::invalidate(Vol::CVolumeBox &box)
 {
-	vec3 lo = box.lower();
-	vec3 hi = box.upper();
+        vec3f lo = box.lower();
+        vec3f hi = box.upper();
 		
 	Vol::CVolumeBox TransformBox(lo - m_origin, hi - m_origin);
 	m_pCache->Invalidate(TransformBox);
@@ -179,7 +179,7 @@ CFieldCacheManager::~CFieldCacheManager()
 }
 
 
-CFieldCache * CFieldCacheManager::CreateCache(CBlobTree * pField, CacheType eType )
+CFieldCache * CFieldCacheManager::CreateCache(CBlobNode * pField, CacheType eType )
 {
 	CFieldCache * pNewCache = new CFieldCache(pField, eType);
 	if (pNewCache)

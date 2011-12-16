@@ -13,18 +13,19 @@ private:
 
 
 public:
-    static CBlobTree * createSphere()
+
+    static CBlobNode * createSphere()
     {
-        CSkeletonPoint * point = new CSkeletonPoint(vec3(0.0, 0.0, 0.0));
+        CSkeletonPoint * point = new CSkeletonPoint(vec3f(0.0, 0.0, 0.0));
         CSkeletonPrimitive * primitive1 = new CSkeletonPrimitive(point, fftWyvill, 1.0f);
         primitive1->setMaterial(CMaterial::mtrlRedPlastic());
         return primitive1;
     }
 
-    static CBlobTree * createPeanut()
+    static CBlobNode * createPeanut()
     {
-        CSkeletonPoint * point1 = new CSkeletonPoint(vec3(0.0f, 0.0f, 0.0f));
-        CSkeletonPoint * point2 = new CSkeletonPoint(vec3(1.0f, 0.0f, 0.0f));
+        CSkeletonPoint * point1 = new CSkeletonPoint(vec3f(0.0f, 0.0f, 0.0f));
+        CSkeletonPoint * point2 = new CSkeletonPoint(vec3f(1.0f, 0.0f, 0.0f));
 
         CSkeletonPrimitive * primitive1 = new CSkeletonPrimitive(point1, fftWyvill);
         CSkeletonPrimitive * primitive2 = new CSkeletonPrimitive(point2, fftWyvill);
@@ -36,11 +37,11 @@ public:
         return root;
     }
 
-    static CBlobTree * createCrossCylinders()
+    static CBlobNode * createCrossCylinders()
     {
         /*
-  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 6.0f);
-  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(-3.0f, 3.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), 0.01f, 4.0f);
+  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3f(0.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 6.0f);
+  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(-3.0f, 3.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), 0.01f, 4.0f);
   CSkeletonPrimitive * primitive1 = new CSkeletonPrimitive(cyl1, fftWyvill);
   CSkeletonPrimitive * primitive2 = new CSkeletonPrimitive(cyl2, fftWyvill);
 
@@ -53,8 +54,8 @@ public:
   return blend;
   */
 
-        CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(-0.5f, -0.5f, 0.0f), vec3(+1.0f, 1.0f, 0.0f), 0.01f, 6.0f);
-        CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(+0.5f, -0.5f, 0.0f), vec3(-1.0f, 1.0f, 0.0f), 0.01f, 4.0f);
+        CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3f(-0.5f, -0.5f, 0.0f), vec3f(+1.0f, 1.0f, 0.0f), 0.01f, 6.0f);
+        CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(+0.5f, -0.5f, 0.0f), vec3f(-1.0f, 1.0f, 0.0f), 0.01f, 4.0f);
         CSkeletonPrimitive * primitive1 = new CSkeletonPrimitive(cyl1, fftWyvill);
         CSkeletonPrimitive * primitive2 = new CSkeletonPrimitive(cyl2, fftWyvill);
 
@@ -68,12 +69,12 @@ public:
 
     }
 
-    static CBlobTree * createLogo()
+    static CBlobNode * createLogo()
     {
-        CSkeletonPoint * sphere1 = new CSkeletonPoint(vec3(0.0f, 0.0f, 0.0f));
-        CSkeletonPoint * sphere2 = new CSkeletonPoint(vec3(0.0f, 1.0f, 0.0f));
-        CSkeletonPoint * sphere3 = new CSkeletonPoint(vec3(1.0f, 1.0f, 0.0f));
-        CSkeletonPoint * sphere4 = new CSkeletonPoint(vec3(1.0f, 0.0f, 0.0f));
+        CSkeletonPoint * sphere1 = new CSkeletonPoint(vec3f(0.0f, 0.0f, 0.0f));
+        CSkeletonPoint * sphere2 = new CSkeletonPoint(vec3f(0.0f, 1.0f, 0.0f));
+        CSkeletonPoint * sphere3 = new CSkeletonPoint(vec3f(1.0f, 1.0f, 0.0f));
+        CSkeletonPoint * sphere4 = new CSkeletonPoint(vec3f(1.0f, 0.0f, 0.0f));
 
         CSkeletonPrimitive * primitive1 = new CSkeletonPrimitive(sphere1);
         primitive1->setMaterial(CMaterial::mtrlBlue());
@@ -88,27 +89,25 @@ public:
         CBlend * blend2 = new CBlend(blend1, primitive3);
         CBlend * blend3 = new CBlend(blend2, primitive4);
 
-        //CSkeletonCylinder *cyl = new CSkeletonCylinder(vec3(0.5f, 0.5f, 0.0f), vec3(0.0f, 0.0f, 1.0f), 0.08f, 1.0f);
+        //CSkeletonCylinder *cyl = new CSkeletonCylinder(vec3f(0.5f, 0.5f, 0.0f), vec3f(0.0f, 0.0f, 1.0f), 0.08f, 1.0f);
         //CSkeletonPrimitive * center = new CSkeletonPrimitive(cyl);
 
         //CDifference * dif = new CDifference(uni, center);
         return blend3;
     }
 
-
-
     //Create an individual Gear
-    static CBlobTree* createGear(int ctTeeth, const CMaterial& outer, const CMaterial& inner)
+    static CBlobNode* createGear(int ctTeeth, const CMaterial& outer, const CMaterial& inner)
     {
         //Let's create one gear
-        vec3 center = vec3(0.0f, 2.0f, 0.0f);
+        vec3f center = vec3f(0.0f, 2.0f, 0.0f);
         float radius = 3.0f;
-        CSkeletonDisc * disk = new CSkeletonDisc(center, vec3(0.0f, 0.0f, 1.0f), radius);
+        CSkeletonDisc * disk = new CSkeletonDisc(center, vec3f(0.0f, 0.0f, 1.0f), radius);
         CSkeletonPrimitive * nodeDisk = new CSkeletonPrimitive(disk, fftWyvill);
         nodeDisk->setMaterial(outer);
 
         center.z -= 0.5f;
-        CSkeletonCylinder* cyl = new CSkeletonCylinder(center, vec3(0.0f, 0.0f, 1.0f), 0.25f, 2.0f);
+        CSkeletonCylinder* cyl = new CSkeletonCylinder(center, vec3f(0.0f, 0.0f, 1.0f), 0.25f, 2.0f);
         CSkeletonPrimitive * nodeCyl = new CSkeletonPrimitive(cyl, fftWyvill);
         nodeCyl->setMaterial(inner);
 
@@ -116,14 +115,14 @@ public:
 
         CSkeletonCylinder* tempCyl;
         CSkeletonPrimitive* tempPrim;
-        vec3 pos = center;
+        vec3f pos = center;
         float ep = 0.20f;
 
         for(int i=0; i < ctTeeth; i++)
         {
             pos.x = center.x + (radius + ep) * cos(static_cast<float>(i*TwoPi)/(ctTeeth));
             pos.y = center.y + (radius + ep) * sin(static_cast<float>(i*TwoPi)/(ctTeeth));
-            tempCyl = new CSkeletonCylinder(pos, vec3(0.0f, 0.0f, 1.0f), 0.25f, 2.0f);
+            tempCyl = new CSkeletonCylinder(pos, vec3f(0.0f, 0.0f, 1.0f), 0.25f, 2.0f);
             tempPrim = new CSkeletonPrimitive(tempCyl, fftWyvill);
             tempPrim->setMaterial(CMaterial::mtrlBrass());
             dif->addChild(tempPrim);
@@ -132,11 +131,11 @@ public:
         return dif;
     }
 
-    static CBlobTree* create3CylinderTaperBend(float xoffset, float zoffset, float RicciN = 2.0f)
+    static CBlobNode* create3CylinderTaperBend(float xoffset, float zoffset, float RicciN = 2.0f)
     {
-        CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(0.0f + xoffset, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 5.0f);
-        CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(0.8f + xoffset, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 5.0f);
-        //CSkeletonCylinder * cyl3 = new CSkeletonCylinder(vec3(-0.8f + xoffset, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
+        CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3f(0.0f + xoffset, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 5.0f);
+        CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(0.8f + xoffset, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 5.0f);
+        //CSkeletonCylinder * cyl3 = new CSkeletonCylinder(vec3f(-0.8f + xoffset, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
         CSkeletonPrimitive * primitive1 = new CSkeletonPrimitive(cyl1, fftWyvill);
         CSkeletonPrimitive * primitive2 = new CSkeletonPrimitive(cyl2, fftWyvill);
         //CSkeletonPrimitive * primitive3 = new CSkeletonPrimitive(cyl3, fftWyvill);
@@ -156,20 +155,18 @@ public:
 
         if((xoffset != 0.0f)||(zoffset != 0.0f))
         {
-            CAffine * affine = new CAffine(blend1);
-            affine->setTranslate(vec3(xoffset, 0.0f, zoffset));
-            return affine;
+            blend1->getTransform().setTranslate(vec3f(xoffset, 0.0f, zoffset));
         }
-        else
-            return blend1;
+
+        return blend1;
     }
 
-    static CBlobTree* create3CylinderTaperTwist(float xoffset, float zoffset, float RicciN = 2.0f)
+    static CBlobNode* create3CylinderTaperTwist(float xoffset, float zoffset, float RicciN = 2.0f)
     {
         //1.Twist
-        CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(0.0f + xoffset, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
-        CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(0.8f + xoffset, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
-        CSkeletonCylinder * cyl3 = new CSkeletonCylinder(vec3(-0.8f + xoffset, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
+        CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3f(0.0f + xoffset, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
+        CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(0.8f + xoffset, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
+        CSkeletonCylinder * cyl3 = new CSkeletonCylinder(vec3f(-0.8f + xoffset, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
         CSkeletonPrimitive * primitive1 = new CSkeletonPrimitive(cyl1, fftWyvill);
         CSkeletonPrimitive * primitive2 = new CSkeletonPrimitive(cyl2, fftWyvill);
         CSkeletonPrimitive * primitive3 = new CSkeletonPrimitive(cyl3, fftWyvill);
@@ -194,7 +191,7 @@ public:
         cache->setCacheResolution(64);
 
         CAffine * affine1 = new CAffine(cache);
-        affine1->setTranslate(vec3(0.0f, -0.3f, 0.0f));
+        affine1->setTranslate(vec3f(0.0f, -0.3f, 0.0f));
 
 
         /*
@@ -208,7 +205,7 @@ public:
         if((xoffset != 0.0f)||(zoffset != 0.0f))
         {
             CAffine * affine2 = new CAffine(cache);
-            affine2->setTranslate(vec3(xoffset, 0.0f, zoffset));
+            affine2->setTranslate(vec3f(xoffset, 0.0f, zoffset));
             return affine2;
         }
         else
@@ -221,16 +218,16 @@ public:
         /*
 
   CAffine * affine = new CAffine(createDVDDeck());
-  affine->setTranslate(vec3(3.0f, 0.0f, -3.0f));
+  affine->setTranslate(vec3f(3.0f, 0.0f, -3.0f));
   affine->turnOn(false, true, false);
   lm->addLayer(affine);
   */
     }
 
-    static CBlobTree* createBlobSpheres()
+    static CBlobNode* createBlobSpheres()
     {
-        CSkeletonPoint * point1 = new CSkeletonPoint(vec3(-2.5f, 0.0f, 0.0f));
-        CSkeletonPoint * point2 = new CSkeletonPoint(vec3(2.5f, 0.0f, 0.0f));
+        CSkeletonPoint * point1 = new CSkeletonPoint(vec3f(-2.5f, 0.0f, 0.0f));
+        CSkeletonPoint * point2 = new CSkeletonPoint(vec3f(2.5f, 0.0f, 0.0f));
 
         CSkeletonPrimitive * sphere1 = new CSkeletonPrimitive(point1, fftWyvill, 5.0f);
         CSkeletonPrimitive * sphere2 = new CSkeletonPrimitive(point2, fftWyvill, 5.0f);
@@ -244,8 +241,8 @@ public:
 
     static void createTwoSpheres(CLayerManager * lm = NULL)
     {
-        CSkeletonPoint * point1 = new CSkeletonPoint(vec3(-3.0f, 0.0f, 0.0f));
-        CSkeletonPoint * point2 = new CSkeletonPoint(vec3(5.0f, 0.0f, 0.0f));
+        CSkeletonPoint * point1 = new CSkeletonPoint(vec3f(-3.0f, 0.0f, 0.0f));
+        CSkeletonPoint * point2 = new CSkeletonPoint(vec3f(5.0f, 0.0f, 0.0f));
 
         CSkeletonPrimitive * sphere1 = new CSkeletonPrimitive(point1, fftWyvill, 6.0f);
         CSkeletonPrimitive * sphere2 = new CSkeletonPrimitive(point2, fftWyvill, 6.0f);
@@ -260,7 +257,7 @@ public:
         return;
     }
 
-    static CBlobTree* createPiza()
+    static CBlobNode* createPiza()
     {
         CUnion * root = new CUnion();
         /*
@@ -288,16 +285,16 @@ public:
 
 
         CAffine * finalScale = new CAffine(root);
-        //finalScale->setTranslate(vec3(-0.3f, 0.3f, -0.3f));
-        finalScale->setScale(vec3(0.2f, 0.2f, 0.2f));
+        //finalScale->setTranslate(vec3f(-0.3f, 0.3f, -0.3f));
+        finalScale->setScale(vec3f(0.2f, 0.2f, 0.2f));
         return finalScale;
     }
 
-    static CBlobTree* createPizaLevel(int level, int nPillars, float radius, CMaterial mtrlLevel)
+    static CBlobNode* createPizaLevel(int level, int nPillars, float radius, CMaterial mtrlLevel)
     {
         float x, z;
 
-        vec3 c(0.0f, 2.0f + 11.0f * level, 0.0f);
+        vec3f c(0.0f, 2.0f + 11.0f * level, 0.0f);
 
         CAffine * aff = NULL;
         CUnion * root = new CUnion();
@@ -307,30 +304,30 @@ public:
             z = c.z + radius * sinf(static_cast<float>(i * TwoPi)/nPillars);
 
             aff = new CAffine(createPizaPillar(mtrlLevel));
-            aff->setTranslate(vec3(x, c.y, z));
+            aff->setTranslate(vec3f(x, c.y, z));
             root->addChild(aff);
         }
 
-        CSkeletonDisc * disc = new CSkeletonDisc(c + vec3(0.0f, 2.5f, 0.0f), vec3(0.0f, 1.0f, 0.0f), radius + 4.0f);
+        CSkeletonDisc * disc = new CSkeletonDisc(c + vec3f(0.0f, 2.5f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), radius + 4.0f);
         CSkeletonPrimitive * primDisc = new CSkeletonPrimitive(disc);
         primDisc->setMaterial(CMaterial::mtrlSilver());
         root->addChild(primDisc);
         return root;
     }
 
-    static CBlobTree* createPizaPillar(CMaterial mtrl)
+    static CBlobNode* createPizaPillar(CMaterial mtrl)
     {
-        CSkeletonPoint * point1 = new CSkeletonPoint(vec3(0.0f, 0.0f, 0.0f));
+        CSkeletonPoint * point1 = new CSkeletonPoint(vec3f(0.0f, 0.0f, 0.0f));
         CSkeletonPrimitive * sphere1 = new CSkeletonPrimitive(point1, fftWyvill, 6.0f);
         sphere1->setMaterial(mtrl);
 
-        CSkeletonCylinder* pillar = new CSkeletonCylinder(vec3(0.0, -8.0, 0.0), vec3(0.0f, 1.0f, 0.0f), 0.25f, 6.0f);
+        CSkeletonCylinder* pillar = new CSkeletonCylinder(vec3f(0.0, -8.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 0.25f, 6.0f);
         CSkeletonPrimitive* pillarPrim = new CSkeletonPrimitive(pillar);
         pillarPrim->setMaterial(mtrl);
 
         CRicciBlend* blendUpper = new CRicciBlend(sphere1, pillarPrim, 32.0f);
 
-        CSkeletonDisc * ground = new CSkeletonDisc(vec3(0.0, -8.0, 0.0), vec3(0.0f, 1.0f, 0.0f), 2.0f);
+        CSkeletonDisc * ground = new CSkeletonDisc(vec3f(0.0, -8.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 2.0f);
         CSkeletonPrimitive * groundPrim = new CSkeletonPrimitive(ground, fftWyvill);
         groundPrim->setMaterial(mtrl);
 
@@ -339,17 +336,17 @@ public:
     }
 
 
-    static CBlobTree* createKitchen()
+    static CBlobNode* createKitchen()
     {
-        CBlobTree* chair1 = createChair();
+        CBlobNode* chair1 = createChair();
         CAffine * affine2 = new CAffine(createChair());
-        affine2->setTranslate(vec3(7.0f ,0.0f, 0.0f));
+        affine2->setTranslate(vec3f(7.0f ,0.0f, 0.0f));
 
         CAffine * affine3 = new CAffine(createChair());
-        affine3->setTranslate(vec3(7.0f ,0.0f, 7.0f));
+        affine3->setTranslate(vec3f(7.0f ,0.0f, 7.0f));
 
         CAffine * affine4 = new CAffine(createChair());
-        affine4->setTranslate(vec3(0.0f ,0.0f, 7.0f));
+        affine4->setTranslate(vec3f(0.0f ,0.0f, 7.0f));
 
         CUnion * uni = new CUnion(chair1, affine2, affine3);
         uni->addChild(affine4);
@@ -358,27 +355,27 @@ public:
     }
 
 
-    static CBlobTree* createChair()
+    static CBlobNode* createChair()
     {
-        CSkeletonPoint * point1 = new CSkeletonPoint(vec3(0.0f, 0.0f, 0.0f));
+        CSkeletonPoint * point1 = new CSkeletonPoint(vec3f(0.0f, 0.0f, 0.0f));
         CSkeletonPrimitive * sphere1 = new CSkeletonPrimitive(point1, fftWyvill, 6.0f);
         sphere1->setMaterial(CMaterial::mtrlEmerald());
 
-        vec3 center(-4.0f, 2.0f, 0.0f);
-        CSkeletonCylinder* cyl = new CSkeletonCylinder(center, vec3(1.0f, 0.0f, 0.0f), 1.8f, 8.0f);
+        vec3f center(-4.0f, 2.0f, 0.0f);
+        CSkeletonCylinder* cyl = new CSkeletonCylinder(center, vec3f(1.0f, 0.0f, 0.0f), 1.8f, 8.0f);
         CSkeletonPrimitive* cylPrim = new CSkeletonPrimitive(cyl);
         cylPrim->setMaterial(CMaterial::mtrlEmerald());
 
         CSmoothDifference * sit = new CSmoothDifference(sphere1, cylPrim);
 
-        CSkeletonCylinder* pillar = new CSkeletonCylinder(vec3(0.0, -8.0, 0.0), vec3(0.0f, 1.0f, 0.0f), 0.25f, 6.0f);
+        CSkeletonCylinder* pillar = new CSkeletonCylinder(vec3f(0.0, -8.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 0.25f, 6.0f);
         CSkeletonPrimitive* pillarPrim = new CSkeletonPrimitive(pillar);
         pillarPrim->setMaterial(CMaterial::mtrlCopper());
 
         CRicciBlend* blendUpper = new CRicciBlend(sit, pillarPrim, 32.0f);
 
 
-        CSkeletonDisc * ground = new CSkeletonDisc(vec3(0.0, -8.0, 0.0), vec3(0.0f, 1.0f, 0.0f), 2.0f);
+        CSkeletonDisc * ground = new CSkeletonDisc(vec3f(0.0, -8.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 2.0f);
         CSkeletonPrimitive * groundPrim = new CSkeletonPrimitive(ground, fftWyvill);
         groundPrim->setMaterial(CMaterial::mtrlCopper());
 
@@ -388,22 +385,22 @@ public:
     }
 
     //Create a complete gearbox
-    static CBlobTree* createGearBox(CLayerManager * lm = NULL)
+    static CBlobNode* createGearBox(CLayerManager * lm = NULL)
     {
-        CBlobTree* gear1  = createGear(10, CMaterial::mtrlRedPlastic(), CMaterial::mtrlBrass());
-        CBlobTree* gear2  = createGear(8, CMaterial::mtrlGreen(), CMaterial::mtrlBrass());
-        CBlobTree* gear3  = createGear(10, CMaterial::mtrlBlue(), CMaterial::mtrlBrass());
+        CBlobNode* gear1  = createGear(10, CMaterial::mtrlRedPlastic(), CMaterial::mtrlBrass());
+        CBlobNode* gear2  = createGear(8, CMaterial::mtrlGreen(), CMaterial::mtrlBrass());
+        CBlobNode* gear3  = createGear(10, CMaterial::mtrlBlue(), CMaterial::mtrlBrass());
         //********************************************
         CAffine* affine2 = new CAffine(gear2);
-        affine2->setRotation(90, vec3(0.0f, 1.0f, 0.0f));
-        affine2->setScale(vec3(0.8f, 0.8f, 0.8f));
-        affine2->setTranslate(vec3(3.2f, 1.4f, 2.4f));
+        affine2->setRotation(90, vec3f(0.0f, 1.0f, 0.0f));
+        affine2->setScale(vec3f(0.8f, 0.8f, 0.8f));
+        affine2->setTranslate(vec3f(3.2f, 1.4f, 2.4f));
 
 
         CAffine* affine3 = new CAffine(gear3);
-        affine3->setRotation(90, vec3(1.0f, 0.0f, 0.0f));
-        affine3->setScale(vec3(1.5f, 1.5f, 1.0f));
-        affine3->setTranslate(vec3(-7.0f, 2.8f, -3.0f));
+        affine3->setRotation(90, vec3f(1.0f, 0.0f, 0.0f));
+        affine3->setScale(vec3f(1.5f, 1.5f, 1.0f));
+        affine3->setTranslate(vec3f(-7.0f, 2.8f, -3.0f));
 
 
         if(lm == NULL)
@@ -420,10 +417,10 @@ public:
         }
     }
 
-    static CBlobTree* createDVDDeck()
+    static CBlobNode* createDVDDeck()
     {
-        vec3 origin(0.0f, 0.0f, 0.0f);
-        vec3 dir(0.0f, 1.0f, 0.0f);
+        vec3f origin(0.0f, 0.0f, 0.0f);
+        vec3f dir(0.0f, 1.0f, 0.0f);
         CSkeletonDisc* disk = new CSkeletonDisc(origin, dir, 2.0f);
         CSkeletonPrimitive * prim1 = new CSkeletonPrimitive(disk);
         prim1->setRange(0.01f);
@@ -448,7 +445,7 @@ public:
         return blend;
     }
 
-    static CBlobTree * createDonut()
+    static CBlobNode * createDonut()
     {
         CSkeletonRing * ring = new CSkeletonRing();
         ring->setRadius(3.0f);
@@ -468,18 +465,18 @@ public:
     /*
  static CBlobTree * createHollowSphere()
  {
-  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(-2.0f, -1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
-  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(-1.0f, -1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
-  CSkeletonCylinder * cyl3 = new CSkeletonCylinder(vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
-  CSkeletonCylinder * cyl4 = new CSkeletonCylinder(vec3(+1.0f, -1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
-  CSkeletonCylinder * cyl5 = new CSkeletonCylinder(vec3(+2.0f, -1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
-  //CSkeletonCylinder * cyl6 = new CSkeletonCylinder(vec3(0.0f, +1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
+  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3f(-2.0f, -1.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
+  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(-1.0f, -1.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
+  CSkeletonCylinder * cyl3 = new CSkeletonCylinder(vec3f(0.0f, -1.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
+  CSkeletonCylinder * cyl4 = new CSkeletonCylinder(vec3f(+1.0f, -1.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
+  CSkeletonCylinder * cyl5 = new CSkeletonCylinder(vec3f(+2.0f, -1.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.005f, 4.0f);
+  //CSkeletonCylinder * cyl6 = new CSkeletonCylinder(vec3f(0.0f, +1.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 4.0f);
 
 
-  //CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(+1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f), 0.01f, 4.0f);
+  //CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(+1.0f, -1.0f, 0.0f), vec3f(-1.0f, 1.0f, 0.0f), 0.01f, 4.0f);
 
-//		CSkeletonPoint * point = new CSkeletonPoint(vec3(0.7f, 0.0f, 0.0f));
-//		CSkeletonCylinder * cyl = new CSkeletonCylinder(vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.01f, 3.0f);
+//		CSkeletonPoint * point = new CSkeletonPoint(vec3f(0.7f, 0.0f, 0.0f));
+//		CSkeletonCylinder * cyl = new CSkeletonCylinder(vec3f(0.0f, -1.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.01f, 3.0f);
 
   CSkeletonPrimitive *primitive1 = new CSkeletonPrimitive(cyl1, fftWyvill, 1.0f, 0.6f);
   CSkeletonPrimitive *primitive2 = new CSkeletonPrimitive(cyl2, fftWyvill, 1.0f, 0.6f);
@@ -499,8 +496,8 @@ public:
 
  static CBlobTree * createDisk()
  {
-  CSkeletonDisc * disk = new CSkeletonDisc(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), 1.0f);
-  CSkeletonPoint * point = new CSkeletonPoint(vec3(0.0, 0.0, 2.0f));
+  CSkeletonDisc * disk = new CSkeletonDisc(vec3f(0.0f, 0.0f, 0.0f), vec3f(0.0f, 0.0f, 1.0f), 1.0f);
+  CSkeletonPoint * point = new CSkeletonPoint(vec3f(0.0, 0.0, 2.0f));
 
   CSkeletonPrimitive *primitive1 = new CSkeletonPrimitive(disk, fftWyvill, 1.0f, 0.6f);
   CSkeletonPrimitive *primitive2 = new CSkeletonPrimitive(point, fftWyvill, 1.0f, 0.6f);
@@ -512,8 +509,8 @@ public:
 
  static CBlobTree * createBLOB()
  {
-  CSkeletonRing * ring1 = new CSkeletonRing(vec3(0.0f, 1.8f, 0.0f), vec3(0.0, 0.0, 1.0), 1.0f);
-  CSkeletonRing * ring2 = new CSkeletonRing(vec3(0.0f, 0.0f, 0.0f), vec3(0.0, 0.0, 1.0), 1.0f);
+  CSkeletonRing * ring1 = new CSkeletonRing(vec3f(0.0f, 1.8f, 0.0f), vec3f(0.0, 0.0, 1.0), 1.0f);
+  CSkeletonRing * ring2 = new CSkeletonRing(vec3f(0.0f, 0.0f, 0.0f), vec3f(0.0, 0.0, 1.0), 1.0f);
 
   CSkeletonPrimitive *primitive1 = new CSkeletonPrimitive(ring1, fftWyvill, 0.75f, 0.5f, 30.0f);
   primitive1->setMaterial(CMaterial::mtrlGreen());
@@ -522,8 +519,8 @@ public:
 
   CUnion * firstUnion = new CUnion(primitive1, primitive2);
 
-  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(3.0f, 2.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.005f, 2.0f);
-  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(3.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), 0.005f, 1.0f);
+  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3f(3.0f, 2.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.005f, 2.0f);
+  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(3.0f, 0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), 0.005f, 1.0f);
   CSkeletonPrimitive *primitive3 = new CSkeletonPrimitive(cyl1, fftWyvill, 0.75f, 0.5f, 30.0f);
   primitive1->setMaterial(CMaterial::mtrlGreen());
   CSkeletonPrimitive *primitive4 = new CSkeletonPrimitive(cyl2, fftWyvill, 0.75f, 0.5f, 30.0f);
@@ -538,10 +535,10 @@ public:
 
  static CBlobTree * createTaperTwistedPlus()
  {
-  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), 0.05f, 3.0f);
+  CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3f(0.0f, 0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), 0.05f, 3.0f);
   CWarpTaper * taper1 = new CWarpTaper(CSkeletonPrimitive::getBlobTreeNode(cyl1), 1.0f, xAxis);
 
-  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.05f, 3.0f);
+  CSkeletonCylinder * cyl2 = new CSkeletonCylinder(vec3f(0.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 0.05f, 3.0f);
   CWarpTaper * taper2 = new CWarpTaper(CSkeletonPrimitive::getBlobTreeNode(cyl2), 1.0f, yAxis);
 
   CBlend * blend = new CBlend(CSkeletonPrimitive::getBlobTreeNode(cyl1), CSkeletonPrimitive::getBlobTreeNode(cyl2));
@@ -551,64 +548,6 @@ public:
  }
  */
 
-    static int createStringBlob(CLayerManager & lm)
-    {
-        vec3 xAxis(1.0f,0.0f,0.0f);
-        vec3 yAxis(0.0f,1.0f,0.0f);
-        vec3 zAxis(0.0f,0.0f,1.0f);
-
-        CSkeletonRing * ringUP = new CSkeletonRing(vec3(4.0f, 2.5f, 0.0f), zAxis, 1.0f);
-        CSkeletonRing * ringDN = new CSkeletonRing(vec3(4.0f, 0.5f, 0.0f), zAxis, 1.0f);
-        CSkeletonCylinder * cyl1 = new CSkeletonCylinder(vec3(5.25f, -0.5f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.03f, 4.0f);
-        CSkeletonPrimitive * primUp = new CSkeletonPrimitive(ringUP);
-        CSkeletonPrimitive * primDn = new CSkeletonPrimitive(ringDN);
-        CSkeletonPrimitive * primLeft = new CSkeletonPrimitive(cyl1);
-
-        primUp->setMaterial(CMaterial::mtrlBlue());
-        primUp->setRange(0.6f);
-        primDn->setMaterial(CMaterial::mtrlBlue());
-        primDn->setRange(0.6f);
-        primLeft->setMaterial(CMaterial::mtrlBlue());
-        primLeft->setRange(0.6f);
-        CBlend * blend1 = new CBlend(primUp, primDn);
-        CBlend * blend2 = new CBlend(blend1, primLeft);
-        lm.addLayer(blend2);
-        lm.getLast()->setPolySeedPoint(vec3(5.0f, 0.0f, 0.0f));
-        lm.getLast()->setGroupName("BLOB B");
-
-        //****************
-        CSkeletonCylinder * cyl5 = new CSkeletonCylinder(vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), 0.05f, 3.0f);
-        CSkeletonCylinder * cyl6 = new CSkeletonCylinder(vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), 0.05f, 2.5f);
-        CSkeletonPrimitive * prim5 = new CSkeletonPrimitive(cyl5);
-        CSkeletonPrimitive * prim6 = new CSkeletonPrimitive(cyl6);
-        prim5->setMaterial(CMaterial::mtrlRedPlastic());
-        prim6->setMaterial(CMaterial::mtrlRedPlastic());
-        CGradientBlend * blend3 = new CGradientBlend(prim5, prim6);
-        lm.addLayer(blend3);
-        lm.getLast()->setPolySeedPoint(vec3(1.0f, 0.0f, 0.0f));
-        lm.getLast()->setGroupName("BLOB L");
-        //****************
-        CSkeletonRing * ring = new CSkeletonRing(vec3(-5.3f, 1.3f, 0.0f), zAxis, 2.0f);
-        CSkeletonPrimitive * prim1 = new CSkeletonPrimitive(ring);
-        prim1->setRange(0.6f);
-        prim1->setMaterial(CMaterial::mtrlGreen());
-        lm.addLayer(prim1);
-        lm.getLast()->setPolySeedPoint(vec3(-6.0f, 1.0f, 0.0f));
-        lm.getLast()->setGroupName("BLOB O");
-        //***************
-        CGradientBlend* blend4 = dynamic_cast<CGradientBlend*>(cloneBlobTree(blend1));
-        CAffine * affine = new CAffine(blend4);
-        affine->setTranslate(vec3(-14.0f, 0.0f, 0.0f));
-
-        lm.addLayer(affine);
-        lm.getLast()->setPolySeedPoint(vec3(-9.0f, 0.0f, 0.0f));
-        lm.getLast()->setGroupName("BLOB LastB");
-
-
-        lm.setCellSize(0.15f);
-        lm.setPolyBounds(500);
-        return 1;
-    }
 
 
 
@@ -616,8 +555,8 @@ public:
 
  static CBlobTree * createSimpleBlob()
  {
-  CSkeletonPoint * left = new CSkeletonPoint(vec3(-0.8f, 0.0f, 0.0f));
-  CSkeletonPoint * right = new CSkeletonPoint(vec3(0.8f, 0.0f, 0.0f));
+  CSkeletonPoint * left = new CSkeletonPoint(vec3f(-0.8f, 0.0f, 0.0f));
+  CSkeletonPoint * right = new CSkeletonPoint(vec3f(0.8f, 0.0f, 0.0f));
   CSkeletonPrimitive * prim1 = CSkeletonPrimitive::getBlobTreeNode(left);
   prim1->setMaterial(CMaterial::mtrlBlue());
 

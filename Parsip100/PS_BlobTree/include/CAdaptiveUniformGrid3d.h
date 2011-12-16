@@ -44,12 +44,12 @@ public:
 	};
 
 
-	CAdaptiveUniformGrid3D( float fVoxelSize, const vec3 & vOrigin );
+	CAdaptiveUniformGrid3D( float fVoxelSize, const vec3f & vOrigin );
 	virtual ~CAdaptiveUniformGrid3D();
 
 
-	void SetOrigin( const vec3 & vNewOrigin );
-	inline const vec3 & GetOrigin() const;
+	void SetOrigin( const vec3f & vNewOrigin );
+	inline const vec3f & GetOrigin() const;
 
 	// [TODO: this really should be based on feature size..]
 	void SetVoxelSize( const PS::COctree& fieldBounds, unsigned int nMaxCells, bool bForce = false );
@@ -67,15 +67,15 @@ public:
 	float GetValue( float x, float y, float z );
 	
 
-	float SampleTriLinear( float x, float y, float z, CBlobTree * pRoot);
-	float SampleTriQuadratic( float x, float y, float z, CBlobTree * pRoot);
+	float SampleTriLinear( float x, float y, float z, CBlobNode * pRoot);
+	float SampleTriQuadratic( float x, float y, float z, CBlobNode * pRoot);
 
 	void SampleGradientTriLinear( float x, float y, float z, 
 		float & gradX, float & gradY, float & gradZ, 
-		float * pFieldValue, CBlobTree * pRoot);
+		float * pFieldValue, CBlobNode * pRoot);
 	void SampleGradientTriQuadratic( float x, float y, float z, 
 		float & gradX, float & gradY, float & gradZ, 
-		float * pFieldValue, CBlobTree * pRoot);
+		float * pFieldValue, CBlobNode * pRoot);
 
 
 	// invalidation funcs
@@ -95,7 +95,7 @@ protected:
 	float m_fVoxelSize;
 	float m_fBlockSize;
 
-	vec3 m_vOrigin;		// origin of grid passed in by user
+	vec3f m_vOrigin;		// origin of grid passed in by user
 
 	float m_vGridOrigin[3];			// bottom-left corner of grid in real space
 	float m_fVoxelScale;
@@ -136,8 +136,8 @@ protected:
 	static const unsigned int INVALID_COORD;
 
 
-	float GetValueOrCache( int nCellX, int nCellY, int nCellZ, CBlobTree* pField);
-	float CacheValueAndReturn( Block * pBlock, int celli, int cellj, int cellk, CBlobTree* pField);
+	float GetValueOrCache( int nCellX, int nCellY, int nCellZ, CBlobNode* pField);
+	float CacheValueAndReturn( Block * pBlock, int celli, int cellj, int cellk, CBlobNode* pField);
 
 	inline Block * FindBlock( unsigned int nBlockID );
 	inline Block * FindBlockOrCreate( unsigned int nBlockID );
@@ -154,7 +154,7 @@ protected:
 
 
 	// deprecated...
-	float GetValueOrCache( float x, float y, float z, CBlobTree* pField);
+	float GetValueOrCache( float x, float y, float z, CBlobNode* pField);
 };
 
 
@@ -169,7 +169,7 @@ inline float CAdaptiveUniformGrid3D::GetBlockSize() const
 	return m_fBlockSize;
 }
 
-inline const vec3 & CAdaptiveUniformGrid3D::GetOrigin() const
+inline const vec3f & CAdaptiveUniformGrid3D::GetOrigin() const
 {
 	return m_vOrigin;
 }

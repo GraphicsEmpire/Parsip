@@ -172,9 +172,9 @@ public:
         return sqrt(dist2);
     }
 
-    void getName(char * chrName)
+    string getName()
     {
-        strncpy(chrName, "CUBE", MAX_NAME_LEN);
+        return "CUBE";
     }
 
     bool getExtremes(vec3f& lower, vec3f& upper)
@@ -190,7 +190,7 @@ public:
         return b;
     }
 
-    vec3 getPolySeedPoint()
+    vec3f getPolySeedPoint()
     {
         return m_center;
     }
@@ -201,6 +201,23 @@ public:
     }
 
     SkeletonType getType()		{return sktCube;}
+
+    bool saveScript(CSketchConfig *lpSketchScript, int id)
+    {
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        lpSketchScript->writeVec3f(strNodeName, "position", this->getPosition());
+        lpSketchScript->writeFloat(strNodeName, "side", this->getSide());
+        return true;
+    }
+
+    bool loadScript(CSketchConfig *lpSketchScript, int id)
+    {
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        m_center = lpSketchScript->readVec3f(strNodeName, "position");
+        m_side = lpSketchScript->readFloat(strNodeName, "side");
+        return true;
+    }
+
 };
 
 }

@@ -105,19 +105,19 @@ public:
         U32 countTexCoords(int idxChannel) const;
 	void clearTextures();
 	//===================================================
-	void addNormal(vec3 n);
+	void addNormal(vec3f n);
 	void addNormal(float x, float y, float z);
 	void addNormal(const float *begin, const float *end);
 	void setNormal(int n, float x, float y, float z);
 	void setNormal(int n, const float *begin, const float *end);
 	const float *getNormal(int n) const;
-	vec3 getNormal3(int n) const;
+	vec3f getNormal3(int n) const;
 	const float *getNormalArray(void) const;
         U32 countNormals(void) const;
 	void clearNormals(void);
 	//===================================================
 	void addVertex(vec2 v2);
-	void addVertex(vec3 v3);	
+	void addVertex(vec3f v3);	
 	void addVertex(float x);
 	void addVertex(float x, float y);
 	void addVertex(float x, float y, float z);
@@ -125,7 +125,7 @@ public:
 	void addVertex(const float *begin, const float *end);
 
 	void setVertex(int n, vec2 v2);
-	void setVertex(int n, vec3 v3);
+	void setVertex(int n, vec3f v3);
 	void setVertex(int n, float x);
 	void setVertex(int n, float x, float y);
 	void setVertex(int n, float x, float y, float z);
@@ -134,7 +134,7 @@ public:
 	void setUnitVertexSize(int size);
 
 	const float *getVertex(int n) const;
-	vec3   getVertex3(int n) const;
+	vec3f   getVertex3(int n) const;
 
 	const float *getVertexArray(void) const;
 
@@ -156,7 +156,7 @@ public:
 
 	//Get Primitives	
         U32 getFaceMode(void) const;
-	int getFace(size_t idxFace, vec3* arrVertices, size_t szVerticesBuffer);
+	int getFace(size_t idxFace, vec3f* arrVertices, size_t szVerticesBuffer);
         const U32 *getFace(U32 primitiveId) const;
 	int getUnitFaceSize(void) const;
         U32 countFaces(void) const;
@@ -174,7 +174,7 @@ public:
 	bool fitTo(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax);
 	bool generateNormals(void);
 	bool smoothNormals(void);
-	bool getExtremes(vec3 &lo, vec3 &hi);
+	bool getExtremes(vec3f &lo, vec3f &hi);
 
 	//Append from other mesh
 	bool appendFrom(const CMeshVV& rhs);

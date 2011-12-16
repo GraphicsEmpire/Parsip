@@ -101,8 +101,8 @@ bool CMeshVV::performCompleteTest()
 		if(vertexUsed[iVertex] == 0)
 		{
 			vertexUsed[iVertex] = vertexUsed[iVertex];
-			vec3 v1 = getVertex3(iVertex);
-			vec3 v2 = getVertex3(iVertex+1);
+			vec3f v1 = getVertex3(iVertex);
+			vec3f v2 = getVertex3(iVertex+1);
 			ctErrors++;
 		}
 	}
@@ -414,7 +414,7 @@ void CMeshVV::clearTextures()
 }
 
 
-void CMeshVV::addNormal(vec3 n)
+void CMeshVV::addNormal(vec3f n)
 {
 	addNormal(n.x, n.y, n.z);
 }
@@ -488,7 +488,7 @@ const float *CMeshVV::getNormal(int n) const
 	return 0;
 }
 
-vec3 CMeshVV::getNormal3(int n) const
+vec3f CMeshVV::getNormal3(int n) const
 {
 	vec3f normal;
 	normal.set(m_lstNormals[n*3+0], m_lstNormals[n*3+1], m_lstNormals[n*3+2]);
@@ -519,7 +519,7 @@ void CMeshVV::addVertex(vec2 v2)
 	addVertex(v2.x, v2.y);
 }
 
-void CMeshVV::addVertex(vec3 v3)
+void CMeshVV::addVertex(vec3f v3)
 {
 	addVertex(v3.x, v3.y, v3.z);
 }
@@ -601,7 +601,7 @@ void CMeshVV::setVertex(int n, vec2 v2)
 	setVertex(n, v2.x, v2.y);
 }
 
-void CMeshVV::setVertex(int n, vec3 v3)
+void CMeshVV::setVertex(int n, vec3f v3)
 {
 	setVertex(n, v3.x, v3.y, v3.z);
 }
@@ -716,9 +716,9 @@ const float *CMeshVV::getVertex(int n) const
 	return 0;
 }
 
-vec3  CMeshVV::getVertex3(int n) const
+vec3f  CMeshVV::getVertex3(int n) const
 {
-	return vec3(getVertex(n));
+	return vec3f(getVertex(n));
 }
 
 const float *CMeshVV::getVertexArray(void) const
@@ -841,7 +841,7 @@ unsigned int CMeshVV::getFaceMode(void) const
 }
 
 
-int CMeshVV::getFace(size_t idxFace, vec3* arrVertices, size_t szVerticesBuffer)
+int CMeshVV::getFace(size_t idxFace, vec3f* arrVertices, size_t szVerticesBuffer)
 {
 	size_t ctFaceSides = getUnitFaceSize();
 	if(szVerticesBuffer < ctFaceSides)
@@ -1405,7 +1405,7 @@ bool CMeshVV::saveToASCIISTLFile(const DAnsiStr& fileName) const
 		primitiveCount,
 		i;
 	// Auxiliary vectors used to calculate the triangle normal.
-	vec3 u,v, normal;
+	vec3f u,v, normal;
 
 	if (m_lstVertices.empty())
 	{
@@ -1584,8 +1584,8 @@ bool CMeshVV::openOBJ(const DAnsiStr& name)
 
     // Parse the .obj file. Both triangle faces and quad faces are supported.
     // Only v and f tags are processed, other tags like vn, vt etc are ignored.	
-	vec3 pos;
-	vec3 normal;
+	vec3f pos;
+	vec3f normal;
 	vec2 texCoord;
 
 	unsigned int idx[4];
@@ -1807,7 +1807,7 @@ bool CMeshVV::openOFF(const DAnsiStr& fileName)
 
 		//Add all points
 		for(i=0; i < tempNumPoints; i++)
-			this->addVertex(vec3(tempPoints[i]));
+			this->addVertex(vec3f(tempPoints[i]));
 
 		//Add all faces
 		for(i=0; i < tempNumFaces; i++)
@@ -2002,7 +2002,7 @@ bool CMeshVV::fitTo(float xMin, float yMin, float zMin, float xMax, float yMax, 
 		return false;
 	}
 
-	vec3 lo, hi;
+	vec3f lo, hi;
 	if (!this->getExtremes(lo, hi))
 	{
 		MarkError();
@@ -2104,7 +2104,7 @@ bool CMeshVV::generateNormals(void)
 		triangleNormal[1] = (secondTriangleVertexCoord[2] - firstTriangleVertexCoord[2])*(thirdTriangleVertexCoord[0] - firstTriangleVertexCoord[0]) - (secondTriangleVertexCoord[0] - firstTriangleVertexCoord[0])*(thirdTriangleVertexCoord[2] - firstTriangleVertexCoord[2]);
 		triangleNormal[2] = (secondTriangleVertexCoord[0] - firstTriangleVertexCoord[0])*(thirdTriangleVertexCoord[1] - firstTriangleVertexCoord[1]) - (secondTriangleVertexCoord[1] - firstTriangleVertexCoord[1])*(thirdTriangleVertexCoord[0] - firstTriangleVertexCoord[0]);
 
-		vec3 n(triangleNormal);
+		vec3f n(triangleNormal);
 		n.normalize();		
 		n.get(triangleNormal);
 
@@ -2171,7 +2171,7 @@ bool CMeshVV::smoothNormals(void)
 	float normalAverage[3],
 		*vertexNormal;
 	vector<float> normalArray;
-	vec3 temp;
+	vec3f temp;
 
 	if (this->getMode() != CMeshVV::TRIANGLES)
 	{
@@ -2300,7 +2300,7 @@ void CVVMesh::SetMaterial(CMaterial& mtrl)
 }
 */
 
-bool CMeshVV::getExtremes(vec3 &lo, vec3 &hi)
+bool CMeshVV::getExtremes(vec3f &lo, vec3f &hi)
 {
 	int vertexCount = this->countVertices();
 
@@ -2337,8 +2337,8 @@ bool CMeshVV::getExtremes(vec3 &lo, vec3 &hi)
 		vertex++;
 	}
 
-	lo = vec3(xMin, yMin, zMin);
-	hi = vec3(xMax, yMax, zMax);
+	lo = vec3f(xMin, yMin, zMin);
+	hi = vec3f(xMax, yMax, zMax);
 
 	return true;
 
@@ -2494,13 +2494,13 @@ void CMeshVV::drawDirect() const
 
 			if(bHasNormals)
 			{
-				vec3 n = vec3(&m_lstNormals[0] + idVertex);
+				vec3f n = vec3f(&m_lstNormals[0] + idVertex);
 				glNormal3fv(n.ptr());
 			}
 
 			if(bHasVertices)
 			{
-				vec3 v = vec3(&m_lstVertices[0] + idVertex);
+				vec3f v = vec3f(&m_lstVertices[0] + idVertex);
 				glVertex3fv(v.ptr());
 			}			
 		}

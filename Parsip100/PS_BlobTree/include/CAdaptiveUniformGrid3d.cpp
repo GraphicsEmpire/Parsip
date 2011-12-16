@@ -60,7 +60,7 @@ const unsigned int CAdaptiveUniformGrid3D::MAXBLOCKS = 1024;
 
 CAdaptiveUniformGrid3D::Block * CAdaptiveUniformGrid3D::s_pInvalidBlock = NULL;
 
-CAdaptiveUniformGrid3D::CAdaptiveUniformGrid3D( float fVoxelSize, const vec3 & vOrigin )
+CAdaptiveUniformGrid3D::CAdaptiveUniformGrid3D( float fVoxelSize, const vec3f & vOrigin )
 {
 	m_vOrigin = vOrigin;
 	m_fVoxelSize = fVoxelSize;
@@ -94,7 +94,7 @@ CAdaptiveUniformGrid3D::Block * CAdaptiveUniformGrid3D::GetInvalidBlock()
 }
 
 
-void CAdaptiveUniformGrid3D::SetOrigin( const vec3 & vNewOrigin )
+void CAdaptiveUniformGrid3D::SetOrigin( const vec3f & vNewOrigin )
 {
 	m_vOrigin = vNewOrigin;
 	m_vGridOrigin[0] = - ( vNewOrigin.x - (m_fBlockSize * (float)(MAXBLOCKS/2)) );
@@ -104,8 +104,8 @@ void CAdaptiveUniformGrid3D::SetOrigin( const vec3 & vNewOrigin )
 
 void CAdaptiveUniformGrid3D::SetVoxelSize( const PS::COctree &fieldBounds, unsigned int nGridDim, bool bForce )
 {
-	vec3 lower = fieldBounds.lower;
-	vec3 upper = fieldBounds.upper;
+        vec3f lower = fieldBounds.lower;
+        vec3f upper = fieldBounds.upper;
 	float fWidth  = upper.x - lower.x;
 	float fHeight = upper.y - lower.y;
 	float fDepth  = upper.z - lower.z;
@@ -155,7 +155,7 @@ float CAdaptiveUniformGrid3D::GetValue( float x, float y, float z )
 		return 0.0;
 }
 
-float CAdaptiveUniformGrid3D::GetValueOrCache( float x, float y, float z, CBlobTree * pField )
+float CAdaptiveUniformGrid3D::GetValueOrCache( float x, float y, float z, CBlobNode * pField )
 {
 	int celli = (int)( (x + m_vGridOrigin[0]) * m_fVoxelScale );
 	int cellj = (int)( (y + m_vGridOrigin[1]) * m_fVoxelScale );
@@ -175,7 +175,7 @@ float CAdaptiveUniformGrid3D::GetValueOrCache( float x, float y, float z, CBlobT
 }
 
 
-float CAdaptiveUniformGrid3D::GetValueOrCache( int celli, int cellj, int cellk, CBlobTree * pField )
+float CAdaptiveUniformGrid3D::GetValueOrCache( int celli, int cellj, int cellk, CBlobNode * pField )
 {
 	int nBlockID = _BLOCK_ID_FROM_CELL(celli, cellj, cellk);
 	Block * pBlock = FindBlockOrCreate(nBlockID);
@@ -191,7 +191,7 @@ float CAdaptiveUniformGrid3D::GetValueOrCache( int celli, int cellj, int cellk, 
 }
 
 
-float CAdaptiveUniformGrid3D::CacheValueAndReturn( Block * pBlock, int celli, int cellj, int cellk, CBlobTree * pField )
+float CAdaptiveUniformGrid3D::CacheValueAndReturn( Block * pBlock, int celli, int cellj, int cellk, CBlobNode * pField )
 {
 	float fX = _BLOCK_ID_X(pBlock->nBlockID) * m_fBlockSize - m_vGridOrigin[0] + (float)celli * m_fVoxelSize;
 	float fY = _BLOCK_ID_Y(pBlock->nBlockID) * m_fBlockSize - m_vGridOrigin[1] + (float)cellj * m_fVoxelSize;
@@ -216,7 +216,7 @@ float CAdaptiveUniformGrid3D::CacheValueAndReturn( Block * pBlock, int celli, in
 // doing things like binary searches inside one voxel (happens often for MC polygonizers, etc).
 // Otherwise causes some overhead, but I think it's negligible...
 
-float CAdaptiveUniformGrid3D::SampleTriLinear( float x, float y, float z, CBlobTree * pField )
+float CAdaptiveUniformGrid3D::SampleTriLinear( float x, float y, float z, CBlobNode * pField )
 {
 	int celli = (int)( (x + m_vGridOrigin[0]) * m_fVoxelScale );
 	int cellj = (int)( (y + m_vGridOrigin[1]) * m_fVoxelScale );
@@ -355,7 +355,7 @@ float CAdaptiveUniformGrid3D::SampleTriLinear( float x, float y, float z, Scalar
 
 void CAdaptiveUniformGrid3D::SampleGradientTriLinear( float x, float y, float z, 
 													  float & gradX, float & gradY, float & gradZ, 
-													  float * pFieldValue, CBlobTree * pField)
+													  float * pFieldValue, CBlobNode * pField)
 {
 	int celli = (int)( (x + m_vGridOrigin[0]) * m_fVoxelScale );
 	int cellj = (int)( (y + m_vGridOrigin[1]) * m_fVoxelScale );
@@ -427,7 +427,7 @@ void CAdaptiveUniformGrid3D::SampleGradientTriLinear( float x, float y, float z,
 
 
 
-float CAdaptiveUniformGrid3D::SampleTriQuadratic( float x, float y, float z, CBlobTree * pField )
+float CAdaptiveUniformGrid3D::SampleTriQuadratic( float x, float y, float z, CBlobNode * pField )
 {
 	int celli = (int)( (x + m_vGridOrigin[0]) * m_fVoxelScale );
 	int cellj = (int)( (y + m_vGridOrigin[1]) * m_fVoxelScale );
@@ -508,7 +508,7 @@ float CAdaptiveUniformGrid3D::SampleTriQuadratic( float x, float y, float z, CBl
 
 void CAdaptiveUniformGrid3D::SampleGradientTriQuadratic( float x, float y, float z, 
 													    float & gradX, float & gradY, float & gradZ, 
-														float * pFieldValue, CBlobTree * pField)
+														float * pFieldValue, CBlobNode * pField)
 {
 	int celli = (int)( (x + m_vGridOrigin[0]) * m_fVoxelScale );
 	int cellj = (int)( (y + m_vGridOrigin[1]) * m_fVoxelScale );
@@ -684,8 +684,8 @@ void CAdaptiveUniformGrid3D::CalculateCellAllocationStats( const CVolumeBox & bo
 														  unsigned int & nBlocksTotal, unsigned int & nBlocksAllocated,
 														  unsigned int & nCellsTotal, unsigned int & nCellsAllocated )
 {
-	vec3 lower = bounds.lower();
-	vec3 upper = bounds.upper();
+        vec3f lower = bounds.lower();
+        vec3f upper = bounds.upper();
 	float fWidth  = upper.x - lower.x;
 	float fHeight = upper.y - lower.y;
 	float fDepth  = upper.z - lower.z;
@@ -712,8 +712,8 @@ void CAdaptiveUniformGrid3D::CalculateCellAllocationStats( const CVolumeBox & bo
 void CAdaptiveUniformGrid3D::CalculateCellEvaluationStats(  const CVolumeBox & bounds,
 								  unsigned int & nCellsTotalGrid, unsigned int & nCellsTotalAllocated, unsigned int & nCellsEvaluated )
 {
-	vec3 lower = bounds.lower();
-	vec3 upper = bounds.upper();
+        vec3f lower = bounds.lower();
+        vec3f upper = bounds.upper();
 	float fWidth  = upper.x - lower.x;
 	float fHeight = upper.y - lower.y;
 	float fDepth  = upper.z - lower.z;

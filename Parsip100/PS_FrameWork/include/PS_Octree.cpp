@@ -17,7 +17,7 @@ COctree::COctree()
 	upper.zero();
 }
 
-COctree::COctree(vec3 lbnCorner, vec3 rtfCorner)
+COctree::COctree(vec3f lbnCorner, vec3f rtfCorner)
 {
 	for(int i=0;i<8; i++)
 		children[i] = NULL;
@@ -35,7 +35,7 @@ COctree::COctree(float l, float b, float n, float r, float t, float f)
 	upper = vec3f(r,t,f);
 }
 
-COctree::COctree(vec3 lstPoints[], int ctPoints)
+COctree::COctree(vec3f lstPoints[], int ctPoints)
 {	
 	m_bHasChildren = false;
 	set(lstPoints, ctPoints);
@@ -50,7 +50,7 @@ void COctree::set(const std::vector<vec3f>& lstPoints)
 {
 	removeAllChildren();
 
-	vec3 vMax, vMin, p;
+	vec3f vMax, vMin, p;
 	vMin = lstPoints[0];
 	vMax = lstPoints[0];
 
@@ -68,11 +68,11 @@ void COctree::set(const std::vector<vec3f>& lstPoints)
 	upper = vMax;	
 }
 
-void COctree::set(vec3 lstPoints[], int ctPoints)
+void COctree::set(vec3f lstPoints[], int ctPoints)
 {
 	removeAllChildren();
 
-	vec3 vMax, vMin, p;
+	vec3f vMax, vMin, p;
 	vMin = lstPoints[0];
 	vMax = lstPoints[0];
 
@@ -109,9 +109,9 @@ bool COctree::hasChildren()
 	return m_bHasChildren;
 }
 
-vec3 COctree::center()
+vec3f COctree::center()
 {
-	vec3 c = (lower + upper) * 0.5f;
+	vec3f c = (lower + upper) * 0.5f;
 	return c;
 }
 
@@ -191,7 +191,7 @@ void COctree::subDivide()
 {	
 	if (hasChildren())	removeAllChildren();
 
-	vec3 c = center();
+	vec3f c = center();
 	float l = lower.x; float r = upper.x;
 	float b = lower.y; float t = upper.y;
 	float n = lower.z; float f = upper.z;
@@ -199,15 +199,15 @@ void COctree::subDivide()
 	float btov2 = (b+t)/2.0f;
 	float nfov2 = (n+f)/2.0f;
 
-	children[LBN] = new COctree(vec3(l, b, n), vec3(lrov2, btov2, nfov2));
-	children[LBF] = new COctree(vec3(l, b, nfov2), vec3(lrov2, btov2, f));
-	children[LTN] = new COctree(vec3(l, btov2, n), vec3(lrov2, t, nfov2));
-	children[LTF] = new COctree(vec3(l, btov2, nfov2), vec3(lrov2, t, f));
+	children[LBN] = new COctree(vec3f(l, b, n), vec3f(lrov2, btov2, nfov2));
+	children[LBF] = new COctree(vec3f(l, b, nfov2), vec3f(lrov2, btov2, f));
+	children[LTN] = new COctree(vec3f(l, btov2, n), vec3f(lrov2, t, nfov2));
+	children[LTF] = new COctree(vec3f(l, btov2, nfov2), vec3f(lrov2, t, f));
 
-	children[RBN] = new COctree(vec3(lrov2, b, n), vec3(r, btov2, nfov2));
-	children[RBF] = new COctree(vec3(lrov2, b, nfov2), vec3(r, btov2, f));
-	children[RTN] = new COctree(vec3(lrov2, btov2, n), vec3(r, t, nfov2));
-	children[RTF] = new COctree(vec3(lrov2, btov2, nfov2), vec3(r, t, f));
+	children[RBN] = new COctree(vec3f(lrov2, b, n), vec3f(r, btov2, nfov2));
+	children[RBF] = new COctree(vec3f(lrov2, b, nfov2), vec3f(r, btov2, f));
+	children[RTN] = new COctree(vec3f(lrov2, btov2, n), vec3f(r, t, nfov2));
+	children[RTF] = new COctree(vec3f(lrov2, btov2, nfov2), vec3f(r, t, f));
 	m_bHasChildren = true;
 }
 
@@ -252,7 +252,7 @@ void COctree::drawPolygon()
 }
 */
 
-bool COctree::isInside(vec3 pt)
+bool COctree::isInside(vec3f pt)
 {
 	if((pt.x < lower.x)||(pt.x > upper.x))
 		return false;
@@ -316,7 +316,7 @@ bool COctree::intersect( const CRay& ray, float t0, float t1 ) const
 void COctree::draw()
 {	
 	/*
-	vec3 c = center();
+	vec3f c = center();
 	float l = lower.x; float r = upper.x;
 	float b = lower.y; float t = upper.y;
 	float n = lower.z; float f = upper.z;
@@ -365,7 +365,7 @@ void COctree::draw()
 	*/
 }
 
-vec3 COctree::getCorner(int index)
+vec3f COctree::getCorner(int index)
 {
 	vec3f mask(static_cast<float>((index & 4) >> 2), 
 			   static_cast<float>((index & 2) >> 1), 
@@ -377,24 +377,24 @@ vec3 COctree::getCorner(int index)
 	float b = lower.y; float t = upper.y;
 	float n = lower.z; float f = upper.z;
 
-	vec3 corner;
+	vec3f corner;
 	switch(index)
 	{
-	case LBN: corner = vec3(l,b,n);
+	case LBN: corner = vec3f(l,b,n);
 		break;
-	case LBF: corner = vec3(l,b,f);
+	case LBF: corner = vec3f(l,b,f);
 		break;
-	case LTN: corner = vec3(l,t,n);
+	case LTN: corner = vec3f(l,t,n);
 		break;
-	case LTF: corner = vec3(l,t,f);
+	case LTF: corner = vec3f(l,t,f);
 		break;
-	case RBN: corner = vec3(r,b,n);
+	case RBN: corner = vec3f(r,b,n);
 		break;
-	case RBF: corner = vec3(r,b,f);
+	case RBF: corner = vec3f(r,b,f);
 		break;
-	case RTN: corner = vec3(r,t,n);
+	case RTN: corner = vec3f(r,t,n);
 		break;
-	case RTF: corner = vec3(r,t,f);
+	case RTF: corner = vec3f(r,t,f);
 		break;
 	}
 	return corner;
@@ -407,12 +407,12 @@ void COctree::expand( vec3f v )
 	lower -= v;	
 }
 
-void COctree::expand( vec3 lstPoints[], int ctPoints )
+void COctree::expand( vec3f lstPoints[], int ctPoints )
 {
 	for(int i=0;i<8; i++)
 		children[i] = NULL;	
 
-	vec3* lpArrPoints = new vec3[ctPoints+2];
+	vec3f* lpArrPoints = new vec3f[ctPoints+2];
 	for(int i=0; i<ctPoints; i++)
 		lpArrPoints[i] = lstPoints[i];
 	lpArrPoints[ctPoints] = lower;

@@ -10,81 +10,99 @@ namespace BLOBTREE{
 class  CSkeletonPoint: public CSkeleton 
 {
 private:
-	vec3f m_position;
+    vec3f m_position;
 public:
-	CSkeletonPoint() { m_position.set(0.0f, 0.0f, 0.0f);}
-	CSkeletonPoint(vec3f position)
-	{
-		m_position = position;
-	}
+    CSkeletonPoint() { m_position.set(0.0f, 0.0f, 0.0f);}
+    CSkeletonPoint(vec3f position)
+    {
+        m_position = position;
+    }
 
-	CSkeletonPoint(CSkeleton* other)
-	{
-		setParamFrom(other);
-	}
+    CSkeletonPoint(CSkeleton* other)
+    {
+        setParamFrom(other);
+    }
 
-	void setParamFrom(CSkeleton* input)
-	{
-		CSkeletonPoint* pointN = dynamic_cast<CSkeletonPoint*>(input);
-		this->m_position = pointN->m_position;		
-	}
+    void setParamFrom(CSkeleton* input)
+    {
+        CSkeletonPoint* pointN = dynamic_cast<CSkeletonPoint*>(input);
+        this->m_position = pointN->m_position;
+    }
 
-	vec3f getPosition() const { return m_position;}
-	void setPosition(vec3f pos) { m_position = pos;}
+    vec3f getPosition() const { return m_position;}
+    void setPosition(vec3f pos) { m_position = pos;}
 
-	float distance(vec3f p)
-	{
-		return m_position.distance(p);
-	}
+    float distance(vec3f p)
+    {
+        return m_position.distance(p);
+    }
 
-	float squareDistance(vec3f p)
-	{
-		return m_position.dist2(p);
-	}
-	
-	vec3f normal(vec3f p)
-	{
-		vec3f n = p - m_position;
-		n.normalize();
-		return n;
-	}
+    float squareDistance(vec3f p)
+    {
+        return m_position.dist2(p);
+    }
 
-	float getDistanceAndNormal(vec3f p, vec3f& normal)
-	{
-		normal = p - m_position;
-		normal.normalize();
-		return m_position.distance(p);
-	}
+    vec3f normal(vec3f p)
+    {
+        vec3f n = p - m_position;
+        n.normalize();
+        return n;
+    }
 
-	void getName(char * chrName)
-	{
-            strncpy(chrName, "POINT", MAX_NAME_LEN);
-	}
+    float getDistanceAndNormal(vec3f p, vec3f& normal)
+    {
+        normal = p - m_position;
+        normal.normalize();
+        return m_position.distance(p);
+    }
 
-	bool getExtremes(vec3f& lower, vec3f& upper)
-	{
-		lower = m_position;
-		upper = m_position;
-		return false;
-	}
+    string getName()
+    {
+        return "POINT";
+    }
 
-	Vol::CVolume* getBoundingVolume(float range)	
-	{
-		Vol::CVolumeSphere * s = new Vol::CVolumeSphere(m_position, range);												  
-		return s;
-	}
+    bool getExtremes(vec3f& lower, vec3f& upper)
+    {
+        lower = m_position;
+        upper = m_position;
+        return false;
+    }
 
-	vec3 getPolySeedPoint()
-	{
-		return m_position;
-	}
+    Vol::CVolume* getBoundingVolume(float range)
+    {
+        Vol::CVolumeSphere * s = new Vol::CVolumeSphere(m_position, range);
+        return s;
+    }
 
-	void translate(vec3f d)
-	{
-		m_position += d;
-	}
+    vec3f getPolySeedPoint()
+    {
+        return m_position;
+    }
 
-	SkeletonType getType()		{return sktPoint;}
+    void translate(vec3f d)
+    {
+        m_position += d;
+    }
+
+    SkeletonType getType()		{return sktPoint;}
+
+    bool saveScript(CSketchConfig* lpSketchScript, int id)
+    {
+        //Write parameters for RicciBlend
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        lpSketchScript->writeVec3f(strNodeName, "position", this->getPosition());
+        return true;
+    }
+
+    bool loadScript(CSketchConfig* lpSketchScript, int id)
+    {
+        //Write parameters for RicciBlend
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        m_position = lpSketchScript->readVec3f(strNodeName, "position");
+        return true;
+    }
+
+
 };
 
 }

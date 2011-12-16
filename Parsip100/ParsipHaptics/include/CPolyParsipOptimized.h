@@ -313,7 +313,7 @@ namespace PS{
 	* @param isovalue the field value at the isosurface for which the mesh will be produced.
 	* @return outputs a pointer to an instance of the polygonizer 
 	*/
-	CParsipOptimized* Run_Polygonizer(CBlobTree* input, float cellSize = DEFAULT_CELL_SIZE, float isovalue = ISO_VALUE);
+	CParsipOptimized* Run_Polygonizer(CBlobNode* input, float cellSize = DEFAULT_CELL_SIZE, float isovalue = ISO_VALUE);
 
 	/**
 	* Polygonize a BlobTree by converting it to a compact tree and
@@ -324,7 +324,7 @@ namespace PS{
 	* @param isovalue the field value at the isosurface for which the mesh will be produced.
 	* @return true if succeeded.
 	*/
-	bool Run_PolygonizerExportMesh(CBlobTree* input, 
+	bool Run_PolygonizerExportMesh(CBlobNode* input, 
 								   CMeshVV* lpMesh, 
 								   float cellSize = DEFAULT_CELL_SIZE, 
 								   float isovalue = ISO_VALUE);

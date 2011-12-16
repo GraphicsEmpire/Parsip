@@ -82,7 +82,7 @@ GLWidget::GLWidget(QWidget *parent)
     m_animSpeed			= 1.0f;
     m_glChessBoard		= 0;
     m_uiMode			= uimSketch;
-    m_sketchSkeletType          = sktPoint;
+    m_sketchType                = bntPrimPoint;
     m_bEnablePan		= false;
     m_bEnableMultiSelect        = false;
 
@@ -274,8 +274,8 @@ void GLWidget::paintGL()
     //Pan Camera
     glTranslatef(m_globalPan.x, m_globalPan.y, m_globalPan.z);
 
-    vec3 p = m_camera.getCoordinates();
-    vec3 c = m_camera.getCenter();
+    vec3f p = m_camera.getCoordinates();
+    vec3f c = m_camera.getCenter();
     gluLookAt(p.x, p.y, p.z, c.x, c.y, c.z, 0.0, 1.0, 0.0);
 
 
@@ -285,7 +285,7 @@ void GLWidget::paintGL()
     //Draw Ground
     if(TheAppSettings::Instance().setDisplay.bDrawChessboardGround)
     {
-        glCallList(m_glChessBoard);       
+        glCallList(m_glChessBoard);
     }
 
     if(m_bProbing)
@@ -293,26 +293,26 @@ void GLWidget::paintGL()
         glPushMatrix();
         glTranslatef(m_probePoint.x, m_probePoint.y, m_probePoint.z);
         glScalef(0.1f, 0.1f, 0.1f);
-            glCallList(m_glTopCornerCube);
+        glCallList(m_glTopCornerCube);
         glPopMatrix();
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
-            glPointSize(3.0f);
-            glColor3f(1.0f, 1.0f, 1.0f);
-            glBegin(GL_POINTS);
-                glVertex3fv(m_probeProjected.ptr());
-            glEnd();
+        glPointSize(3.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glBegin(GL_POINTS);
+        glVertex3fv(m_probeProjected.ptr());
+        glEnd();
 
-            glLineWidth(2.0f);
-            glBegin(GL_LINES);
-                glVertex3fv(m_probePoint.ptr());
-                glVertex3fv(m_probeProjected.ptr());
-            glEnd();
+        glLineWidth(2.0f);
+        glBegin(GL_LINES);
+        glVertex3fv(m_probePoint.ptr());
+        glVertex3fv(m_probeProjected.ptr());
+        glEnd();
         glPopAttrib();
     }
 
 
-    //Draw based on current UI mode    
+    //Draw based on current UI mode
     U32 ctAnimObjects = CAnimManagerSingleton::Instance().countObjects();
     if((TheAppSettings::Instance().setDisplay.bShowAnimCurves)&&(ctAnimObjects > 0))
     {
@@ -326,7 +326,7 @@ void GLWidget::paintGL()
     if(m_uiMode == uimSketch)
         drawPolygon(m_lstSketchControlPoints);
     else if(m_uiMode == uimTransform)
-    {        
+    {
         glDisable(GL_DEPTH_TEST);
         drawLineSegment(TheUITransform::Instance().mouseDown,
                         TheUITransform::Instance().mouseDown +
@@ -475,7 +475,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
             TheUITransform::Instance().mouseDown = posTransNear;
         else if((m_uiMode == uimSketch)||(m_uiMode == uimAnimation))
         {
-            vec3 c(0.0f, 0.0f, 0.0f);
+            vec3f c(0.0f, 0.0f, 0.0f);
 
             if(m_layerManager.queryHitOctree(ray, Z_NEAR, Z_FAR, idxLayer, idxPrimitive))
                 c = m_layerManager[idxLayer]->queryGetItem(idxPrimitive)->getOctree().center();
@@ -523,7 +523,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
             m_layerManager.selRemoveItems();
 
             //Check if we can select a ctrl point in path animation
-            int idxPath, idxCtrlPoint;            
+            int idxPath, idxCtrlPoint;
             if(CAnimManagerSingleton::Instance().queryHitPathCtrlPoint(ray, Z_NEAR, Z_FAR, idxPath, idxCtrlPoint))
             {
                 CAnimManagerSingleton::Instance().getObject(idxPath)->idxSelCtrlPoint = idxCtrlPoint;
@@ -580,7 +580,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                     addUndoLevel();
                 TheUITransform::Instance().nStep++;
 
-                vec3 displacement = mask(TheUITransform::Instance().mouseMove - TheUITransform::Instance().mouseDown, TheUITransform::Instance().axis);
+                vec3f displacement = mask(TheUITransform::Instance().mouseMove - TheUITransform::Instance().mouseDown, TheUITransform::Instance().axis);
                 displacement *= static_cast<float>(TheAppSettings::Instance().setSketch.mouseDragScale);
                 TheUITransform::Instance().mouseDown = TheUITransform::Instance().mouseMove;
 
@@ -632,7 +632,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                     active->bumpRevision();
                     for(size_t i=0; i<ctSelected; i++)
                     {
-                        CBlobTree* node = active->selGetItem(i);
+                        CBlobNode* node = active->selGetItem(i);
                         if(node && node->getLock().acquire())
                         {
                             //actNetSendCommand(cmdLock, node, vec4f(0.0f, 0.0f, 0.0f, 0.0f));
@@ -744,7 +744,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event )
         {
             if(m_lstSketchControlPoints.size() > 0)
             {
-                addBlobPrimitive(m_sketchSkeletType, m_lstSketchControlPoints.back());
+                addBlobPrimitive(m_sketchType, m_lstSketchControlPoints.back());
                 m_lstSketchControlPoints.clear();
             }
         }
@@ -1038,7 +1038,7 @@ void GLWidget::setDisplayMtrlMeshWires(int index)
     updateGL();
 }
 
-void GLWidget::drawOctree(vec3 lo, vec3 hi, vec4f color, bool bSelected)
+void GLWidget::drawOctree(vec3f lo, vec3f hi, vec4f color, bool bSelected)
 {
     float l = lo.x; float r = hi.x;
     float b = lo.y; float t = hi.y;
@@ -1074,7 +1074,7 @@ void GLWidget::drawLayerManager()
 {
     //glDisable(GL_LIGHTING);
     //CMeshVV* aMesh = NULL;
-    DVec<vec3> lstSeeds;
+    DVec<vec3f> lstSeeds;
     size_t ctLayers = m_layerManager.countLayers();
     bool bIsActiveLayer = false;
     vec4f clBlack(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1320,7 +1320,7 @@ void GLWidget::actSaveProject()
 {
     DAnsiStr strAppPath = PS::FILESTRINGUTILS::ExtractFilePath(PS::FILESTRINGUTILS::GetExePath());
     QString qstrFileName = QFileDialog::getSaveFileName(this, tr("Save Scene"), strAppPath.ptr(), tr("Blobtree Scene(*.scene)"));
-    DAnsiStr strFilePath(qstrFileName.toAscii().data());    
+    DAnsiStr strFilePath(qstrFileName.toAscii().data());
     m_layerManager.saveScript(strFilePath);
 }
 
@@ -1525,7 +1525,7 @@ void GLWidget::setPrimitiveColorFromColorDlg()
     CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(active->selGetItem(0));
     if(sprim)
     {
-        vec4f dif = sprim->getMatrial().diffused;
+        vec4f dif = sprim->getMaterial().diffused;
         QColor clPrev(static_cast<int>(dif.x * 255.0f),
                       static_cast<int>(dif.y * 255.0f),
                       static_cast<int>(dif.z * 255.0f),
@@ -1536,15 +1536,11 @@ void GLWidget::setPrimitiveColorFromColorDlg()
         {
             CMaterial m;
             float invFactor = 1.0f / 255.0f;
-            m.diffused = vec4f(static_cast<float>(clNew.red())*invFactor,
+            vec4f diffused = vec4f(static_cast<float>(clNew.red())*invFactor,
                                static_cast<float>(clNew.green())*invFactor,
                                static_cast<float>(clNew.blue())*invFactor,
                                static_cast<float>(clNew.alpha())*invFactor);
-            m.ambient = m.diffused * 0.5f;
-            m.specular = vec4f(0.8f, 0.8f, 0.8f, 0.8f) + m.diffused * 0.2f;
-            m.shininess = 32.0f;
-            sprim->setMaterial(m);
-            sprim->setColor(m.diffused);
+            sprim->setMaterial(ColorToMaterial(diffused));
 
             active->bumpRevision();
             actMeshPolygonize(m_layerManager.getActiveLayerIndex());
@@ -1555,7 +1551,7 @@ void GLWidget::setPrimitiveColorFromColorDlg()
     }
 }
 
-QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobTree* lpNode)
+QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobNode* lpNode)
 {
     if(lpNode == NULL)
         return NULL;
@@ -1751,7 +1747,7 @@ QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobTree* lpNode)
         }
 
         //Show current color
-        vec4f dif = sprim->getMatrial().diffused;
+        vec4f dif = sprim->getMaterial().diffused;
         QColor cl(static_cast<int>(dif.x * 255.0f),
                   static_cast<int>(dif.y * 255.0f),
                   static_cast<int>(dif.z * 255.0f),
@@ -1965,16 +1961,16 @@ QStandardItemModel * GLWidget::getModelBlobTree(int iLayer)
     m_modelBlobTree->setHeaderData(0, Qt::Horizontal, strTitle);
 
 
-    std::list< std::pair <CBlobTree*, QStandardItem *> > stkProcessing;
+    std::list< std::pair <CBlobNode*, QStandardItem *> > stkProcessing;
     QStandardItem * parentItem = m_modelBlobTree->invisibleRootItem();
 
-    CBlobTree * blobParent  = NULL;
-    CBlobTree * blobChild  = NULL;
+    CBlobNode * blobParent  = NULL;
+    CBlobNode * blobChild  = NULL;
 
 
     DAnsiStr strLayerName;
     char chrBlobNodeName[MAX_NAME_LEN];
-    std::pair <CBlobTree*, QStandardItem*> mypair;
+    std::pair <CBlobNode*, QStandardItem*> mypair;
     QString strTag;
 
     //m_layerManager[iLayer]->getSelPrimitive()
@@ -1983,8 +1979,7 @@ QStandardItemModel * GLWidget::getModelBlobTree(int iLayer)
     if(blobParent != NULL)
     {
         strLayerName = m_layerManager[iLayer]->getGroupName();
-        blobParent->getName(chrBlobNodeName);
-        strTag = QString("Layer: %1 RootNode: %2:%3").arg(strLayerName.ptr()).arg(blobParent->getID()).arg(chrBlobNodeName);
+        strTag = QString("Layer: %1 RootNode: %2:%3").arg(strLayerName.ptr()).arg(blobParent->getID()).arg(blobParent->getName().c_str());
 
         QStandardItem * childItem = new QStandardItem(strTag);
         childItem->setEditable(true);
@@ -2000,7 +1995,7 @@ QStandardItemModel * GLWidget::getModelBlobTree(int iLayer)
 
     while(!stkProcessing.empty())
     {
-        blobParent = static_cast<CBlobTree*>(stkProcessing.front().first);
+        blobParent = static_cast<CBlobNode*>(stkProcessing.front().first);
         parentItem = static_cast<QStandardItem*>(stkProcessing.front().second);
         stkProcessing.pop_front();
 
@@ -2008,10 +2003,9 @@ QStandardItemModel * GLWidget::getModelBlobTree(int iLayer)
         for(size_t i=0; i <	blobParent->countChildren(); i++)
         {
             blobChild = blobParent->getChild(i);
-            blobChild->getName(chrBlobNodeName);
 
             //Set this node
-            QStandardItem *item = new QStandardItem(QString("%1:%2").arg(blobChild->getID()).arg(chrBlobNodeName));
+            QStandardItem *item = new QStandardItem(QString("%1:%2").arg(blobChild->getID()).arg(blobChild->getName().c_str()));
             item->setEditable(true);
             item->setData(reinterpret_cast<U64>(blobChild));
             parentItem->appendRow(item);
@@ -2275,9 +2269,7 @@ void GLWidget::select_tblColorRibbon(const QModelIndex& topLeft)
     {
         m_idxRibbonSelection = topLeft.column();
         vec4f dif = m_materials[m_idxRibbonSelection].diffused * (255.0f, 255.0f, 255.0f, 255.0f);
-
         sprim->setMaterial(m_materials[m_idxRibbonSelection]);
-        sprim->setColor(dif);
 
         active->bumpRevision();
         emit sig_setPrimitiveColor(QColor((int)dif.x, (int)dif.y, (int)dif.z, (int)dif.w));
@@ -2286,7 +2278,7 @@ void GLWidget::select_tblColorRibbon(const QModelIndex& topLeft)
     }
 }
 
-void GLWidget::selectBlobNode(int iLayer, CBlobTree* aNode)
+void GLWidget::selectBlobNode(int iLayer, CBlobNode* aNode)
 {
     if((aNode == NULL)||(!m_layerManager.isLayerIndex(iLayer))) return;
 
@@ -2312,7 +2304,7 @@ void GLWidget::selectBlobNode(QModelIndex idx)
 
     //Fetch node pointer from its QStandardItem
     QVariant v = item->data();
-    CBlobTree* lpNode = (CBlobTree*)(v.toInt());
+    CBlobNode* lpNode = (CBlobNode*)(v.toInt());
     if(lpNode != NULL)
         selectBlobNode(m_layerManager.getActiveLayerIndex(), lpNode);
 
@@ -2393,37 +2385,37 @@ void GLWidget::actLayerSelectAll()
 
 void GLWidget::actAddSphere()
 {
-    m_sketchSkeletType = sktPoint;
+    m_sketchType = bntPrimPoint;
     m_uiMode = uimSketch;
 }
 
 void GLWidget::actAddCylinder()
 {
-    m_sketchSkeletType = sktCylinder;
+    m_sketchType = bntPrimCylinder;
     m_uiMode = uimSketch;
 }
 
 void GLWidget::actAddRing()
 {
-    m_sketchSkeletType = sktRing;
+    m_sketchType = bntPrimRing;
     m_uiMode = uimSketch;
 }
 
 void GLWidget::actAddDisc()
 {
-    m_sketchSkeletType = sktDisc;
+    m_sketchType = bntPrimDisc;
     m_uiMode = uimSketch;
 }
 
 void GLWidget::actAddCube()
 {
-    m_sketchSkeletType = sktCube;
+    m_sketchType = bntPrimCube;
     m_uiMode = uimSketch;
 }
 
 void GLWidget::actAddTriangle()
 {
-    m_sketchSkeletType = sktTriangle;
+    m_sketchType = bntPrimTriangle;
     m_uiMode = uimSketch;
 }
 
@@ -2431,7 +2423,7 @@ void GLWidget::actAddPolygonPlane()
 {
     m_lstSketchControlPoints.resize(0);
     m_uiMode = uimSketch;
-    m_sketchSkeletType = sktPolygon;
+    m_sketchType = bntPrimPolygon;
 }
 
 void GLWidget::actAddWarpTwist()
@@ -2576,7 +2568,7 @@ void GLWidget::actEditDelete()
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
-    CBlobTree* node = active->selGetItem(0);
+    CBlobNode* node = active->selGetItem(0);
     if(node == NULL) return;
 
     active->selRemoveItem(0);
@@ -2600,7 +2592,7 @@ void GLWidget::actEditDelete()
 //Add a new skeletal primitive to active layer's BlobTree
 //Removes previous blobtree if it was a primitive node
 //Adds itself as a child of root operator
-CBlobTree* GLWidget::addBlobPrimitive(SkeletonType skeletType, const vec3f& pos, int preferredID, bool bSendToNet)
+CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& pos, int preferredID, bool bSendToNet)
 {
     CLayer* aLayer = m_layerManager.getActiveLayer();
     if(aLayer == NULL) return NULL;
@@ -2609,83 +2601,43 @@ CBlobTree* GLWidget::addBlobPrimitive(SkeletonType skeletType, const vec3f& pos,
     //Capture Undo Level
     addUndoLevel();
 
-    CSkeleton* skelet = NULL;
-    switch(skeletType)
+    CBlobNode* primitive = TheBlobNodeFactoryIndex::Instance().CreateObject(primitiveType);
+    CBlobNode* root = aLayer->getBlob();
+    if(root == NULL)
     {
-    case sktPoint:
-        skelet = new CSkeletonPoint(vec3(0.0f, 0.0f, 0.0f));
-        break;
-    case sktCylinder:
-        skelet = new CSkeletonCylinder(vec3(-1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), 0.01f, 4.0f);
-        break;
-    case sktRing:
-        skelet = new CSkeletonRing(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), 1.0f);
-        break;
-    case sktDisc:
-        skelet = new CSkeletonDisc(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), 1.0f);
-        break;
-    case sktLine:
-        skelet = new CSkeletonLine(vec3(-0.5f, 0.0f, 0.0f), vec3(0.5f, 0.0f, 0.0f));
-        break;
-    case sktPolygon:
-        skelet = new CSkeletonPolygon(m_lstSketchControlPoints);
-        break;
-    case sktCube:
-        skelet = new CSkeletonCube(vec3f(0.0f, 0.0f, 0.0f), 1.0f);
-        break;
-    case sktTriangle:
-        skelet = new CSkeletonTriangle(vec3f(-1.0f, 0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f));
-        break;
+        //Create a global union node first
+        CUnion* globalUnion = new CUnion();
+        globalUnion->setID(aLayer->fetchIncrementLastNodeID());
+        aLayer->setBlob(globalUnion);
+        root = aLayer->getBlob();
     }
 
-    CSkeletonPrimitive * primitive = NULL;
-    if(skelet != NULL)
+    //Create SkeletonPrimitive
+    primitive->setMaterial(m_materials[m_idxRibbonSelection]);
+    if(preferredID >= 0)
+        primitive->setID(preferredID);
+    else
+        primitive->setID(aLayer->fetchIncrementLastNodeID());
+    root->addChild(primitive);
+    primitive->getTransform().addTranslate(pos);
+
+    if(bSendToNet)
     {
-        CBlobTree* root = aLayer->getBlob();
-        if(root == NULL)
-        {
-            //Create a global union node first
-            CUnion* globalUnion = new CUnion();
-            globalUnion->setID(aLayer->fetchIncrementLastNodeID());
-            aLayer->setBlob(globalUnion);
-            root = aLayer->getBlob();
-        }
-
-        //Create SkeletonPrimitive
-        primitive = new CSkeletonPrimitive(skelet, fftWyvill, 1.0f);
-        primitive->setMaterial(m_materials[m_idxRibbonSelection]);
-        primitive->setColor(m_materials[m_idxRibbonSelection].diffused);
-        if(preferredID >= 0)
-            primitive->setID(preferredID);
-        else
-            primitive->setID(aLayer->fetchIncrementLastNodeID());
-
-
-        root->addChild(primitive);
-        if (!pos.isZero())
-        {
-            primitive->getTransform().addTranslate(pos);
-        }
-
-
-        if(bSendToNet)
-        {
-            actNetSendCommand(cmdAdd, primitive, primitive->getColor());
-            actNetSendCommand(cmdMove, primitive, vec4f(pos.x, pos.y, pos.z));
-        }
+        actNetSendCommand(cmdAdd, primitive, primitive->getMaterial().diffused);
+        actNetSendCommand(cmdMove, primitive, vec4f(pos.x, pos.y, pos.z));
     }
 
+    //Set revision
     aLayer->bumpRevision();
 
     int idxLayer = m_layerManager.getActiveLayerIndex();
-
     actMeshPolygonize(idxLayer);
     emit sig_showBlobTree(getModelBlobTree(idxLayer));
 
     return primitive;
 }
 
-CBlobTree* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID, bool bSendToNet)
+CBlobNode* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID, bool bSendToNet)
 {
     CLayer* aLayer = m_layerManager.getActiveLayer();
     if(aLayer == NULL) return NULL;
@@ -2707,7 +2659,7 @@ CBlobTree* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
     }
 
     //Create operator
-    CBlobTree* op = createBlobOperator(operatorType);
+    CBlobNode* op = TheBlobNodeFactoryIndex::Instance().CreateObject(operatorType);
 
     //Assign and Increment ID
     if(preferredID >= 0)
@@ -2716,7 +2668,7 @@ CBlobTree* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
         op->setID(aLayer->fetchIncrementLastNodeID());
 
     //Find parent and update relationships
-    CBlobTree* dstParent = NULL;
+    CBlobNode* dstParent = NULL;
     for(size_t i=0; i<aLayer->selCountItems(); i++)
     {
         CmdBlobTreeParams FindParent;
@@ -2760,7 +2712,7 @@ CBlobTree* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
 
     //Send to members in DesignNET
     if(bSendToNet &&(CDesignNet::GetDesignNet()->countMembers() > 0))
-        actNetSendCommand(cmdOperator, op, op->getColor());
+        actNetSendCommand(cmdOperator, op, op->getMaterial().diffused);
 
     aLayer->bumpRevision();
 
@@ -2772,7 +2724,7 @@ CBlobTree* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
     return op;
 }
 
-void GLWidget::drawPolygon( const DVec<vec3>& lstPoints )
+void GLWidget::drawPolygon( const vector<vec3f>& lstPoints )
 {
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     CMeshVV::setOglMaterial(CMaterial::mtrlBlack());
@@ -2885,7 +2837,7 @@ void GLWidget::resetTransformState()
 
 void GLWidget::setMouseDragScale( int k )
 {
-   TheAppSettings::Instance().setSketch.mouseDragScale  = k;
+    TheAppSettings::Instance().setSketch.mouseDragScale  = k;
 }
 
 void GLWidget::userInterfaceReady()
@@ -2977,9 +2929,10 @@ void GLWidget::actEditCopy()
     if(active->getBlob() == NULL) return;
     if(active->selCountItems() == 0) return;
 
+    /*
     int rootID = active->fetchIncrementLastNodeID();
     int added = 0;
-    CBlobTree* clonned = cloneBlobTree(active->selGetItem(), rootID, &added);
+    CBlobNode* clonned = cloneBlobTree(active->selGetItem(), rootID, &added);
     while(added > 0)
     {
         active->fetchIncrementLastNodeID();
@@ -2988,6 +2941,8 @@ void GLWidget::actEditCopy()
 
     clonned->getTransform().addTranslate(vec3f(0.5, 0.5, 0.5));
     active->getBlob()->addChild(clonned);
+    */
+
     actMeshPolygonize(m_layerManager.getActiveLayerIndex());
     emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
 }
@@ -3583,15 +3538,18 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
         {
         case(cmdAdd):
         {
-            CBlobTree* prim = addBlobPrimitive(rxMsg.primType, vec3f(0.0f, 0.0f, 0.0f), rxMsg.blobnodeID,false);
-            if(prim != NULL) prim->setColor(rxMsg.param);
+            CBlobNode* prim = addBlobPrimitive(rxMsg.primType, vec3f(0.0f, 0.0f, 0.0f), rxMsg.blobnodeID,false);
+            if(prim != NULL)
+            {
+                prim->setMaterial(ColorToMaterial(rxMsg.param));
+            }
         }
             break;
         case(cmdOperator):
         {
             active->selRemoveItem();
-            CBlobTree* child1 = active->findNodeByID(rxMsg.leftChild);
-            CBlobTree* child2 = active->findNodeByID(rxMsg.rightChild);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.leftChild);
+            CBlobNode* child2 = active->findNodeByID(rxMsg.rightChild);
             if((child1 == NULL)||(child2 == NULL))
                 result = ackIDNotFound;
             else
@@ -3604,7 +3562,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             break;
         case(cmdMove):
         {
-            CBlobTree* child1 = active->findNodeByID(rxMsg.blobnodeID);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
                 if(child1->getLock().acquire())
@@ -3621,7 +3579,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
 
         case(cmdScale):
         {
-            CBlobTree* child1 = active->findNodeByID(rxMsg.blobnodeID);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
                 if(child1->getLock().acquire())
@@ -3637,7 +3595,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             break;
         case(cmdRotate):
         {
-            CBlobTree* child1 = active->findNodeByID(rxMsg.blobnodeID);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
                 if(child1->getLock().acquire())
@@ -3653,7 +3611,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             break;
         case(cmdLock):
         {
-            CBlobTree* child1 = active->findNodeByID(rxMsg.blobnodeID);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
                 if(!child1->getLock().acquire(DAnsiStr(peer->m_strAddress.toAscii().data())))
@@ -3664,7 +3622,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
 
         case(cmdUnlock):
         {
-            CBlobTree* child1 = active->findNodeByID(rxMsg.blobnodeID);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
                 if((child1->getLock().isLocked())&&
@@ -3677,7 +3635,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             break;
         case(cmdDelete):
         {
-            CBlobTree* child1 = active->findNodeByID(rxMsg.blobnodeID);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
                 if(child1->getLock().acquire())
@@ -3695,7 +3653,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             break;
         case(cmdSet):
         {
-            CBlobTree* child1 = active->findNodeByID(rxMsg.blobnodeID);
+            CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
                 if(child1->getLock().acquire())
@@ -3705,7 +3663,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
                     //Apply Replacement if needed
                     if(child1->getNodeType() != rxMsg.opType)
                     {
-                        CBlobTree* replacement = createBlobOperator(rxMsg.opType);
+                        CBlobNode* replacement = CreateBlobOperator(rxMsg.opType);
 
                         //Run Transform Command
                         PS::BLOBTREE::CmdBlobTreeParams param;
@@ -3759,7 +3717,7 @@ bool GLWidget::actNetSendAck( SKETCHACK ack, int idxMember, int msgID )
     return peer->sendText(strOutput);
 }
 
-bool GLWidget::actNetSendCommand( SKETCHCMD command, CBlobTree* node, vec4f param )
+bool GLWidget::actNetSendCommand( SKETCHCMD command, CBlobNode* node, vec4f param )
 {
     if(CDesignNet::GetDesignNet()->countMembers() == 0) return false;
 
@@ -3777,7 +3735,7 @@ bool GLWidget::actNetSendCommand( SKETCHCMD command, CBlobTree* node, vec4f para
         {
             txMsg.opType = bntPrimSkeleton;
             txMsg.primType = reinterpret_cast<CSkeletonPrimitive*>(node)->getSkeleton()->getType();
-            txMsg.param = node->getColor();
+            txMsg.param = node->getMaterial().diffused;
         }
         else if(command == cmdOperator)
         {
@@ -3807,7 +3765,7 @@ bool GLWidget::actNetSendCommand( SKETCHCMD command, CBlobTree* node, vec4f para
 void GLWidget::actFileExportMesh()
 {
     if(m_layerManager.countLayers() == 0) return;
-	DAnsiStr strFilePath = GetExePath();
+    DAnsiStr strFilePath = GetExePath();
     QString strFileName = QFileDialog::getSaveFileName(this, tr("Export Mesh"),
                                                        strFilePath.ptr(),
                                                        tr("Obj File(*.obj)"));
@@ -3839,7 +3797,7 @@ void GLWidget::actAnimDrawGuide()
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL)
         return;
-    CBlobTree* root = active->selGetItem();
+    CBlobNode* root = active->selGetItem();
     if(root == NULL)
         return;
     if(CAnimManagerSingleton::Instance().getObject(root) != NULL)
@@ -3848,7 +3806,7 @@ void GLWidget::actAnimDrawGuide()
         FlushAllErrors();
         return;
     }
-		
+
     CAnimManagerSingleton::Instance().addModel(root);
     m_uiMode = uimAnimation;
 }
@@ -3929,7 +3887,7 @@ void GLWidget::updateProbe()
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
-    CBlobTree* root = active->selGetItem();
+    CBlobNode* root = active->selGetItem();
     if(root == NULL)
         return;
 
@@ -4044,7 +4002,7 @@ void GLWidget::setAnimationSpeed( int speed )
 
 void GLWidget::actAnimRemoveAll()
 {
-	CAnimManagerSingleton::Instance().removeAll();   
+    CAnimManagerSingleton::Instance().removeAll();
     updateGL();
 }
 

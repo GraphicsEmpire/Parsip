@@ -11,147 +11,147 @@ namespace BLOBTREE{
 
 //***********************************************************
 //Twist 
-class  CWarpTwist : public CBlobTree
+class  CWarpTwist : public CBlobNode
 {
 private:
-	float m_warpFactor;
-	MajorAxices m_axis;
+    float m_warpFactor;
+    MajorAxices m_axis;
 
 public:
-	CWarpTwist() 
-	{
-		m_warpFactor = DEFAULT_WARP_FACTOR;
-		m_axis = zAxis;		
-	}
+    CWarpTwist()
+    {
+        m_warpFactor = DEFAULT_WARP_FACTOR;
+        m_axis = zAxis;
+    }
 
-	CWarpTwist(CBlobTree * child)
-	{
-		addChild(child);
-		m_warpFactor = DEFAULT_WARP_FACTOR;
-		m_axis = zAxis;
-	}
+    CWarpTwist(CBlobNode * child)
+    {
+        addChild(child);
+        m_warpFactor = DEFAULT_WARP_FACTOR;
+        m_axis = zAxis;
+    }
 
-	CWarpTwist(CBlobTree * child, float warpFactor)
-	{
-		addChild(child);
-		m_warpFactor = warpFactor;
-		m_axis = zAxis;
-		
-	}
+    CWarpTwist(CBlobNode * child, float warpFactor)
+    {
+        addChild(child);
+        m_warpFactor = warpFactor;
+        m_axis = zAxis;
 
-	CWarpTwist(CBlobTree * child, float warpFactor, MajorAxices axis)
-	{
-		addChild(child);
-		m_warpFactor = warpFactor;
-		m_axis = axis;		
-	}
+    }
 
-	CWarpTwist(float warpFactor, MajorAxices axis)
-	{
-		m_warpFactor = warpFactor;
-		m_axis = axis;		
-	}
+    CWarpTwist(CBlobNode * child, float warpFactor, MajorAxices axis)
+    {
+        addChild(child);
+        m_warpFactor = warpFactor;
+        m_axis = axis;
+    }
 
-	void setParamFrom(CBlobTree* input)
-	{
-		CWarpTwist* twistN = dynamic_cast<CWarpTwist*>(input);
-		this->m_warpFactor = twistN->m_warpFactor;
-		this->m_axis = twistN->m_axis;
-	}
+    CWarpTwist(float warpFactor, MajorAxices axis)
+    {
+        m_warpFactor = warpFactor;
+        m_axis = axis;
+    }
 
-	float getWarpFactor() {return m_warpFactor;}
-	void setWarpFactor(float factor) { m_warpFactor = factor;}
+    void setParamFrom(CBlobNode* input)
+    {
+        CWarpTwist* twistN = dynamic_cast<CWarpTwist*>(input);
+        this->m_warpFactor = twistN->m_warpFactor;
+        this->m_axis = twistN->m_axis;
+    }
 
-	MajorAxices getMajorAxis() {return m_axis;}
-	void setMajorAxis(MajorAxices axis) { m_axis = axis;}
+    float getWarpFactor() {return m_warpFactor;}
+    void setWarpFactor(float factor) { m_warpFactor = factor;}
 
-	__inline vec3f warp(vec3f p)
-	{
-		float theta = 0.0f;
-		vec3f pw;
+    MajorAxices getMajorAxis() {return m_axis;}
+    void setMajorAxis(MajorAxices axis) { m_axis = axis;}
 
-		switch(m_axis)
-		{
-		case(xAxis):		
-			theta = p.x * m_warpFactor;
-			pw.x = p.x;
-			pw.y = p.y*cos(theta) - p.z*sin(theta);
-			pw.z = p.y*sin(theta) + p.z*cos(theta);
-			break;
+    __inline vec3f warp(vec3f p)
+    {
+        float theta = 0.0f;
+        vec3f pw;
 
-		case(yAxis):
-			theta = p.y * m_warpFactor;
-			pw.x = p.x*cos(theta) - p.z*sin(theta);
-			pw.y = p.y;
-			pw.z = p.x*sin(theta) + p.z*cos(theta);
-			break;
+        switch(m_axis)
+        {
+        case(xAxis):
+            theta = p.x * m_warpFactor;
+            pw.x = p.x;
+            pw.y = p.y*cos(theta) - p.z*sin(theta);
+            pw.z = p.y*sin(theta) + p.z*cos(theta);
+            break;
 
-		case(zAxis):
-			theta = p.z * m_warpFactor;
-			pw.x = p.x*cos(theta) - p.y*sin(theta);
-			pw.y = p.x*sin(theta) + p.y*cos(theta);
-			pw.z = p.z;
-			break;
-		}
+        case(yAxis):
+            theta = p.y * m_warpFactor;
+            pw.x = p.x*cos(theta) - p.z*sin(theta);
+            pw.y = p.y;
+            pw.z = p.x*sin(theta) + p.z*cos(theta);
+            break;
 
-		return pw;
-	}
+        case(zAxis):
+            theta = p.z * m_warpFactor;
+            pw.x = p.x*cos(theta) - p.y*sin(theta);
+            pw.y = p.x*sin(theta) + p.y*cos(theta);
+            pw.z = p.z;
+            break;
+        }
 
-	float fieldValue(vec3f p)
-	{		
-		if(m_children[0]->isOperator())
-		{
-			//Goto Warp Space Directly!
-			p = warp(p);
-			return m_children[0]->fieldValue(p);			
-		}
-		else
-		{
-			CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(m_children[0]);
-			//Goto Normal Space
-			p = sprim->getTransform().applyBackwardTransform(p);
+        return pw;
+    }
 
-			//Goto Warp Space
-			p = warp(p);
-			float dd = sprim->getSkeleton()->squareDistance(p) * sprim->getScaleInv2();
-			return sprim->getFieldFunction()->fieldValueSquare(dd);
-		}
-	}
+    float fieldValue(vec3f p)
+    {
+        if(m_children[0]->isOperator())
+        {
+            //Goto Warp Space Directly!
+            p = warp(p);
+            return m_children[0]->fieldValue(p);
+        }
+        else
+        {
+            CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(m_children[0]);
+            //Goto Normal Space
+            p = sprim->getTransform().applyBackwardTransform(p);
 
-	float curvature(vec3f p)
-	{
-		p = warp(p);
-		return m_children[0]->curvature(p);
-	}
+            //Goto Warp Space
+            p = warp(p);
+            float dd = sprim->getSkeleton()->squareDistance(p) * sprim->getScaleInv2();
+            return sprim->getFieldFunction()->fieldValueSquare(dd);
+        }
+    }
 
-	vec4f baseColor(vec3f p)
-	{		
-		return m_children[0]->baseColor(warp(p));
-	}
+    float curvature(vec3f p)
+    {
+        p = warp(p);
+        return m_children[0]->curvature(p);
+    }
 
-	CMaterial baseMaterial(vec3f p)
-	{
-		p = warp(p);
-		return m_children[0]->baseMaterial(p);
-	}
+    string getName()
+    {
+        return "TWIST";
+    }
 
 
-	void getName(char * chrName)
-	{
-            strncpy(chrName, "TWIST", MAX_NAME_LEN);
-	}
+    COctree computeOctree()
+    {
+        m_octree = m_children[0]->getOctree();
+        m_octree.expand(BOUNDING_OCTREE_EXPANSION_FACTOR);
+        return m_octree;
+    }
 
 
-	COctree computeOctree()
-	{
-		m_octree = m_children[0]->getOctree();			
-		m_octree.expand(BOUNDING_OCTREE_EXPANSION_FACTOR);
-		return m_octree;
-	}
+    bool isOperator() { return true;}
+    BlobNodeType getNodeType() {return bntOpWarpTwist;}
 
+    bool saveScript(CSketchConfig* lpSketchScript, int idOffset = 0)
+    {
+        bool bres = saveGenericInfoScript(lpSketchScript, idOffset);
 
-	bool isOperator() { return true;}
-	BlobNodeType getNodeType() {return bntOpWarpTwist;}
+        //Write parameters for RicciBlend
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID() + idOffset);
+        lpSketchScript->writeFloat(strNodeName, "factor", this->getWarpFactor());
+        lpSketchScript->writeInt(strNodeName, "axis", static_cast<int>(this->getMajorAxis()));
+        return bres;
+    }
+
 };
 }
 }

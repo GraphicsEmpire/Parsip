@@ -7,104 +7,86 @@
 namespace PS{
 namespace BLOBTREE{
 
-class  CDifference : public CBlobTree
+class  CDifference : public CBlobNode
 {
 public:
-	CDifference() {;}
-	CDifference(CBlobTree * child)
-	{
-		addChild(child);
-	}
+    CDifference() {;}
+    CDifference(CBlobNode * child)
+    {
+        addChild(child);
+    }
 
-	CDifference(CBlobTree * child1, CBlobTree * child2)
-	{
-		addChild(child1);
-		addChild(child2);
-	}
+    CDifference(CBlobNode * child1, CBlobNode * child2)
+    {
+        addChild(child1);
+        addChild(child2);
+    }
 
-	CDifference(CBlobTree * child1, CBlobTree * child2, CBlobTree * child3)
-	{
-		addChild(child1);
-		addChild(child2);
-		addChild(child3);
-	}
+    CDifference(CBlobNode * child1, CBlobNode * child2, CBlobNode * child3)
+    {
+        addChild(child1);
+        addChild(child2);
+        addChild(child3);
+    }
 
-	CDifference(BLOBTREECHILDREN children)
-	{
-		addChild(children);
-	}
+    CDifference(BLOBNODECHILDREN children)
+    {
+        addChild(children);
+    }
 
-	float fieldValue(vec3f p)
-	{
-		float result = m_children[0]->fieldValue(p);
-		for(size_t i=1; i < m_children.size(); i++)
-		{
-			result = min(result, MAX_FIELD_VALUE - m_children[i]->fieldValue(p));
-		}
-		return result;
-	}
+    float fieldValue(vec3f p)
+    {
+        float result = m_children[0]->fieldValue(p);
+        for(size_t i=1; i < m_children.size(); i++)
+        {
+            result = min(result, MAX_FIELD_VALUE - m_children[i]->fieldValue(p));
+        }
+        return result;
+    }
 
-	float curvature(vec3f p)
-	{
-		CBlobTree * minNode = getChildMinDif(p);
-		if(minNode)
-			return minNode->curvature(p);
-		else
-			return 0.0f;
-	}
+    float curvature(vec3f p)
+    {
+        CBlobNode * minNode = getChildMinDif(p);
+        if(minNode)
+            return minNode->curvature(p);
+        else
+            return 0.0f;
+    }
 
-	vec4f baseColor(vec3f p)
-	{		
-		CBlobTree * minNode = getChildMinDif(p);
-		if(minNode)
-			return minNode->baseColor(p);
-		else
-			return m_children[0]->baseColor(p);
-	}
+    CBlobNode * getChildMinDif(vec3f p)
+    {
+        if(countChildren() == 0)
+            return NULL;
 
-	CMaterial baseMaterial(vec3f p)
-	{
-		CBlobTree * minNode = getChildMinDif(p);
-		if(minNode)
-			return minNode->baseMaterial(p);
-		else 
-			return m_children[0]->baseMaterial(p);
-	}
+        float minField = m_children[0]->fieldValue(p);
+        size_t iMin = 0;
+        float curField;
+        for(size_t i = 1; i < m_children.size(); i++)
+        {
+            curField = MAX_FIELD_VALUE - m_children[i]->fieldValue(p);
+            if(curField < minField)
+            {
+                minField = curField;
+                iMin = i;
+            }
+        }
+        return m_children[iMin];
+    }
 
-	CBlobTree * getChildMinDif(vec3f p)
-	{
-		if(countChildren() == 0)
-			return NULL;
+    string getName()
+    {
+        return "DIFFERENCE";
+    }
 
-		float minField = m_children[0]->fieldValue(p);
-		size_t iMin = 0;
-		float curField;
-		for(size_t i = 1; i < m_children.size(); i++)
-		{
-			curField = MAX_FIELD_VALUE - m_children[i]->fieldValue(p);
-			if(curField < minField)
-			{
-				minField = curField;
-				iMin = i;
-			}
-		}
-		return m_children[iMin];
-	}
-
-	void getName(char * chrName)
-	{
-            strncpy(chrName, "DIFFERENCE", MAX_NAME_LEN);
-	}
-
-	COctree computeOctree()
-	{
-		m_octree = m_children[0]->getOctree();		
-		return m_octree;
-	}
+    COctree computeOctree()
+    {
+        m_octree = m_children[0]->getOctree();
+        return m_octree;
+    }
 
 
-	bool isOperator() { return true;}
-	BlobNodeType getNodeType() {return bntOpDif;}
+    bool isOperator() { return true;}
+    BlobNodeType getNodeType() {return bntOpDif;}
 };
 
 }

@@ -620,7 +620,7 @@ namespace PS{
 		return (lpOutputMesh->countFaces() > 0);
 	}
 
-	CParsipOptimized* Run_Polygonizer( CBlobTree* input, float cellSize, float isovalue )
+	CParsipOptimized* Run_Polygonizer( CBlobNode* input, float cellSize, float isovalue )
 	{
 		if(input == NULL) return NULL;
 
@@ -635,7 +635,7 @@ namespace PS{
 		return parsip;
 	}
 
-	bool Run_PolygonizerExportMesh( CBlobTree* input, 
+	bool Run_PolygonizerExportMesh( CBlobNode* input, 
 									CMeshVV* lpMesh, 
 									float cellSize /*= DEFAULT_CELL_SIZE*/,
 									float isovalue /*= ISO_VALUE */)

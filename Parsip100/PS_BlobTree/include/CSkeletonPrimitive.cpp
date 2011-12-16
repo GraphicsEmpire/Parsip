@@ -80,13 +80,13 @@ namespace PS{
 			static const float target_field = ISO_VALUE - ISO_VALUE_EPSILON;
 			float init_step_width = 0.0001f;
 
-			vec3 dir[6];		
-			dir[0] = vec3(-1.0f, 0.0f, 0.0f);
-			dir[1] = vec3(0.0f, -1.0f, 0.0f);
-			dir[2] = vec3(0.0f, 0.0f, -1.0f);
-			dir[3] = vec3(1.0f, 0.0f, 0.0f);
-			dir[4] = vec3(0.0f, 1.0f, 0.0f);
-			dir[5] = vec3(0.0f, 0.0f, 1.0f);
+                        vec3f dir[6];
+                        dir[0] = vec3f(-1.0f, 0.0f, 0.0f);
+                        dir[1] = vec3f(0.0f, -1.0f, 0.0f);
+                        dir[2] = vec3f(0.0f, 0.0f, -1.0f);
+                        dir[3] = vec3f(1.0f, 0.0f, 0.0f);
+                        dir[4] = vec3f(0.0f, 1.0f, 0.0f);
+                        dir[5] = vec3f(0.0f, 0.0f, 1.0f);
 
 
 			CMatrix mtxForwardRot = m_transform.getForwardRotate();
@@ -153,7 +153,7 @@ namespace PS{
 				//Root finder to converge to the point at target_field
 				CRootFinder *rootFinder = new CRootFinder(this, rfmBisection, DEFAULT_ITERATIONS, target_field);						
 
-				vec3 arrPoints[6];
+                                vec3f arrPoints[6];
 				int ctPoints = 0;
 				float maxDisplaced = 0.0f;
 				float fpCold, fpHot;

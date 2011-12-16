@@ -19,9 +19,9 @@ private:
 
 	//int recursive_countErrors(CBlobTree* node);
 	//int recursive_convertToBinaryTree(CBlobTree* node, CBlobTree* clonned);
-	int recursive_nodeToAction(CBlobTree* node);
+	int recursive_nodeToAction(CBlobNode* node);
 
-	bool appendCommand( SKETCHCMD command, CBlobTree* node, vec4f param);
+	bool appendCommand( SKETCHCMD command, CBlobNode* node, vec4f param);
 public:
 	CBlobTreeToActions(CLayer* input);
 	~CBlobTreeToActions();

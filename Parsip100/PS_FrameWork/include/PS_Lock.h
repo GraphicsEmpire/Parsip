@@ -6,43 +6,47 @@
 
 namespace PS{
 
-	class CEditLock{
-	private:
-		bool m_bLocked;
-		DAnsiStr m_strOwner;
-	public:
-		CEditLock()
-		{
-			m_bLocked = false;
-		}
+/*!
+  * Simple lock for controlling BlobTree Manipulations and modifications
+  *
+  */
+class CEditLock{
+private:
+    bool m_bLocked;
+    DAnsiStr m_strOwner;
+public:
+    CEditLock()
+    {
+        m_bLocked = false;
+    }
 
-		CEditLock(const DAnsiStr& owner)
-		{
-			m_bLocked = false;
-			acquire(owner);
-		}
+    CEditLock(const DAnsiStr& owner)
+    {
+        m_bLocked = false;
+        acquire(owner);
+    }
 
-		bool acquire()
-		{
-			return acquire(DAnsiStr("localhost"));
-		}
+    bool acquire()
+    {
+        return acquire(DAnsiStr("localhost"));
+    }
 
-		bool acquire(const DAnsiStr& owner)
-		{
-			if(m_bLocked) return false;
-			m_strOwner = owner;
-			m_bLocked = true;
-			return true;
-		}
+    bool acquire(const DAnsiStr& owner)
+    {
+        if(m_bLocked) return false;
+        m_strOwner = owner;
+        m_bLocked = true;
+        return true;
+    }
 
-		void release()
-		{
-			m_bLocked = false;
-		}
+    void release()
+    {
+        m_bLocked = false;
+    }
 
-		DAnsiStr getOwner() const {return m_strOwner;}
+    DAnsiStr getOwner() const {return m_strOwner;}
 
-		bool isLocked() const {return m_bLocked;}
-	};
+    bool isLocked() const {return m_bLocked;}
+};
 }
 #endif

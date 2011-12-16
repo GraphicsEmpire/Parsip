@@ -12,16 +12,16 @@ namespace BLOBTREE{
 typedef enum CacheType {PassThrough, AdaptiveUniformGrid};
 typedef enum SampleMode {TriLinear, TriQuadratic};
 
-class  CFieldCache : public CBlobTree
+class  CFieldCache : public CBlobNode
 {
 public:	
 	CFieldCache();
-	CFieldCache(CBlobTree * child, CacheType type = AdaptiveUniformGrid);
+	CFieldCache(CBlobNode * child, CacheType type = AdaptiveUniformGrid);
 	~CFieldCache();
 
 	float fieldValue(vec3f p);
 	
-	vec3 normal(vec3f p, float delta);
+	vec3f normal(vec3f p, float delta);
 
 
 	void invalidate(BLOBTREE::Vol::CVolumeBox& box);
@@ -32,23 +32,13 @@ public:
 		return m_children[0]->curvature(p);
 	}
 
-	vec4f baseColor(vec3f p)
-	{
-		return m_children[0]->baseColor(p);
-	}
-
-	CMaterial baseMaterial(vec3f p)
-	{
-		return m_children[0]->baseMaterial(p);
-	}
-
-	//Cache Resolution
+        //Cache Resolution
 	int getCacheResolution() const {return m_cacheResolution;}
 	void setCacheResolution(int res) { m_cacheResolution = res;}
 
 	//Origin of the Grid
-	vec3 getOrigin() const {return m_origin;}
-	void setOrigin(const vec3 origin) {m_origin = origin;}
+	vec3f getOrigin() const {return m_origin;}
+	void setOrigin(const vec3f origin) {m_origin = origin;}
 
 	//Cache Type default is Adaptive
 	CacheType getCacheType() {return m_cacheType;}
@@ -69,9 +59,9 @@ public:
 	virtual void UpdateCacheResolution( unsigned int nResolution );
 
 
-	void getName(char * chrName)
+        string getName()
 	{
-            strncpy(chrName, "CACHE", MAX_NAME_LEN);
+            return "CACHE";
 	}
 
 	COctree computeOctree()
@@ -90,7 +80,7 @@ protected:
 	SampleMode m_eFieldValueSampleMode;
 	SampleMode m_eGradientSampleMode;
 
-	vec3 m_origin;
+	vec3f m_origin;
 	CacheType m_cacheType;
 
 	CAdaptiveUniformGrid3D *m_pCache;
@@ -108,7 +98,7 @@ public:
 
 	static CFieldCacheManager * Get();
 
-	CFieldCache * CreateCache(CBlobTree * pField, CacheType eType );
+	CFieldCache * CreateCache(CBlobNode * pField, CacheType eType );
 	void FreeCache( CFieldCache * pCache );
 
 	void SetDefaultValueMode( SampleMode eMode, bool bSetAllCaches );

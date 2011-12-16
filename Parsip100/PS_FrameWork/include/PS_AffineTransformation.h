@@ -81,7 +81,7 @@ namespace PS{
 		}
 
 		//Getters
-		vec3 getTranslate(AffineDirection ad = adForward) const
+		vec3f getTranslate(AffineDirection ad = adForward) const
 		{
 			if(ad == adForward)
 				return m_translate;
@@ -89,7 +89,7 @@ namespace PS{
 				return m_revTranslate;
 		}
 
-		vec3 getScale(AffineDirection ad = adForward) const
+		vec3f getScale(AffineDirection ad = adForward) const
 		{
 			if(ad == adForward)
 				return m_scale;

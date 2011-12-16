@@ -60,7 +60,7 @@ public:
 class SubDividePerformBody
 {
 private:
-	CBlobTree* m_lpInRoot;
+	CBlobNode* m_lpInRoot;
 	int* m_lpInVertexCount;
 	int* m_lpInVertexCountScanned;
 	int* m_lpInDecisionBits;
@@ -68,7 +68,7 @@ private:
 	
 	PS::CMeshVV* m_lpOutMesh;
 public:
-	SubDividePerformBody(CBlobTree* lpInRoot, 
+	SubDividePerformBody(CBlobNode* lpInRoot, 
 						 int* lpInVertexCount, 
 						 int* lpInVertexCountScanned, 
 						 int* lpInDecisionBits, 
@@ -88,7 +88,7 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 //Moves edges midpoint to iso-surface
-int  SubDivide_MoveMidPointToSurface(CBlobTree* root, 
+int  SubDivide_MoveMidPointToSurface(CBlobNode* root, 
 									 vec3f& m, 
 									 vec3f& outputNormal, 
 									 vec4f& outputColor, 
@@ -96,7 +96,7 @@ int  SubDivide_MoveMidPointToSurface(CBlobTree* root,
 									 int nIterations = DEFAULT_ITERATIONS );
 
 //Returns estimated number of field evaluations.
-size_t SubDivide_ParallelPerform(CMeshVV& inMesh, CBlobTree* lpInBlob, float adaptiveParam);
+size_t SubDivide_ParallelPerform(CMeshVV& inMesh, CBlobNode* lpInBlob, float adaptiveParam);
 
 size_t SubDivide_Analyze(CMeshVV& inMesh, float adaptiveParam, DVec<int>& arrVertexCount, DVec<int>& arrDecisionBits);
 

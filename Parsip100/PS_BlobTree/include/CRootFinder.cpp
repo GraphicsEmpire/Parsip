@@ -28,7 +28,7 @@ namespace PS{
 			}
 		}
 
-		size_t CRootFinder::findRoot(vec3 p1, vec3 p2, float fp1, float fp2, vec3 &output, float &fieldoutput)
+                size_t CRootFinder::findRoot(vec3f p1, vec3f p2, float fp1, float fp2, vec3f &output, float &fieldoutput)
 		{
 			if(m_method == rfmParabola)
 				return rootFitParabola(p1, p2, fp1, fp2, output, fieldoutput);
@@ -41,9 +41,9 @@ namespace PS{
 		}
 
 		//Newton Raphson uses gradient and is very fast on converging to the root
-		size_t CRootFinder::rootNewtonRaphson(vec3 p1, vec3 p2, float fp1, float fp2, vec3 &output, float &fieldoutput)
+                size_t CRootFinder::rootNewtonRaphson(vec3f p1, vec3f p2, float fp1, float fp2, vec3f &output, float &fieldoutput)
 		{		
-			vec3 grad, x;
+                        vec3f grad, x;
 			float f,d;
 
 			if(fabsf(fp1 - m_isoValue) < fabsf(fp2 - m_isoValue))
@@ -75,14 +75,14 @@ namespace PS{
 		}
 
 
-		size_t CRootFinder::rootFitParabola(vec3 p1, vec3 p2, float fp1, float fp2, vec3 &output, float &fieldOutput) 
+                size_t CRootFinder::rootFitParabola(vec3f p1, vec3f p2, float fp1, float fp2, vec3f &output, float &fieldOutput)
 		{	
 			size_t ctFieldEval = 0;
 
 
 			//Grab another sample point
 			float t = (m_isoValue - fp1) / (fp2 - fp1);				
-			vec3 p3 = p1 + t *(p2 - p1);
+                        vec3f p3 = p1 + t *(p2 - p1);
 			float a,b,c;
 
 			CInterval interval(0.0f, 1.0f);
@@ -129,7 +129,7 @@ namespace PS{
 			return i;		
 		}
 
-		size_t CRootFinder::rootLinearInterpolation(vec3 p1, vec3 p2, float fp1, float fp2, vec3 &output, float &fieldOutput) 
+                size_t CRootFinder::rootLinearInterpolation(vec3f p1, vec3f p2, float fp1, float fp2, vec3f &output, float &fieldOutput)
 		{
 			float t = (m_isoValue - fp1) / (fp2 - fp1);
 			output = p1 + t*(p2 - p1);
@@ -139,9 +139,9 @@ namespace PS{
 		}
 
 		//Root Secant Method
-		size_t CRootFinder::rootBisection(vec3 p1, vec3 p2, float fp1, float fp2, vec3 &output, float &fieldOutput) 
+                size_t CRootFinder::rootBisection(vec3f p1, vec3f p2, float fp1, float fp2, vec3f &output, float &fieldOutput)
 		{		
-			vec3 pos, neg;
+                        vec3f pos, neg;
 			size_t ctFieldEval = 0;
 
 			//fp1 < 0 means p1 returned negative field value
@@ -181,10 +181,10 @@ namespace PS{
 		}
 
 		//Returns number of field evaluations
-		int ComputeRootNewtonRaphson(CBlobTree* root, vec3 p1, vec3 p2, float fp1, float fp2, vec3 &output, float &fieldoutput,
+                int ComputeRootNewtonRaphson(CBlobNode* root, vec3f p1, vec3f p2, float fp1, float fp2, vec3f &output, float &fieldoutput,
 		 							 float target_field, int iterations)
 		{
-			vec3 grad, x;
+                        vec3f grad, x;
 			float f,d;
 
 			if(iterations <= 0) return -1;
@@ -218,9 +218,9 @@ namespace PS{
 			return iterations*4;
 		}
 
-		int ComputeRootBiSection( CBlobTree* root, vec3 p1, vec3 p2, float fp1, float fp2, vec3 &output, float &fieldoutput, float target_field /*= ISO_VALUE*/, int iterations /*= DEFAULT_ITERATIONS*/ )
+                int ComputeRootBiSection( CBlobNode* root, vec3f p1, vec3f p2, float fp1, float fp2, vec3f &output, float &fieldoutput, float target_field /*= ISO_VALUE*/, int iterations /*= DEFAULT_ITERATIONS*/ )
 		{
-			vec3 pos, neg;
+                        vec3f pos, neg;
 			size_t ctFieldEval = 0;
 
 			//fp1 < 0 means p1 returned negative field value

@@ -23,9 +23,9 @@ private:
 	bool m_bHasChildren;
 public:
 	COctree();
-	COctree(vec3 lbnCorner, vec3 rtfCorner);
+        COctree(vec3f lbnCorner, vec3f rtfCorner);
 	COctree(float l, float b, float n, float r, float t, float f);
-	COctree(vec3 lstPoints[], int ctPoints);
+        COctree(vec3f lstPoints[], int ctPoints);
 
 	~COctree();
 
@@ -34,13 +34,13 @@ public:
         enum CORNERS {LBN=0, LBF=1, LTN=2, LTF=3, RBN=4, RBF=5, RTN=6, RTF=7};
         enum DIRECTION {L=0, R=1, B=2, T=3, N=4, F=5};
 
-	vec3 lower; 
-	vec3 upper;	
+        vec3f lower;
+        vec3f upper;
 	
 	COctree* children[8];
 		
 	void set(const std::vector<vec3f>& lstPoints);
-	void set(vec3 lstPoints[], int ctPoints);
+        void set(vec3f lstPoints[], int ctPoints);
 	void set(vec3f lo, vec3f hi);
 
 	bool isValid() const { return ((lower.x < upper.x)&&(lower.y < upper.y)&&(lower.z < upper.z));}
@@ -58,7 +58,7 @@ public:
 	float getMinSideSize();
 	
 	//Collision Detection
-	bool isInside(vec3 pt);
+        bool isInside(vec3f pt);
 	bool intersect(vec3f lo, vec3f hi) const;
 	bool intersect(COctree* other) const;
 	bool intersect(const CRay& ray, float t0, float t1) const;
@@ -66,11 +66,11 @@ public:
 	//Expand and Compress
 	void expand(float offset);
 	void expand(vec3f v);
-	void expand(vec3 lstPoints[], int ctPoints);
+        void expand(vec3f lstPoints[], int ctPoints);
 
-	__inline vec3 bounds(int idx) const { return (idx == 0)?lower:upper;}
-	vec3 getCorner(int index);
-	vec3 center();
+        inline vec3f bounds(int idx) const { return (idx == 0)?lower:upper;}
+        vec3f getCorner(int index);
+        vec3f center();
 	void subDivide();
 	void correct();
 	

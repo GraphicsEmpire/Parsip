@@ -13,7 +13,7 @@ namespace BLOBTREE{
 using namespace PS::MATH;
 //***********************************************************
 //Twist 
-class  CWarpBend : public CBlobTree
+class  CWarpBend : public CBlobNode
 {
 private:
 	//Radians per unit length is const k
@@ -32,13 +32,13 @@ public:
 		set(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 
-	CWarpBend(CBlobTree * child)
+	CWarpBend(CBlobNode * child)
 	{
 		addChild(child);
 		set(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 
-	CWarpBend(CBlobTree * child, float bendRate, float bendCenter, float ymin, float ymax)
+	CWarpBend(CBlobNode * child, float bendRate, float bendCenter, float ymin, float ymax)
 	{
 		addChild(child);
 		set(bendRate, bendCenter, ymin, ymax);		
@@ -67,7 +67,7 @@ public:
 	void setBendRegionLeft(float left) { m_bendRegion.left = left;}
 	void setBendRegionRight(float right) { m_bendRegion.right = right;}
 
-	void setParamFrom(CBlobTree* input)
+	void setParamFrom(CBlobNode* input)
 	{
 		CWarpBend* bendN = dynamic_cast<CWarpBend*>(input);
 		this->m_bendRate = bendN->m_bendRate;
@@ -75,9 +75,9 @@ public:
 		this->m_bendRegion = bendN->m_bendRegion;
 	}
 
-	vec3 warp(vec3 pin)
+	vec3f warp(vec3f pin)
 	{	
-		vec3 pout;
+		vec3f pout;
 		float k = m_bendRate;
 		float kDiv = 1.0f/k;
 		float y0 = m_bendCenter;
@@ -142,21 +142,9 @@ public:
 		return m_children[0]->curvature(p);
 	}
 
-	vec4f baseColor(vec3f p)
-	{		
-		return m_children[0]->baseColor(warp(p));
-	}
-
-	CMaterial baseMaterial(vec3f p)
+        string getName()
 	{
-		p = warp(p);
-		return m_children[0]->baseMaterial(p);
-	}
-
-
-	void getName(char * chrName)
-	{
-            strncpy(chrName, "BEND", MAX_NAME_LEN);
+            return "BEND";
 	}
 
 	COctree computeOctree()
@@ -169,6 +157,21 @@ public:
 
 	bool isOperator() { return true;}
 	BlobNodeType getNodeType() {return bntOpWarpBend;}
+
+        bool saveScript(CSketchConfig* lpSketchScript, int idOffset = 0)
+        {
+            bool bres = saveGenericInfoScript(lpSketchScript, idOffset);
+
+            //Write parameters for RicciBlend
+            DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID() + idOffset);
+            lpSketchScript->writeFloat(strNodeName, "rate", this->getBendRate());
+            lpSketchScript->writeFloat(strNodeName, "center", this->getBendCenter());
+            lpSketchScript->writeFloat(strNodeName, "left bound", this->getBendRegion().left);
+            lpSketchScript->writeFloat(strNodeName, "right bound", this->getBendRegion().right);
+
+            return bres;
+        }
+
 };
 
 }

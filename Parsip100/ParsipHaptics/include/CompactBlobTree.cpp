@@ -4,7 +4,7 @@
 #include "_GlobalFunctions.h"
 
 
-int COMPACTBLOBTREE::convert( CBlobTree* root)
+int COMPACTBLOBTREE::convert( CBlobNode* root)
 {
     if(root == NULL)
     {
@@ -47,7 +47,7 @@ int COMPACTBLOBTREE::convert( CBlobTree* root)
     return res;
 }
 
-int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtxBranch*/)
+int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtxBranch*/)
 {
     int curID = -1;
     if(root->isOperator())
@@ -90,9 +90,9 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
             param.y = lpPCM->getPropagateRight();
             param.z = lpPCM->getAlphaLeft();
             param.w = lpPCM->getAlphaRight();
-            ops[curID].params = param;
-            break;
+            ops[curID].params = param;            
         }            
+        break;
         case(bntOpRicciBlend):
         {
             CRicciBlend* ricci = dynamic_cast<CRicciBlend*>(root);
@@ -101,17 +101,8 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
             ops[curID].params.x = n;
             if(n != 0.0f)
                 ops[curID].params.y = 1.0f / n;
-
-            break;
         }
-        case(bntOpGradientBlend):
-        {
-            CGradientBlend* gradBlend = dynamic_cast<CGradientBlend*>(root);
-            //cfg->writeFloat(strNodeName, "power", ricci->getN());
-
-            break;
-        }
-
+        break;
         case(bntOpWarpTwist):
         {
             CWarpTwist* twist = dynamic_cast<CWarpTwist*>(root);
@@ -119,8 +110,8 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
             //cfg->writeInt(strNodeName, "axis", static_cast<int>(twist->getMajorAxis()));
             ops[curID].params.x = twist->getWarpFactor();
             ops[curID].params.y = static_cast<float>(twist->getMajorAxis());
-            break;
         }
+        break;
         case(bntOpWarpTaper):
         {
             CWarpTaper* taper = dynamic_cast<CWarpTaper*>(root);
@@ -129,9 +120,9 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
             //cfg->writeInt(strNodeName, "taper axis", static_cast<int>(taper->getAxisTaper()));
             ops[curID].params.x = taper->getWarpFactor();
             ops[curID].params.y = static_cast<float>(taper->getAxisAlong());
-            ops[curID].params.z = static_cast<float>(taper->getAxisTaper());
-            break;
+            ops[curID].params.z = static_cast<float>(taper->getAxisTaper());        
         }
+        break;
         case(bntOpWarpBend):
         {
             CWarpBend* bend = dynamic_cast<CWarpBend*>(root);
@@ -142,9 +133,9 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
             ops[curID].params.x = bend->getBendRate();
             ops[curID].params.y = bend->getBendCenter();
             ops[curID].params.z = bend->getBendRegion().left;
-            ops[curID].params.w = bend->getBendRegion().right;
-            break;
+            ops[curID].params.w = bend->getBendRegion().right;        
         }
+        break;
         case(bntOpWarpShear):
         {
             CWarpShear* shear = dynamic_cast<CWarpShear*>(root);
@@ -153,10 +144,9 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
             //cfg->writeInt(strNodeName, "shear axis", static_cast<int>(shear->getAxisDependent()));
             ops[curID].params.x = shear->getWarpFactor();
             ops[curID].params.y = static_cast<float>(shear->getAxisAlong());
-            ops[curID].params.z = static_cast<float>(shear->getAxisDependent());
-            break;
+            ops[curID].params.z = static_cast<float>(shear->getAxisDependent());            
         }
-
+        break;
         default:
         {
 
@@ -182,7 +172,7 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
         ctPrims++;
 
         CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
-        vec4f c = sprim->getColor();
+        vec4f c = sprim->getMaterial().diffused;
         COctree oct = sprim->getOctree();
 
         float row[4];
@@ -202,6 +192,12 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
         //that of branch
         //CMatrix mtxBackward = mtxBranch;
         //mtxBackward.multiply(sprim->getTransform().getBackwardMatrix());
+        CMatrix mtxForward  = sprim->getTransform().getForwardMatrix();
+
+        vec3f s = sprim->getTransform().getScale();
+        vec4f r = sprim->getTransform().getRotationVec4();
+        vec3f t = sprim->getTransform().getTranslate();
+
         CMatrix mtxBackward = sprim->getTransform().getBackwardMatrix();
         mtxBackward.getRow(row, 0);
         prims[curID].mtxBackwardR0.set(row[0], row[1], row[2], row[3]);
@@ -307,9 +303,8 @@ int COMPACTBLOBTREE::convert(CBlobTree* root, int parentID/*, const CMatrix& mtx
             break;
         default:
         {
-            char chrName[MAX_NAME_LEN];
-            root->getName(chrName);
-            DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", chrName);
+            string strName = reinterpret_cast<CSkeletonPrimitive*>(root)->getSkeleton()->getName();
+            DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", strName.c_str());
             ReportError(strMsg.ptr());
             FlushAllErrors();
         }
@@ -1184,9 +1179,8 @@ void COMPACTBLOBTREE::copyFrom( const COMPACTBLOBTREE& rhs )
         this->ops[i].octHi = rhs.ops[i].octHi;
 
         this->ops[i].ctKids = rhs.ops[i].ctKids;
-        this->ops[i].kidIds.copyFrom(rhs.ops[i].kidIds);
-        //for(int j=0; j<8;j++)
-        //this->ops[i].kidIds[j] = rhs.ops[i].kidIds[j];
+        this->ops[i].kidIds.assign(rhs.ops[i].kidIds.begin(),
+                                   rhs.ops[i].kidIds.end());
     }
 
     //Copy Prims
