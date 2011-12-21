@@ -27,9 +27,10 @@ class  CSkeleton
 {
 public:
     CSkeleton() {}
-
-    virtual VOL::CVolume* getBoundingVolume(float range) = 0;
-    virtual bool getExtremes(vec3f& lower, vec3f& upper) = 0;
+    CSkeleton(CSkeleton* other)
+    {
+        this->setParamFrom(other);
+    }
 
     //=========================================================
     vec3f gradient(vec3f p, float delta)
@@ -45,8 +46,12 @@ public:
         return n;
     }
 
-    virtual float distance(vec3f p) = 0;
+    virtual void setParamFrom(CSkeleton* other) = 0;
+    virtual VOL::CVolume* getBoundingVolume(float range) = 0;
+    virtual bool getExtremes(vec3f& lower, vec3f& upper) = 0;
 
+
+    virtual float distance(vec3f p) = 0;
     virtual float squareDistance(vec3f p) = 0;
 
     virtual vec3f normal(vec3f p) = 0;

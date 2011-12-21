@@ -327,7 +327,7 @@ public:
     //Following methods are required to be implemented by all inherited BlobTrees
     virtual float fieldValue(vec3f p) = 0;
 
-    virtual float curvature(vec3f p) {return p.x+p.y+p.z;}
+    virtual float curvature(vec3f p) {return p.x + p.y + p.z;}
 
     //Material weighted by fieldvalue at point p
     virtual COctree computeOctree() = 0;
@@ -356,7 +356,7 @@ public:
         return 0;
     }
 
-
+    void copyGenericInfo(const CBlobNode* rhs);
 protected:
     int              m_id;
     BLOBNODECHILDREN m_children;

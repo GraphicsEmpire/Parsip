@@ -139,7 +139,8 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
     Parsip100/PS_BlobTree/include/CGradientBlend.h \
     Parsip100/ParsipHaptics/include/PS_OclPolygonizer.h \
     Parsip100/PS_FrameWork/include/PS_SketchConfig.h \
-    Parsip100/PS_FrameWork/include/PS_Property.h
+    Parsip100/PS_FrameWork/include/PS_Property.h \
+    Parsip100/PS_BlobTree/include/CNullPrimitive.h
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
          Parsip100/ParsipHaptics/mainwindow.ui
@@ -219,7 +220,8 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonRing.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonDisc.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonPoint.cpp \
-    Parsip100/PS_FrameWork/include/PS_Property.cpp
+    Parsip100/PS_FrameWork/include/PS_Property.cpp \
+    Parsip100/PS_BlobTree/include/CNullPrimitive.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -276,6 +278,8 @@ else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
 
 unix:!symbian: LIBS += -lGLEW \
                        -lOpenCL
+
+
 
 
 

@@ -12,5 +12,6 @@ namespace {
 
     const bool registered = TheBlobNodeFactoryName::Instance().Register("CUBE", CreateCube) &&
                             TheBlobNodeFactoryIndex::Instance().Register(bntPrimCube, CreateCube);
+
 }
 

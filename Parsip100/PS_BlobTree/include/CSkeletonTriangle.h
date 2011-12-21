@@ -29,11 +29,6 @@ public:
         m_triangle[2] = c;
     }
 
-    CSkeletonTriangle(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     void setParamFrom(CSkeleton* input)
     {
         CSkeletonTriangle* triN = dynamic_cast<CSkeletonTriangle*>(input);

@@ -921,13 +921,13 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
                 }
                 else
                 {                    
-                    clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("POINT");
+                    clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("NULL");
                     clonnedChild->setID(this->fetchIncrementLastNodeID());
 
                     //Add clone child to clonned parent
                     clonned->addChild(clonnedChild);
 
-                    ReportError("Found a unary operator while processing. Replaced second primitive with a sphere at origin.");
+                    ReportError("Found a unary operator while processing. Replaced second primitive with a NULL primitive.");
                     FlushAllErrors();
 
                     res++;

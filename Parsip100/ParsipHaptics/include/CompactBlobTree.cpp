@@ -211,7 +211,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
 
         switch(sprim->getSkeleton()->getType())
         {
-        case(sktPoint):
+        case(bntPrimPoint):
         {
             CSkeletonPoint* skeletPoint = reinterpret_cast<CSkeletonPoint*>(sprim->getSkeleton());
             //cfg->writeVec3f(strNodeName, "position", skeletPoint->getPosition());
@@ -219,7 +219,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             prims[curID].pos.set(pos.x, pos.y, pos.z, 0.0f);
         }
             break;
-        case(sktLine):
+        case(bntPrimLine):
         {
             CSkeletonLine* skeletLine = reinterpret_cast<CSkeletonLine*>(sprim->getSkeleton());
             //cfg->writeVec3f(strNodeName, "start", skeletLine->getStartPosition());
@@ -230,7 +230,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             prims[curID].res2.set(e.x, e.y, e.z);
         }
             break;
-        case(sktRing):
+        case(bntPrimRing):
         {
             CSkeletonRing* skeletRing = reinterpret_cast<CSkeletonRing*>(sprim->getSkeleton());
             //cfg->writeVec3f(strNodeName, "position", skeletRing->getPosition());
@@ -245,7 +245,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             prims[curID].res2.set(r*r);
         }
             break;
-        case(sktDisc):
+        case(bntPrimDisc):
         {
             CSkeletonDisc* skeletDisc = reinterpret_cast<CSkeletonDisc*>(sprim->getSkeleton());
             //cfg->writeVec3f(strNodeName, "position", skeletDisc->getPosition());
@@ -260,7 +260,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             prims[curID].res2.set(r*r);
         }
             break;
-        case(sktCylinder):
+        case(bntPrimCylinder):
         {
             CSkeletonCylinder* skeletCyl = reinterpret_cast<CSkeletonCylinder*>(sprim->getSkeleton());
             //cfg->writeVec3f(strNodeName, "position", skeletCyl->getPosition());
@@ -276,7 +276,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
         }
             break;
 
-        case(sktCube):
+        case(bntPrimCube):
         {
             CSkeletonCube* skeletCube = reinterpret_cast<CSkeletonCube*>(sprim->getSkeleton());
             //cfg->writeVec3f(strNodeName, "position", skeletCube->getPosition());
@@ -287,7 +287,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             prims[curID].res1.set(side);
         }
             break;
-        case(sktTriangle):
+        case(bntPrimTriangle):
         {
             CSkeletonTriangle* skeletTriangle = reinterpret_cast<CSkeletonTriangle*>(sprim->getSkeleton());
             //cfg->writeVec3f(strNodeName, "corner0", skeletTriangle->getTriangleCorner(0));

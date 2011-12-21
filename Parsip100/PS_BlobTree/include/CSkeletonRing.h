@@ -42,11 +42,6 @@ public:
         m_radius = radius;
     }
 
-    CSkeletonRing(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     void setParamFrom(CSkeleton* input)
     {
         CSkeletonRing* ringN = dynamic_cast<CSkeletonRing*>(input);

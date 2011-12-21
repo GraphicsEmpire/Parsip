@@ -79,6 +79,22 @@ bool CBlobNode::loadGenericInfoScript(CSketchConfig *lpSketchConfig, int id)
     return true;
 }
 
+void CBlobNode::copyGenericInfo(const CBlobNode* rhs)
+{
+    /*
+    int              m_id;
+    COctree          m_octree;
+    CMaterial        m_material;
+    bool             m_bDeleteChildrenUponCleanup;
+
+    CAffineTransformation m_transform;
+    */
+    this->m_id = rhs->m_id;
+    this->m_octree = rhs->m_octree;
+    this->m_material = rhs->m_material;
+    this->m_bDeleteChildrenUponCleanup = rhs->m_bDeleteChildrenUponCleanup;
+    this->m_transform = rhs->m_transform;
+}
 
 }
 }

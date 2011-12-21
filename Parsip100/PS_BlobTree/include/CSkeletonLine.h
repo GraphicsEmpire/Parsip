@@ -31,11 +31,6 @@ public:
         m_ptEnd = end;
     }
 
-    CSkeletonLine(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     void setParamFrom(CSkeleton* input)
     {
         CSkeletonLine* lineN = dynamic_cast<CSkeletonLine*>(input);

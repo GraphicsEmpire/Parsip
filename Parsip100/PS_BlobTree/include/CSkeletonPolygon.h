@@ -22,11 +22,6 @@ public:
         setPolygon(lstPoints);
     }
 
-    CSkeletonPolygon(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     ~CSkeletonPolygon()
     {
         m_lstPoints.resize(0);

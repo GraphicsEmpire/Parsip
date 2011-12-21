@@ -25,11 +25,6 @@ public:
         m_side = side;
     }
 
-    CSkeletonCube(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     void setParamFrom(CSkeleton* input)
     {
         CSkeletonCube* cubeN = dynamic_cast<CSkeletonCube*>(input);

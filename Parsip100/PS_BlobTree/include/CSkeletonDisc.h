@@ -30,11 +30,6 @@ public:
         m_direction.normalize();
     }
 
-    CSkeletonDisc(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     void setParamFrom(CSkeleton* input)
     {
         CSkeletonDisc* discN = dynamic_cast<CSkeletonDisc*>(input);

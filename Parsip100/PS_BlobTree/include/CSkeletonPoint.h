@@ -18,11 +18,6 @@ public:
         m_position = position;
     }
 
-    CSkeletonPoint(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     void setParamFrom(CSkeleton* input)
     {
         CSkeletonPoint* pointN = dynamic_cast<CSkeletonPoint*>(input);

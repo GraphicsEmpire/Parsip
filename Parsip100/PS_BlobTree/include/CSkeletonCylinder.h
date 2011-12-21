@@ -33,11 +33,6 @@ public:
         m_direction.normalize();
     }
 
-    CSkeletonCylinder(CSkeleton* other)
-    {
-        setParamFrom(other);
-    }
-
     void setParamFrom(CSkeleton* input)
     {
         CSkeletonCylinder* cylN = dynamic_cast<CSkeletonCylinder*>(input);

@@ -57,12 +57,12 @@ public:
         this->m_nDiv = inputRicci->m_nDiv;
     }
 
-    float getN()
+    float getN() const
     {
         return m_n;
     }
 
-    float getNDiv()
+    float getNDiv() const
     {
         return m_nDiv;
     }

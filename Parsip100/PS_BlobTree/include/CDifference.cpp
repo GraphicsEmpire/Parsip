@@ -9,6 +9,14 @@ namespace {
         return new CDifference();
     }
 
+    CBlobNode* CloneDif(const CBlobNode* b)
+    {
+        CDifference* clonned = new CDifference();
+        clonned->copyGenericInfo(b);
+        return clonned;
+    }
+
     const bool registered = TheBlobNodeFactoryName::Instance().Register("DIFFERENCE", CreateDifference) &&
-                            TheBlobNodeFactoryIndex::Instance().Register(bntOpDif, CreateDifference);
+                            TheBlobNodeFactoryIndex::Instance().Register(bntOpDif, CreateDifference) &&
+                            TheBlobNodeCloneFactory::Instance().Register(typeid(CDifference), CloneDif);
 }

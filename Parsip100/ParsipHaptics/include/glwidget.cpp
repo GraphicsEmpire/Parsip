@@ -31,6 +31,7 @@
 #include "CBlobTreeNetwork.h"
 #include "CBlobTreeAnimation.h"
 #include "PS_OclPolygonizer.h"
+#include "PS_Polygonizer.h"
 
 
 using namespace PS::FILESTRINGUTILS;
@@ -60,9 +61,11 @@ GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent)
 {
     runOclPolygonizer();
-
-
     this->setMouseTracking(true);
+
+//    CBlobNode*  b = TheBlobNodeFactoryIndex::Instance().CreateObject(bntOpIntersect);
+  //  CBlobNode* b2 = TheBlobNodeCloneFactory::Instance().CreateObject(b);
+
 
     //Setup TBB Task Scheduling system
     tbb::task_scheduler_init init;
@@ -1380,68 +1383,11 @@ void GLWidget::actMeshSubDivide()
 
 void GLWidget::actMeshPolygonize()
 {
-    if(m_layerManager.countLayers() == 0)	return;
+    if(m_layerManager.countLayers() == 0)
+        return;
 
-    //These values will be set upon each polygonization
-    m_layerManager.resetAllMeshes();
-    m_layerManager.setCellSize(TheAppSettings::Instance().setParsip.cellSize);
-    m_layerManager.setCellShape(TheAppSettings::Instance().setParsip.cellShape);
-    m_layerManager.setAdaptiveParam(TheAppSettings::Instance().setParsip.adaptiveParam);
-
-    CLayer* aLayer = NULL;
-    double totalProcessTime = 0.0;
-    for(size_t iLayer=0; iLayer < m_layerManager.countLayers(); iLayer++)
-    {
-        aLayer = m_layerManager.getLayer(iLayer);
-
-        //Reset stats
-        aLayer->getPolygonizer()->resetStats();
-
-        if(aLayer->getBlob() == NULL)
-            continue;
-
-        if(aLayer->hasChanged())
-        {
-            //1.Find all seed points
-            //2.Set Octrees from BlobTree
-            //3.Flatten Transformations
-            //4.
-            aLayer->resetRevision();
-            aLayer->setPolySeedPointAuto();
-            aLayer->setOctreeFromBlobTree();
-            aLayer->flattenTransformations();
-            aLayer->queryBlobTree(true, false);
-
-            //Setup polygonizer and run
-            //Remove only the MPUs pertaining to this layer
-            //m_parsip.removeLayerMPUs(iLayer);
-            //m_parsip.setForceMC(TheAppSettings::Instance().setParsip.bForceMC);
-            //m_parsip.setAdaptiveSubdivision(TheAppSettings::Instance().setParsip.bUseAdaptiveSubDivision);
-
-            //Create MPUs from layer if it is visible
-            if(aLayer->isVisible())
-            {
-                aLayer->setupCompactTree(aLayer->getBlob());
-
-                aLayer->getPolygonizer()->setup(aLayer->getCompactTree(),
-                                                aLayer->getOctree(),
-                                                iLayer,
-                                                aLayer->getCellSize());
-            }
-        }
-
-        //Run Polygonizer
-        aLayer->getPolygonizer()->run();
-        totalProcessTime += aLayer->getPolygonizer()->statsSetupTime();
-        totalProcessTime += aLayer->getPolygonizer()->statsPolyTime();
-    }
-
-    if(TheAppSettings::Instance().setDisplay.bShowGraph)
-    {
-        emit sig_setTimeFPS(totalProcessTime, static_cast<int>(1000.0 / totalProcessTime));
-        emit sig_showStats(getModelStats());
-        emit sig_showLayerManager(getModelLayerManager());
-    }
+    for(size_t iLayer=0; iLayer < m_layerManager.countLayers(); iLayer++)    
+        actMeshPolygonize(iLayer);
 
     updateGL();
 }
@@ -1449,8 +1395,9 @@ void GLWidget::actMeshPolygonize()
 void GLWidget::actMeshPolygonize(int idxLayer)
 {
     if(!m_layerManager.isLayerIndex(idxLayer))	return;
-
     CLayer* aLayer = m_layerManager.getLayer(idxLayer);
+    if(aLayer->getBlob() == NULL)
+        return;
 
     //These values will be set upon each polygonization
     aLayer->setMesh();
@@ -1461,14 +1408,10 @@ void GLWidget::actMeshPolygonize(int idxLayer)
     //Reset stats
     aLayer->getPolygonizer()->resetStats();
 
-
-    if(aLayer->getBlob() == NULL)
-        return;
-
     if(aLayer->hasChanged())
     {
         aLayer->resetRevision();
-        aLayer->setPolySeedPointAuto();
+        //aLayer->setPolySeedPointAuto();
         aLayer->setOctreeFromBlobTree();
         aLayer->flattenTransformations();
         aLayer->queryBlobTree(true, false);

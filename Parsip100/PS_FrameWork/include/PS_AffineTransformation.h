@@ -8,219 +8,224 @@
 
 namespace PS{
 
-	class CAffineTransformation
-	{
-	private:
-		//Forward
-		vec3f m_scale;
-		CQuaternion m_rotate;	
-		vec3f m_translate;
+class CAffineTransformation
+{
+private:
+    //Forward
+    vec3f m_scale;
+    CQuaternion m_rotate;
+    vec3f m_translate;
 
-		//Reverse
-		vec3f m_revScale;
-		CQuaternion m_revRotate;	
-		vec3f m_revTranslate;
+    //Reverse
+    vec3f m_revScale;
+    CQuaternion m_revRotate;
+    vec3f m_revTranslate;
 
-		CMatrix m_mtxForward;
-		CMatrix m_mtxBackward;
+    CMatrix m_mtxForward;
+    CMatrix m_mtxBackward;
 
-	public:
-                enum AffineTransformationType {attTranslate, attRotate, attScale};
-                enum AffineDirection {adForward, adReverse};
+public:
+    enum AffineTransformationType {attTranslate, attRotate, attScale};
+    enum AffineDirection {adForward, adReverse};
 
-		CAffineTransformation() 
-		{
-			init();		
-		}
-		
-		CAffineTransformation(const CAffineTransformation& rhs)
-		{			
-			set(rhs);
-		}
-	
-		CAffineTransformation(vec3f scale, CQuaternion rot, vec3f translate)
-		{		
-			set(scale, rot, translate);
-		}
+    CAffineTransformation()
+    {
+        init();
+    }
 
-		void add(const CAffineTransformation& rhs)
-		{
-			m_scale *= rhs.m_scale;
-			m_rotate = m_rotate.multiply(rhs.m_rotate);
-			m_translate += rhs.m_translate;
-			setReverseTransformations();
-		}
+    CAffineTransformation(const CAffineTransformation& rhs)
+    {
+        set(rhs);
+    }
 
-		void set(const CAffineTransformation& rhs)
-		{
-			m_scale = rhs.m_scale;
-			m_rotate = rhs.m_rotate;
-			m_translate = rhs.m_translate;
-			setReverseTransformations();
-		}
+    CAffineTransformation(vec3f scale, CQuaternion rot, vec3f translate)
+    {
+        set(scale, rot, translate);
+    }
 
-		void set(vec3f scale, CQuaternion rot, vec3f translate)
-		{
-			m_scale = scale;
-			m_rotate = rot;
-			m_translate = translate;		
-			setReverseTransformations();
-		}
+    void add(const CAffineTransformation& rhs)
+    {
+        m_scale *= rhs.m_scale;
+        m_rotate = m_rotate.multiply(rhs.m_rotate);
+        m_translate += rhs.m_translate;
+        setReverseTransformations();
+    }
 
-		void init()
-		{		
-			m_scale = vec3f(1, 1, 1);
-			m_revScale = vec3f(1, 1, 1);
-			m_translate = vec3f(0, 0, 0);		
-			m_revTranslate = vec3f(0, 0, 0);
-			m_rotate.identity();
-			m_revRotate.identity();
+    void set(const CAffineTransformation& rhs)
+    {
+        m_scale = rhs.m_scale;
+        m_rotate = rhs.m_rotate;
+        m_translate = rhs.m_translate;
+        setReverseTransformations();
+    }
 
-			m_mtxBackward.identity();
-			m_mtxBackward.identity();			
-		}
+    void set(vec3f scale, CQuaternion rot, vec3f translate)
+    {
+        m_scale = scale;
+        m_rotate = rot;
+        m_translate = translate;
+        setReverseTransformations();
+    }
 
-		//Getters
-		vec3f getTranslate(AffineDirection ad = adForward) const
-		{
-			if(ad == adForward)
-				return m_translate;
-			else
-				return m_revTranslate;
-		}
+    void init()
+    {
+        m_scale = vec3f(1, 1, 1);
+        m_revScale = vec3f(1, 1, 1);
+        m_translate = vec3f(0, 0, 0);
+        m_revTranslate = vec3f(0, 0, 0);
+        m_rotate.identity();
+        m_revRotate.identity();
 
-		vec3f getScale(AffineDirection ad = adForward) const
-		{
-			if(ad == adForward)
-				return m_scale;
-			else
-				return m_revScale;
-		}
+        m_mtxBackward.identity();
+        m_mtxBackward.identity();
+    }
 
-		quat getRotation(AffineDirection ad = adForward) const
-		{
-			if(ad == adForward)
-				return m_rotate;
-			else
-				return m_revRotate;
-		}
+    //Getters
+    vec3f getTranslate(AffineDirection ad = adForward) const
+    {
+        if(ad == adForward)
+            return m_translate;
+        else
+            return m_revTranslate;
+    }
 
-		vec4f getRotationVec4(AffineDirection ad = adForward) const
-		{
-			quat rot;
-			if(ad == adForward)
-				rot = m_rotate;
-			else
-				rot = m_revRotate;
-			return vec4f(rot.q.x, rot.q.y, rot.q.z, rot.w);
-		}
+    vec3f getScale(AffineDirection ad = adForward) const
+    {
+        if(ad == adForward)
+            return m_scale;
+        else
+            return m_revScale;
+    }
 
-		//Setters
-		void setScale(const vec3f & scale)
-		{
-			m_scale = scale;
-			setReverseTransformations();
-		}
+    quat getRotation(AffineDirection ad = adForward) const
+    {
+        if(ad == adForward)
+            return m_rotate;
+        else
+            return m_revRotate;
+    }
 
-		void setRotation(float degree, const vec3f & axis)
-		{
-			m_rotate.fromAngleAxis(degree * DEG_TO_RAD, axis);
-			setReverseTransformations();
-		}
+    vec4f getRotationVec4(AffineDirection ad = adForward) const
+    {
+        quat rot;
+        if(ad == adForward)
+            rot = m_rotate;
+        else
+            rot = m_revRotate;
+        return vec4f(rot.q.x, rot.q.y, rot.q.z, rot.w);
+    }
 
-		void setRotation(quat q)
-		{
-			m_rotate = q;
-			setReverseTransformations();
-		}
+    //Setters
+    void setScale(const vec3f & scale)
+    {
+        m_scale = scale;
+        setReverseTransformations();
+    }
 
-		void setTranslate(const vec3f & translate)
-		{
-			m_translate = translate;	
-			setReverseTransformations();
-		}
+    void setRotation(float degree, const vec3f & axis)
+    {
+        m_rotate.fromAngleAxis(degree * DEG_TO_RAD, axis);
+        setReverseTransformations();
+    }
 
-		//Accumulate transformations		
-		void addScale(vec3f v)
-		{
-			setScale(m_scale + v);
-		}
+    void setRotation(quat q)
+    {
+        m_rotate = q;
+        setReverseTransformations();
+    }
 
-		void addRotate(quat rot)
-		{
-			setRotation(m_rotate.multiply(rot));				
-		}
+    void setTranslate(const vec3f & translate)
+    {
+        m_translate = translate;
+        setReverseTransformations();
+    }
 
-		void addTranslate(vec3f v)
-		{
-			setTranslate(m_translate + v);						
-		}
+    //Accumulate transformations
+    void addScale(vec3f v)
+    {
+        setScale(m_scale + v);
+    }
 
-		//Set reverse transforms
-		void setReverseTransformations()
-		{	
-			//Compute reverse components
-			m_revScale.set(1.0f / m_scale.x, 1.0f / m_scale.y, 1.0f / m_scale.z);	
-			m_revRotate = m_rotate.inverse();						
-			m_revTranslate.set(-1.0f * m_translate.x, -1.0f * m_translate.y, -1.0f * m_translate.z);
+    void addRotate(quat rot)
+    {
+        setRotation(m_rotate.multiply(rot));
+    }
 
-			CMatrix mtxRot;
-			m_mtxForward.identity();
+    void addTranslate(vec3f v)
+    {
+        setTranslate(m_translate + v);
+    }
 
-			//Translate to origin
-			m_mtxForward.setTranslate(m_translate * -1.0f);
+    //Set reverse transforms
+    void setReverseTransformations()
+    {
+        //Compute reverse components
+        m_revScale.set(1.0f / m_scale.x, 1.0f / m_scale.y, 1.0f / m_scale.z);
+        m_revRotate = m_rotate.inverse();
+        m_revTranslate.set(-1.0f * m_translate.x, -1.0f * m_translate.y, -1.0f * m_translate.z);
 
-			//Perform SRT transformation
-			m_mtxForward.setScale(m_scale);
+        CMatrix mtxRot;
+        m_mtxForward.identity();
 
-			m_rotate.toMatrix(mtxRot);
-			m_mtxForward.multiply(mtxRot);
-			m_mtxForward.setTranslate(m_translate);
+        //Translate to origin
+        m_mtxForward.setTranslate(m_translate * -1.0f);
 
-			m_mtxForward.invert(m_mtxBackward);		
-		}
+        //Perform SRT transformation
+        m_mtxForward.setScale(m_scale);
 
-		//Forward Transforms
-		vec3f applyForwardTransform(vec3f v)
-		{
-			return m_mtxForward.transform(v);		
-		}
+        m_rotate.toMatrix(mtxRot);
+        m_mtxForward.multiply(mtxRot);
+        m_mtxForward.setTranslate(m_translate);
 
-		vec3f applyForwardRotate(vec3f v)
-		{
-			return m_rotate.transform(m_revRotate, v);		
-		}
+        m_mtxForward.invert(m_mtxBackward);
+    }
 
-		CMatrix getForwardRotate() const
-		{
-			CMatrix m;
-			m_rotate.toMatrix(m);		
-			return m;
-		}
+    //Forward Transforms
+    vec3f applyForwardTransform(vec3f v)
+    {
+        return m_mtxForward.transform(v);
+    }
 
-		CMatrix getBackwardRotate() const
-		{
-			CMatrix m;
-			m_revRotate.toMatrix(m);
-			return m;
-		}
+    vec3f applyForwardRotate(vec3f v)
+    {
+        return m_rotate.transform(m_revRotate, v);
+    }
 
-		CMatrix& getForwardMatrix()  {	return m_mtxForward;}
-		CMatrix& getBackwardMatrix() {	return m_mtxBackward;}
+    CMatrix getForwardRotate() const
+    {
+        CMatrix m;
+        m_rotate.toMatrix(m);
+        return m;
+    }
 
-		//Backward Transforms	
-		vec3f applyBackwardTransform(vec3f v)
-		{			
-			return m_mtxBackward.transform(v);		
-		}
+    CMatrix getBackwardRotate() const
+    {
+        CMatrix m;
+        m_revRotate.toMatrix(m);
+        return m;
+    }
 
-		vec3f applyBackwardRotate(vec3f v)
-		{
-			return m_revRotate.transform(m_rotate, v);		
-		}
+    CMatrix& getForwardMatrix()  {	return m_mtxForward;}
+    CMatrix& getBackwardMatrix() {	return m_mtxBackward;}
 
+    //Backward Transforms
+    vec3f applyBackwardTransform(vec3f v)
+    {
+        return m_mtxBackward.transform(v);
+    }
 
-	};
+    vec3f applyBackwardRotate(vec3f v)
+    {
+        return m_revRotate.transform(m_rotate, v);
+    }
+
+    CAffineTransformation& operator = (const CAffineTransformation& rhs)
+    {
+        this->set(rhs);
+        return(*this);
+    }
+
+};
 
 
 }
