@@ -338,7 +338,7 @@ public:
         return true;
     }
 
-    Vol::CVolume* getBoundingVolume(float range)
+    VOL::CVolume* getBoundingVolume(float range)
     {
         vec3f lower = m_triangle[0].vectorMin(m_triangle[1]);
         lower = lower.vectorMin(m_triangle[2]);
@@ -346,7 +346,7 @@ public:
         vec3f upper = m_triangle[0].vectorMax(m_triangle[1]);
         upper = upper.vectorMax(m_triangle[2]);
 
-        Vol::CVolumeBox * b = new Vol::CVolumeBox(lower, upper);
+        VOL::CVolumeBox * b = new VOL::CVolumeBox(lower, upper);
         return b;
     }
 
@@ -363,7 +363,7 @@ public:
         m_triangle[2] += d;
     }
 
-    SkeletonType getType()		{return sktTriangle;}
+    BlobNodeType getType()		{return bntPrimTriangle;}
 
     bool saveScript(CSketchConfig* lpSketchScript, int id)
     {

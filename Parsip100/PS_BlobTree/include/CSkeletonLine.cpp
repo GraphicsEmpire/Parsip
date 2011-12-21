@@ -10,7 +10,8 @@ namespace {
         return new CSkeletonPrimitive(new CSkeletonLine(), fftWyvill);
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("LINE", CreateLine);
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("LINE", CreateLine) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntPrimLine, CreateLine);
 }
 
 

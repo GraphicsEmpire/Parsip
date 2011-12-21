@@ -28,7 +28,7 @@ class  CSkeleton
 public:
     CSkeleton() {}
 
-    virtual Vol::CVolume* getBoundingVolume(float range) = 0;
+    virtual VOL::CVolume* getBoundingVolume(float range) = 0;
     virtual bool getExtremes(vec3f& lower, vec3f& upper) = 0;
 
     //=========================================================
@@ -57,7 +57,7 @@ public:
     //Computes Centroid useful for computation of bounding volume
     virtual vec3f getPolySeedPoint() = 0;
     virtual void translate(vec3f d) = 0;
-    virtual SkeletonType getType() = 0;
+    virtual BlobNodeType getType() = 0;
 
     virtual bool saveScript(CSketchConfig* lpSketchScript, int id) = 0;
     virtual bool loadScript(CSketchConfig* lpSketchScript, int id) = 0;

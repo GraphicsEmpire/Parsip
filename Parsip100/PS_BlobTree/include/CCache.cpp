@@ -114,12 +114,12 @@ vec3f CFieldCache::normal(vec3f p, float delta)
 	}	
 }
 
-void CFieldCache::invalidate(Vol::CVolumeBox &box)
+void CFieldCache::invalidate(VOL::CVolumeBox &box)
 {
         vec3f lo = box.lower();
         vec3f hi = box.upper();
 		
-	Vol::CVolumeBox TransformBox(lo - m_origin, hi - m_origin);
+	VOL::CVolumeBox TransformBox(lo - m_origin, hi - m_origin);
 	m_pCache->Invalidate(TransformBox);
 }
 

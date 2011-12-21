@@ -26,7 +26,7 @@ struct TreeNodeCache
 struct BlobPrimitive
 {
         int orgID;
-	SkeletonType skelet;
+        BlobNodeType type;
 	vec4f color;
 	vec4f pos;
 	vec4f dir;

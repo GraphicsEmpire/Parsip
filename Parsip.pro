@@ -38,7 +38,6 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/ParsipHaptics/include/_PolygonizerStructs.h \
            Parsip100/ParsipHaptics/include/CBlobTreeAnimation.h \
            Parsip100/ParsipHaptics/include/CBlobTreeNetwork.h \
-           Parsip100/ParsipHaptics/include/CBlobTreeShapes.h \
            Parsip100/ParsipHaptics/include/CCubeTable.h \
            Parsip100/ParsipHaptics/include/CEaseInEaseOut.h \
            Parsip100/ParsipHaptics/include/CEdgeTable.h \
@@ -139,7 +138,8 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/PS_FrameWork/include/TaskManager.h \
     Parsip100/PS_BlobTree/include/CGradientBlend.h \
     Parsip100/ParsipHaptics/include/PS_OclPolygonizer.h \
-    Parsip100/PS_FrameWork/include/PS_SketchConfig.h
+    Parsip100/PS_FrameWork/include/PS_SketchConfig.h \
+    Parsip100/PS_FrameWork/include/PS_Property.h
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
          Parsip100/ParsipHaptics/mainwindow.ui
@@ -218,7 +218,8 @@ SOURCES += Parsip100/DSystem/include/DContainers.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonLine.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonRing.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonDisc.cpp \
-    Parsip100/PS_BlobTree/include/CSkeletonPoint.cpp
+    Parsip100/PS_BlobTree/include/CSkeletonPoint.cpp \
+    Parsip100/PS_FrameWork/include/PS_Property.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -249,7 +250,8 @@ win32:CONFIG(release, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\i
                                               D:\Projects\Dependencies\GLEW\lib\glew32.lib
 else:win32:CONFIG(debug, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb_debug.lib \
                                                  D:\Projects\Dependencies\GLEW\lib\glew32.lib
-else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/ -ltbb
+else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/ -ltbb \
+                            -L$$PWD/../Dependencies/LOKI/lib/ -lloki
 
 #Add all special libraries used in the project
 win32:INCLUDEPATH += D:\Projects\Dependencies\TBB\include \
@@ -274,6 +276,9 @@ else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
 
 unix:!symbian: LIBS += -lGLEW \
                        -lOpenCL
+
+
+
 
 
 

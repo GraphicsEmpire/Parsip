@@ -10,7 +10,8 @@ namespace {
         return new CSkeletonPrimitive(new CSkeletonCylinder(), fftWyvill);
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("CYLINDER", CreateCylinder);
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("CYLINDER", CreateCylinder) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntPrimCylinder, CreateCylinder);
 }
 
 

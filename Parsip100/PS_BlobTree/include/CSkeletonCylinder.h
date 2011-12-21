@@ -112,18 +112,18 @@ public:
         return true;
     }
 
-    Vol::CVolume* getBoundingVolume(float range)
+    VOL::CVolume* getBoundingVolume(float range)
     {
         m_direction.normalize();
         float r = sqrtf(m_radius * m_radius + 0.25f * m_height * m_height);
-        Vol::CVolumeSphere * s = new Vol::CVolumeSphere(vec3f(), r + range);
+        VOL::CVolumeSphere * s = new VOL::CVolumeSphere(vec3f(), r + range);
 
         vec3f d  = (0.5f * m_height) * m_direction;
         vec3f da = d.vectorAbs();
         vec3f bv = da + vec3f(cos(m_direction.x) + range, cos(m_direction.y) + range, cos(m_direction.z) + range).vectorAbs();
 
         vec3f p = m_position + da;
-        Vol::CVolumeBox * b = new Vol::CVolumeBox(p - bv, p + bv);
+        VOL::CVolumeBox * b = new VOL::CVolumeBox(p - bv, p + bv);
         if (s->size() > b->size())
         {
             s->setCenter(m_position + d);
@@ -153,7 +153,7 @@ public:
         m_position += d;
     }
 
-    SkeletonType getType()		{return sktCylinder;}
+    BlobNodeType getType()		{return bntPrimCylinder;}
 
     bool saveScript(CSketchConfig *lpSketchScript, int id)
     {

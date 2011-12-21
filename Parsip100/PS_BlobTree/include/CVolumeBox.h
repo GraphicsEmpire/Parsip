@@ -6,7 +6,7 @@
 
 namespace PS{
 namespace BLOBTREE{
-	namespace Vol{
+	namespace VOL{
 
 		class  CVolumeBox : public CVolume
 		{

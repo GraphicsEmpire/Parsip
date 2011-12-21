@@ -5,7 +5,7 @@
 #include "_constSettings.h"
 #include <string.h>
 
-#include "loki/Factory.h"
+#include <loki/Factory.h>
 
 using namespace Loki;
 using namespace std;
@@ -16,26 +16,29 @@ namespace BLOBTREE{
 typedef SingletonHolder
 <
     Factory<CBlobNode, std::string>,
-    CreateUsingNew,
+    CreateUsingNew,    
     Loki::LongevityLifetime::DieAsSmallObjectChild
 >
 TheBlobNodeFactoryName;
 
+
 typedef SingletonHolder
 <
     Factory<CBlobNode, BlobNodeType>,
-    CreateUsingNew,
+    CreateUsingNew,    
     Loki::LongevityLifetime::DieAsSmallObjectChild
 >
 TheBlobNodeFactoryIndex;
 
+
 typedef SingletonHolder
 <
     CloneFactory<CBlobNode>,
-    CreateUsingNew,
+    CreateUsingNew,    
     Loki::LongevityLifetime::DieAsSmallObjectChild
 >
 TheBlobNodeCloneFactory;
+
 
 }
 }

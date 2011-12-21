@@ -59,8 +59,7 @@ bool CBlobTreeToActions::appendCommand( SKETCHCMD command, CBlobNode* node, vec4
     {
         txMsg.blobnodeID = node->getID();
         if(command == cmdAdd)
-        {
-            txMsg.opType = bntPrimSkeleton;
+        {         
             txMsg.nodeType = reinterpret_cast<PS::BLOBTREE::CSkeletonPrimitive*>(node)->getSkeleton()->getType();
             txMsg.param = node->getMaterial().diffused;
         }

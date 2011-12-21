@@ -6,7 +6,7 @@ using namespace std;
 
 namespace PS{
 namespace BLOBTREE{
-	namespace Vol{
+	namespace VOL{
 
 		CVolumeSphere::CVolumeSphere(vec3f center, float radius)
 		{

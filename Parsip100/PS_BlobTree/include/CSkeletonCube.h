@@ -184,9 +184,9 @@ public:
         return true;
     }
 
-    Vol::CVolume* getBoundingVolume(float range)
+    VOL::CVolume* getBoundingVolume(float range)
     {
-        Vol::CVolumeBox * b = new Vol::CVolumeBox(m_center - m_side - range, m_center + m_side + range);
+        VOL::CVolumeBox * b = new VOL::CVolumeBox(m_center - m_side - range, m_center + m_side + range);
         return b;
     }
 
@@ -200,7 +200,7 @@ public:
         m_center += d;
     }
 
-    SkeletonType getType()		{return sktCube;}
+    BlobNodeType getType()		{return bntPrimCube;}
 
     bool saveScript(CSketchConfig *lpSketchScript, int id)
     {

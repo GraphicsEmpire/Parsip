@@ -9,7 +9,8 @@ namespace {
         return new CGradientBlend();
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("GRADIENT BLEND", CreateGradientBlend);
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("GRADIENT BLEND", CreateGradientBlend) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntOpGradientBlend, CreateGradientBlend);
 }
 
 

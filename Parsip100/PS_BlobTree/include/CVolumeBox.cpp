@@ -5,7 +5,7 @@ using namespace std;
 
 namespace PS{
 namespace BLOBTREE{
-	namespace Vol{
+	namespace VOL{
 		//Constructor with min and max position aka, lower and upper corners
 		CVolumeBox::CVolumeBox(const vec3f min, const vec3f max) 
 		{ 

@@ -107,10 +107,10 @@ public:
         return true;
     }
 
-    Vol::CVolume* getBoundingVolume(float range)
+    VOL::CVolume* getBoundingVolume(float range)
     {
         m_direction.normalize();
-        Vol::CVolumeSphere* s = new Vol::CVolumeSphere(m_center, m_radius + range);
+        VOL::CVolumeSphere* s = new VOL::CVolumeSphere(m_center, m_radius + range);
         return s;
     }
 
@@ -124,7 +124,7 @@ public:
         m_center += d;
     }
 
-    SkeletonType getType()		{return sktDisc;}
+    BlobNodeType getType()		{return bntPrimDisc;}
 
     bool saveScript(CSketchConfig *lpSketchScript, int id)
     {

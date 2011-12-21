@@ -68,9 +68,9 @@ public:
         return false;
     }
 
-    Vol::CVolume* getBoundingVolume(float range)
+    VOL::CVolume* getBoundingVolume(float range)
     {
-        Vol::CVolumeSphere * s = new Vol::CVolumeSphere(m_position, range);
+        VOL::CVolumeSphere * s = new VOL::CVolumeSphere(m_position, range);
         return s;
     }
 
@@ -84,7 +84,7 @@ public:
         m_position += d;
     }
 
-    SkeletonType getType()		{return sktPoint;}
+    BlobNodeType getType()		{return bntPrimPoint;}
 
     bool saveScript(CSketchConfig* lpSketchScript, int id)
     {

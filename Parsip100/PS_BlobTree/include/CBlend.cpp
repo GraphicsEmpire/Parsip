@@ -9,5 +9,6 @@ namespace {
         return new CBlend();
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("BLEND", CreateBlend);
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("BLEND", CreateBlend) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntOpBlend, CreateBlend);
 }

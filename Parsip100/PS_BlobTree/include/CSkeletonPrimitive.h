@@ -175,7 +175,13 @@ public:
     //This function will compute a very tight bounding volume for the primitive to be used
     //In polygonization algorithm
 
-    BlobNodeType getNodeType() {return bntPrimSkeleton;}
+    BlobNodeType getNodeType()
+    {
+        if(m_skeleton)
+            return m_skeleton->getType();
+        else
+            return bntPrimSkeleton;
+    }
 
     virtual vec3f getPolySeedPoint()
     {

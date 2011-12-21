@@ -119,15 +119,15 @@ public:
         return true;
     }
 
-    Vol::CVolume* getBoundingVolume(float range)
+    VOL::CVolume* getBoundingVolume(float range)
     {
         m_direction.normalize();
-        Vol::CVolumeSphere* s = new Vol::CVolumeSphere(m_center, m_radius + range);
+        VOL::CVolumeSphere* s = new VOL::CVolumeSphere(m_center, m_radius + range);
         vec3f bv(cos(m_direction.x) * m_radius + range,
                  cos(m_direction.y) * m_radius + range,
                  cos(m_direction.z) * m_radius + range);
 
-        Vol::CVolumeBox* b = new Vol::CVolumeBox(m_center - bv, m_center +  bv);
+        VOL::CVolumeBox* b = new VOL::CVolumeBox(m_center - bv, m_center +  bv);
         if (s->size() > b->size())
         {
             delete b; b = NULL;
@@ -152,7 +152,7 @@ public:
         m_center += d;
     }
 
-    SkeletonType getType()		{return sktRing;}
+    BlobNodeType getType()		{return bntPrimRing;}
 
     bool saveScript(CSketchConfig *lpSketchScript, int id)
     {

@@ -467,7 +467,6 @@ int CLayer::recursive_WriteBlobNode(CSketchConfig* cfg, CBlobNode* node, int idO
 int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id, int idOffset)
 {
     if(cfg == NULL) return 0;
-    if(parent == NULL) return 0;
 
     DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
     if(cfg->hasSection(strNodeName) < 0)
@@ -522,10 +521,10 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
     else
     {        
         DAnsiStr strSkelet = cfg->readString(strNodeName, "SkeletonType");
-        CSkeletonPrimitive* sprim = NULL;
+        CSkeletonPrimitive* primNode = NULL;
 
         try{
-            sprim = reinterpret_cast<CSkeletonPrimitive*>(TheBlobNodeFactoryName::Instance().CreateObject(strSkelet.cptr()));
+            primNode = reinterpret_cast<CSkeletonPrimitive*>(TheBlobNodeFactoryName::Instance().CreateObject(strSkelet.cptr()));
         }
         catch(exception e)
         {
@@ -537,12 +536,13 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
         }
 
         //Set Params
-        sprim->getSkeleton()->loadScript(cfg, id);
-        sprim->setID(id - idOffset);
+        primNode->loadScript(cfg, id);
+        primNode->getSkeleton()->loadScript(cfg, id);
+        primNode->setID(id - idOffset);
         if(parent == NULL)
-            m_lpBlobTree = sprim;
+            m_lpBlobTree = primNode;
         else
-            parent->addChild(sprim);
+            parent->addChild(primNode);
         return 1;
     }
 

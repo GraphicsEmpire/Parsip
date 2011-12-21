@@ -116,7 +116,7 @@ public:
         return true;
     }
 
-    Vol::CVolume* getBoundingVolume(float range)
+    VOL::CVolume* getBoundingVolume(float range)
     {
         if(m_lstPoints.size() == 0) return NULL;
 
@@ -133,7 +133,7 @@ public:
             if(p.y < minPoint.y) minPoint.y = p.y;
             if(p.z < minPoint.z) minPoint.z = p.z;
         }
-        Vol::CVolumeBox * s = new Vol::CVolumeBox(minPoint, maxPoint);
+        VOL::CVolumeBox * s = new VOL::CVolumeBox(minPoint, maxPoint);
         s->scaleSelf(vec3f(range, range, range));
         return s;
     }
@@ -152,7 +152,7 @@ public:
             m_lstPoints[i] += d;
     }
 
-    SkeletonType getType()		{return sktPolygon;}
+    BlobNodeType getType()		{return bntPrimPolygon;}
 
     bool saveScript(CSketchConfig *lpSketchScript, int id)
     {

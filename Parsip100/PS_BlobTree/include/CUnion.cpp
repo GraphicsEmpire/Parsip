@@ -9,6 +9,8 @@ namespace {
         return new CUnion();
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("UNION", CreateUnion());
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("UNION", CreateUnion) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntOpUnion, CreateUnion);
+
 }
 

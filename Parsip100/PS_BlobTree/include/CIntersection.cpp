@@ -9,6 +9,7 @@ namespace {
         return new CIntersection();
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("INTERSECTION", CreateIntersection);
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("INTERSECTION", CreateIntersection) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntOpIntersect, CreateIntersection);
 }
 

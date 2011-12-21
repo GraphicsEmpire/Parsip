@@ -1,6 +1,7 @@
 #include "CompactBlobTree.h"
 #include "PS_BlobTree/include/BlobTreeLibraryAll.h"
 #include "PS_FrameWork/include/PS_ErrorManager.h"
+#include "PS_BlobTree/include/CSkeletonTriangle.h"
 #include "_GlobalFunctions.h"
 
 
@@ -61,7 +62,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
         curID = ctOps;
         ctOps++;
 
-        ops[curID].type = root->getNodeType();        
+        ops[curID].type = root->getNodeType();
         ops[curID].orgID = root->getID();
         ops[curID].params.zero();
 
@@ -90,9 +91,9 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             param.y = lpPCM->getPropagateRight();
             param.z = lpPCM->getAlphaLeft();
             param.w = lpPCM->getAlphaRight();
-            ops[curID].params = param;            
-        }            
-        break;
+            ops[curID].params = param;
+        }
+            break;
         case(bntOpRicciBlend):
         {
             CRicciBlend* ricci = dynamic_cast<CRicciBlend*>(root);
@@ -102,7 +103,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             if(n != 0.0f)
                 ops[curID].params.y = 1.0f / n;
         }
-        break;
+            break;
         case(bntOpWarpTwist):
         {
             CWarpTwist* twist = dynamic_cast<CWarpTwist*>(root);
@@ -111,7 +112,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             ops[curID].params.x = twist->getWarpFactor();
             ops[curID].params.y = static_cast<float>(twist->getMajorAxis());
         }
-        break;
+            break;
         case(bntOpWarpTaper):
         {
             CWarpTaper* taper = dynamic_cast<CWarpTaper*>(root);
@@ -120,9 +121,9 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             //cfg->writeInt(strNodeName, "taper axis", static_cast<int>(taper->getAxisTaper()));
             ops[curID].params.x = taper->getWarpFactor();
             ops[curID].params.y = static_cast<float>(taper->getAxisAlong());
-            ops[curID].params.z = static_cast<float>(taper->getAxisTaper());        
+            ops[curID].params.z = static_cast<float>(taper->getAxisTaper());
         }
-        break;
+            break;
         case(bntOpWarpBend):
         {
             CWarpBend* bend = dynamic_cast<CWarpBend*>(root);
@@ -133,9 +134,9 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             ops[curID].params.x = bend->getBendRate();
             ops[curID].params.y = bend->getBendCenter();
             ops[curID].params.z = bend->getBendRegion().left;
-            ops[curID].params.w = bend->getBendRegion().right;        
+            ops[curID].params.w = bend->getBendRegion().right;
         }
-        break;
+            break;
         case(bntOpWarpShear):
         {
             CWarpShear* shear = dynamic_cast<CWarpShear*>(root);
@@ -144,9 +145,9 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             //cfg->writeInt(strNodeName, "shear axis", static_cast<int>(shear->getAxisDependent()));
             ops[curID].params.x = shear->getWarpFactor();
             ops[curID].params.y = static_cast<float>(shear->getAxisAlong());
-            ops[curID].params.z = static_cast<float>(shear->getAxisDependent());            
+            ops[curID].params.z = static_cast<float>(shear->getAxisDependent());
         }
-        break;
+            break;
         default:
         {
 
@@ -177,7 +178,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
 
         float row[4];
 
-        prims[curID].skelet = sprim->getSkeleton()->getType();
+        prims[curID].type = sprim->getSkeleton()->getType();
         prims[curID].orgID = sprim->getID();
         prims[curID].color.set(c.x, c.y, c.z, c.w);
 
@@ -369,7 +370,7 @@ float COMPACTBLOBTREE::fieldvalue(const vec4f& p, float* lpStoreFVOp, float* lpS
         return 0.0f;
 }
 
- //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 float COMPACTBLOBTREE::computePCM(const vec4f& p,
                                   const vec4f& pcmParam,
                                   const vec4f& oct1Lo,
@@ -415,7 +416,7 @@ float COMPACTBLOBTREE::computePCM(const vec4f& p,
 
             float k;
             {
-                vec4f p00 = vec4f(p0, 0.0f);                
+                vec4f p00 = vec4f(p0, 0.0f);
                 vec3f gradP0 = gradientAtNode(isChild2Op, idChild2, p00, fp2, NORMAL_DELTA).xyz();
                 k = gradP0.length();
             }
@@ -436,7 +437,7 @@ float COMPACTBLOBTREE::computePCM(const vec4f& p,
 
             float k;
             {
-                vec4f p00 = vec4f(p0, 0.0f);                
+                vec4f p00 = vec4f(p0, 0.0f);
                 vec3f gradP0 = gradientAtNode(isChild1Op, idChild1, p00, fp1, NORMAL_DELTA).xyz();
                 k = gradP0.length();
             }
@@ -506,7 +507,7 @@ vec4f COMPACTBLOBTREE::gradientAtNode(bool isOp, int id, const vec4f& p, float f
     float arrN[4];
 
     if(isOp)
-    {        
+    {
         arrN[0] = fieldvalueOp(p + vec4f(delta, 0.0f, 0.0f, 0.0f), id);
         arrN[1] = fieldvalueOp(p + vec4f(0.0f, delta, 0.0f, 0.0f), id);
         arrN[2] = fieldvalueOp(p + vec4f(0.0f, 0.0f, delta, 0.0f), id);
@@ -668,20 +669,20 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
         else
             return 0.0f;
     }
-    break;
+        break;
     case(bntOpBlend):
     {
         for(int i=0; i<ctKids; i++)
             res += fv[i];
     }
-    break;
+        break;
     case(bntOpRicciBlend):
     {
         for(int i=0; i<ctKids; i++)
             res += powf(fv[i], ops[id].params.x);
         res = powf(res, ops[id].params.y);
     }
-    break;
+        break;
     case(bntOpUnion):
     {
         res = fv[0];
@@ -691,7 +692,7 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
                 res = fv[i];
         }
     }
-    break;
+        break;
     case(bntOpIntersect):
     {
         res = fv[0];
@@ -701,7 +702,7 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
                 res = fv[i];
         }
     }
-    break;
+        break;
     case(bntOpDif):
     {
         res = fv[0];
@@ -710,7 +711,7 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
             res = MATHMIN(res, MAX_FIELD_VALUE - fv[i]);
         }
     }
-    break;
+        break;
     case(bntOpSmoothDif):
     {
         res = fv[0];
@@ -719,27 +720,27 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
             res *= (MAX_FIELD_VALUE - fv[i]);
         }
     }
-    break;
+        break;
     case(bntOpWarpBend):
     {
         res = fv[0];
     }
-    break;
+        break;
     case(bntOpWarpTwist):
     {
         res = fv[0];
     }
-    break;
+        break;
     case(bntOpWarpTaper):
     {
         res = fv[0];
     }
-    break;
+        break;
     case(bntOpWarpShear):
     {
         res = fv[0];
     }
-    break;
+        break;
     default:
     {
         DAnsiStr strMsg = printToAStr("That operator is not been implemented yet! Op = %d", ops[id].type);
@@ -794,14 +795,14 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
 
     //switch(prims)
     float dd;
-    switch(prims[id].skelet)
+    switch(prims[id].type)
     {
-    case sktPoint:
+    case bntPrimPoint:
     {
         dd = pn.dist2(prims[id].pos.xyz());
     }
         break;
-    case sktCylinder:
+    case bntPrimCylinder:
     {
         vec3f pos = pn - prims[id].pos.xyz();
 
@@ -817,7 +818,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         dd = x*x + y*y;
     }
         break;
-    case sktTriangle:
+    case bntPrimTriangle:
     {
         vec3f vertices[3];
         vertices[0] = prims[id].pos.xyz();
@@ -828,7 +829,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
     }
         break;
 
-    case sktCube:
+    case bntPrimCube:
     {
         vec3f center = prims[id].pos.xyz();
         float side   = prims[id].res1.x;
@@ -881,7 +882,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         dd = dist2;
     }
         break;
-    case sktDisc:
+    case bntPrimDisc:
     {
         vec3f n = prims[id].dir.xyz();
         vec3f c = prims[id].pos.xyz();
@@ -902,7 +903,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
     }
         break;
 
-    case sktRing:
+    case bntPrimRing:
     {
         vec3f n = prims[id].dir.xyz();
         vec3f c = prims[id].pos.xyz();
@@ -923,7 +924,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         }
     }
         break;
-    case sktLine:
+    case bntPrimLine:
     {
         vec3f s = prims[id].res1.xyz();
         vec3f e = prims[id].res2.xyz();
@@ -1055,7 +1056,7 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
         else
             resCL = resCL * vec4f(1.0 / resFV);
     }
-    break;
+        break;
     case(bntOpPCM):
     {
         kidID = 0;
@@ -1065,7 +1066,7 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
             kidID = 1;
         resCL = arrCL[kidID];
     }
-    break;
+        break;
     case(bntOpUnion):
     {
         kidID = 0;
@@ -1080,7 +1081,7 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
         }
         resCL = arrCL[kidID];
     }
-    break;
+        break;
     case(bntOpIntersect):
     {
         kidID = 0;
@@ -1172,9 +1173,9 @@ void COMPACTBLOBTREE::copyFrom( const COMPACTBLOBTREE& rhs )
     //Copy Ops
     for(int i=0;i<rhs.ctOps;i++)
     {
+        this->ops[i].type  = rhs.ops[i].type;
         this->ops[i].params = rhs.ops[i].params;
         this->ops[i].orgID = rhs.ops[i].orgID;
-        this->ops[i].type  = rhs.ops[i].type;
         this->ops[i].octLo = rhs.ops[i].octLo;
         this->ops[i].octHi = rhs.ops[i].octHi;
 
@@ -1186,7 +1187,7 @@ void COMPACTBLOBTREE::copyFrom( const COMPACTBLOBTREE& rhs )
     //Copy Prims
     for(int i=0;i<rhs.ctPrims;i++)
     {
-        this->prims[i].skelet = rhs.prims[i].skelet;
+        this->prims[i].type = rhs.prims[i].type;
         this->prims[i].orgID  = rhs.prims[i].orgID;
         this->prims[i].color  = rhs.prims[i].color;
         this->prims[i].pos    = rhs.prims[i].pos;

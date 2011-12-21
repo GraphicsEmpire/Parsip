@@ -18,11 +18,10 @@
 #include "PS_FrameWork/include/PS_FileDirectory.h"
 #include "PS_FrameWork/include/PS_AppConfig.h"
 #include "PS_FrameWork/include/PS_ErrorManager.h"
+#include "PS_FrameWork/include/PS_Property.h"
 //#include "PS_SubDivision/include/CSubDivCCDX11.h"
 #include "CEaseInEaseOut.h"
 #include "PS_PerfTest.h"
-
-#include "CBlobTreeShapes.h"
 #include "PS_BlobTree/include/BlobTreeBuilder.h"
 #include "_GlobalSettings.h"
 #include "CCubeTable.h"
@@ -32,6 +31,7 @@
 #include "CBlobTreeNetwork.h"
 #include "CBlobTreeAnimation.h"
 #include "PS_OclPolygonizer.h"
+
 
 using namespace PS::FILESTRINGUTILS;
 using namespace PS::BLOBTREEANIMATION;
@@ -1520,7 +1520,7 @@ void GLWidget::setPrimitiveColorFromColorDlg()
     if(active == NULL) return;
     if(active->getBlob() == NULL) return;
     if(active->selCountItems() == 0) return;
-    if(active->selGetItem(0)->getNodeType() != bntPrimSkeleton) return;
+    if(active->selGetItem(0)->isOperator()) return;
 
     CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(active->selGetItem(0));
     if(sprim)
@@ -1563,34 +1563,17 @@ QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobNode* lpNode)
     m_modelBlobNodeProperty->setHeaderData(0, Qt::Horizontal, tr("Property"));
     m_modelBlobNodeProperty->setHeaderData(1, Qt::Horizontal, tr("Value"));
 
-    if(lpNode->isOperator())
+    PS::PropertyList propList;
+    lpNode->getProperties(propList);
+    for(int i=0; i<propList.size(); i++)
     {
-        switch (lpNode->getNodeType())
-        {
-        case(bntOpPCM):
-        {
-            CPcm* pcm = reinterpret_cast<CPcm*>(lpNode);
-            lstRow.push_back(new QStandardItem(QString("Propagate Left")));
-            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getPropagateLeft())));
-            m_modelBlobNodeProperty->appendRow(lstRow);
-            lstRow.clear();
+        lstRow.clear();
+        lstRow.push_back(new QStandardItem(QString(propList[i].name.ptr())));
+        lstRow.push_back(new QStandardItem(QString(propList[i].asString().ptr())));
+        m_modelBlobNodeProperty->appendRow(lstRow);
+    }
 
-            lstRow.push_back(new QStandardItem(QString("Propagate Right")));
-            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getPropagateRight())));
-            m_modelBlobNodeProperty->appendRow(lstRow);
-            lstRow.clear();
-
-            lstRow.push_back(new QStandardItem(QString("Attenuate Left")));
-            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getAlphaLeft())));
-            m_modelBlobNodeProperty->appendRow(lstRow);
-            lstRow.clear();
-
-            lstRow.push_back(new QStandardItem(QString("Attenuate Right")));
-            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getAlphaRight())));
-            m_modelBlobNodeProperty->appendRow(lstRow);
-            lstRow.clear();
-            break;
-        }
+    /*
         case(bntOpRicciBlend):
         {
             CRicciBlend* ricci = reinterpret_cast<CRicciBlend*>(lpNode);
@@ -1754,7 +1737,7 @@ QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobNode* lpNode)
                   static_cast<int>(dif.w * 255.0f));
         emit sig_setPrimitiveColor(cl);
     }
-
+*/
     m_lpSelectedBlobNode = lpNode;
     connect(m_modelBlobNodeProperty, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(dataChanged_tblBlobProperty(QModelIndex, QModelIndex)));
     return m_modelBlobNodeProperty;
@@ -1775,6 +1758,7 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
     if(col != 1) return;
 
     //Set Affine things
+    /*
     QString strValue = m_modelBlobNodeProperty->itemFromIndex(topLeft)->text();
     if(m_lpSelectedBlobNode->isOperator())
     {
@@ -1940,6 +1924,7 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             }
         }
     }
+    */
 
     //Bump Version
     m_layerManager.getActiveLayer()->bumpRevision();
@@ -2601,15 +2586,22 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
     //Capture Undo Level
     addUndoLevel();
 
-    CBlobNode* primitive = TheBlobNodeFactoryIndex::Instance().CreateObject(primitiveType);
-    CBlobNode* root = aLayer->getBlob();
-    if(root == NULL)
+    CBlobNode* primitive = NULL;
+    try{
+        primitive = TheBlobNodeFactoryIndex::Instance().CreateObject(primitiveType);
+        CBlobNode* root = aLayer->getBlob();
+        if(root == NULL)
+        {
+            //Create a global union node first
+            CBlobNode* globalUnion = TheBlobNodeFactoryIndex::Instance().CreateObject(bntOpUnion);
+            globalUnion->setID(aLayer->fetchIncrementLastNodeID());
+            aLayer->setBlob(globalUnion);
+            root = aLayer->getBlob();
+        }
+    }
+    catch(exception e)
     {
-        //Create a global union node first
-        CUnion* globalUnion = new CUnion();
-        globalUnion->setID(aLayer->fetchIncrementLastNodeID());
-        aLayer->setBlob(globalUnion);
-        root = aLayer->getBlob();
+        ReportError(e.what());
     }
 
     //Create SkeletonPrimitive
@@ -2618,7 +2610,7 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
         primitive->setID(preferredID);
     else
         primitive->setID(aLayer->fetchIncrementLastNodeID());
-    root->addChild(primitive);
+    aLayer->getBlob()->addChild(primitive);
     primitive->getTransform().addTranslate(pos);
 
     if(bSendToNet)
@@ -3538,7 +3530,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
         {
         case(cmdAdd):
         {
-            CBlobNode* prim = addBlobPrimitive(rxMsg.primType, vec3f(0.0f, 0.0f, 0.0f), rxMsg.blobnodeID,false);
+            CBlobNode* prim = addBlobPrimitive(rxMsg.nodeType, vec3f(0.0f, 0.0f, 0.0f), rxMsg.blobnodeID,false);
             if(prim != NULL)
             {
                 prim->setMaterial(ColorToMaterial(rxMsg.param));
@@ -3556,7 +3548,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             {
                 active->selAddItem(child1);
                 active->selAddItem(child2);
-                addBlobOperator(rxMsg.opType, rxMsg.blobnodeID, false);
+                addBlobOperator(rxMsg.nodeType, rxMsg.blobnodeID, false);
             }
         }
             break;
@@ -3661,9 +3653,9 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
                     active->selRemoveItem(-1);
 
                     //Apply Replacement if needed
-                    if(child1->getNodeType() != rxMsg.opType)
+                    if(child1->getNodeType() != rxMsg.nodeType)
                     {
-                        CBlobNode* replacement = CreateBlobOperator(rxMsg.opType);
+                        CBlobNode* replacement = TheBlobNodeFactoryIndex::Instance().CreateObject(rxMsg.nodeType);
 
                         //Run Transform Command
                         PS::BLOBTREE::CmdBlobTreeParams param;
@@ -3732,14 +3724,13 @@ bool GLWidget::actNetSendCommand( SKETCHCMD command, CBlobNode* node, vec4f para
     {
         txMsg.blobnodeID = node->getID();
         if(command == cmdAdd)
-        {
-            txMsg.opType = bntPrimSkeleton;
-            txMsg.primType = reinterpret_cast<CSkeletonPrimitive*>(node)->getSkeleton()->getType();
+        {            
+            txMsg.nodeType = node->getNodeType();
             txMsg.param = node->getMaterial().diffused;
         }
         else if(command == cmdOperator)
         {
-            txMsg.opType = node->getNodeType();
+            txMsg.nodeType = node->getNodeType();
             txMsg.leftChild  = -1;
             txMsg.rightChild = -1;
             if(node->countChildren() == 1)

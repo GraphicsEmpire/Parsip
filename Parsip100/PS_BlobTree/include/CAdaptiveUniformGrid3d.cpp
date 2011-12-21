@@ -647,7 +647,7 @@ void CAdaptiveUniformGrid3D::Invalidate( bool bDiscardMemory )
 }
 
 
-void CAdaptiveUniformGrid3D::Invalidate(Vol::CVolumeBox & Bounds)
+void CAdaptiveUniformGrid3D::Invalidate(CVolumeBox & Bounds)
 {
 //	PARS_PROFILER_start(2);
 
@@ -659,7 +659,7 @@ void CAdaptiveUniformGrid3D::Invalidate(Vol::CVolumeBox & Bounds)
 		float fYMin = _BLOCK_ID_Y(nBlockID) * m_fBlockSize - m_vGridOrigin[1];
 		float fZMin = _BLOCK_ID_Z(nBlockID) * m_fBlockSize - m_vGridOrigin[2];
 
-		Vol::CVolumeBox box(fXMin, fYMin, fZMin, fXMin + m_fBlockSize, fYMin + m_fBlockSize, fZMin + m_fBlockSize);
+                CVolumeBox box(fXMin, fYMin, fZMin, fXMin + m_fBlockSize, fYMin + m_fBlockSize, fZMin + m_fBlockSize);
 		if (Bounds.intersect(&box)) {
 			(*cur).second->Invalidate( BLOCK_CELL_SIZE, *GetInvalidBlock() );
 			++cur;

@@ -9,5 +9,6 @@ namespace {
         return new CDifference();
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("DIFFERENCE", CreateDifference());
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("DIFFERENCE", CreateDifference) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntOpDif, CreateDifference);
 }

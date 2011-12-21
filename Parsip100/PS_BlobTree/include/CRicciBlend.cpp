@@ -9,6 +9,7 @@ namespace {
         return new CRicciBlend();
     }
 
-    const bool registered = TheBlobNodeFactoryName::Instance().Register("RICCI BLEND", CreateRicci);
+    const bool registered = TheBlobNodeFactoryName::Instance().Register("RICCI BLEND", CreateRicci) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntOpRicciBlend, CreateRicci);
 }
 

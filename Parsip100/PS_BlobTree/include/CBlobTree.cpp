@@ -38,7 +38,7 @@ bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig, int idOffse
     }
     else
     {
-        CSkeletonPrimitive* sprim = dynamic_cast<CSkeletonPrimitive*>(node);
+        CSkeletonPrimitive* sprim = dynamic_cast<CSkeletonPrimitive*>(this);
 
         //Write skeleton Name
         lpSketchConfig->writeString(strNodeName, "SkeletonType", DAnsiStr(sprim->getSkeleton()->getName().c_str()));
@@ -67,7 +67,7 @@ bool CBlobNode::loadGenericInfoScript(CSketchConfig *lpSketchConfig, int id)
     vec3f affTranslate = lpSketchConfig->readVec3f(strNodeName, "AffineTranslate");
     this->getTransform().set(affScale, quatRotation, affTranslate);
 
-    if(!bOperator)
+    if(!this->isOperator())
     {
         CMaterial mtrl;
         mtrl.ambient   = lpSketchConfig->readVec4f(strNodeName, "MtrlAmbient");

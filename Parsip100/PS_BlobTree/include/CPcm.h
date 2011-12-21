@@ -78,7 +78,71 @@ public:
     bool isOperator() { return true;}
 
     BlobNodeType getNodeType() { return bntOpPCM;}
-};
+
+    bool saveScript(CSketchConfig *lpSketchScript, int idOffset)
+    {
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID() + idOffset);
+        lpSketchScript->writeFloat(strNodeName, "Propagate Left", this->getPropagateLeft());
+        lpSketchScript->writeFloat(strNodeName, "Propagate Right", this->getPropagateRight());
+
+        lpSketchScript->writeFloat(strNodeName, "Attenuate Left", this->getAlphaLeft());
+        lpSketchScript->writeFloat(strNodeName, "Attenuate Right", this->getAlphaRight());
+        return true;
+    }
+
+    bool loadScript(CSketchConfig *lpSketchScript, int id)
+    {
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        m_wPropagateLeft = lpSketchScript->readFloat(strNodeName, "Propagate Left");
+        m_wPropagateRight = lpSketchScript->readFloat(strNodeName, "Propagate Right");
+        m_alphaLeft = lpSketchScript->readFloat(strNodeName, "Attenuate Left");
+        m_alphaRight = lpSketchScript->readFloat(strNodeName, "Attenuate Right");
+        return true;
+    }
+
+    int getProperties(PropertyList &outProperties)
+    {
+        outProperties.resize(0);
+        outProperties.add(m_wPropagateLeft, "Propagate Left");
+        outProperties.add(m_wPropagateRight, "Propagate Right");
+        outProperties.add(m_alphaLeft, "Attenuate Right");
+        outProperties.add(m_alphaRight, "Attenuate Right");
+        return 4;
+    }
+
+    int setProperties(const PropertyList &inProperties)
+    {        
+        //m_wPropagateLeft = inProperties.findProperty("Propagate Left", ttFLT).value.valFloat;
+        return 4;
+
+        /*
+            CPcm* pcm = reinterpret_cast<CPcm*>(lpNode);
+            lstRow.push_back(new QStandardItem(QString("Propagate Left")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getPropagateLeft())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            lstRow.clear();
+
+            lstRow.push_back(new QStandardItem(QString("Propagate Right")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getPropagateRight())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            lstRow.clear();
+
+            lstRow.push_back(new QStandardItem(QString("Attenuate Left")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getAlphaLeft())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            lstRow.clear();
+
+            lstRow.push_back(new QStandardItem(QString("Attenuate Right")));
+            lstRow.push_back(new QStandardItem(printToQStr("%.2f", pcm->getAlphaRight())));
+            m_modelBlobNodeProperty->appendRow(lstRow);
+            */
+    }
+
+
+
+
+
+    };
 
 }
 }

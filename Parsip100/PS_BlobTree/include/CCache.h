@@ -24,7 +24,7 @@ public:
 	vec3f normal(vec3f p, float delta);
 
 
-	void invalidate(BLOBTREE::Vol::CVolumeBox& box);
+	void invalidate(BLOBTREE::VOL::CVolumeBox& box);
 	void invalidate();
 
 	float curvature(vec3f p)

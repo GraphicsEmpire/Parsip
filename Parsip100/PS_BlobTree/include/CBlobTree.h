@@ -10,6 +10,7 @@
 #include "PS_FrameWork/include/PS_AffineTransformation.h"
 #include "PS_FrameWork/include/PS_Lock.h"
 #include "PS_FrameWork/include/PS_SketchConfig.h"
+#include "PS_FrameWork/include/PS_Property.h"
 #include "_constSettings.h"
 #include <vector>
 #include <string.h>
@@ -328,8 +329,6 @@ public:
 
     virtual float curvature(vec3f p) {return p.x+p.y+p.z;}
 
-
-
     //Material weighted by fieldvalue at point p
     virtual COctree computeOctree() = 0;
     virtual BlobNodeType getNodeType() = 0;
@@ -339,12 +338,22 @@ public:
     virtual std::string getName() = 0;
     virtual bool saveScript(CSketchConfig* lpSketchScript, int idOffset = 0)
     {
-        saveGenericInfoScript(lpSketchScript, idOffset);
+        return saveGenericInfoScript(lpSketchScript, idOffset);
     }
 
     virtual bool loadScript(CSketchConfig* lpSketchScript, int id)
     {
-        loadGenericInfoScript(lpSketchScript, id);
+        return loadGenericInfoScript(lpSketchScript, id);
+    }
+
+    virtual int getProperties(PropertyList& outProperties)
+    {
+        return 0;
+    }
+
+    virtual int setProperties(const PropertyList& inProperties)
+    {
+        return 0;
     }
 
 
