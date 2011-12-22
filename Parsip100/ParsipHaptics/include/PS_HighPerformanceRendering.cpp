@@ -197,7 +197,6 @@ int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator
         g_blobPrims.vPrimBoxHiY[curID] = hi.y;
         g_blobPrims.vPrimBoxHiZ[curID] = hi.z;
 
-        float row[4];
         CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
         if(mtxBackward.isIdentity())
         {
