@@ -38,16 +38,19 @@ bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig, int idOffse
     }
     else
     {
-        CSkeletonPrimitive* sprim = dynamic_cast<CSkeletonPrimitive*>(this);
-
-        //Write skeleton Name
-        lpSketchConfig->writeString(strNodeName, "SkeletonType", DAnsiStr(sprim->getSkeleton()->getName().c_str()));
-
-        CMaterial m = sprim->getMaterial();
+        CMaterial m = this->getMaterial();
         lpSketchConfig->writeVec4f(strNodeName, "MtrlAmbient", m.ambient);
         lpSketchConfig->writeVec4f(strNodeName, "MtrlDiffused", m.diffused);
         lpSketchConfig->writeVec4f(strNodeName, "MtrlSpecular", m.specular);
         lpSketchConfig->writeFloat(strNodeName, "MtrlShininess", m.shininess);
+
+        std::string strName;
+        if(this->getNodeType() == bntPrimSkeleton)
+            strName = reinterpret_cast<CSkeletonPrimitive*>(this)->getSkeleton()->getName();
+        else
+            strName = this->getName();
+        //Write skeleton Name
+        lpSketchConfig->writeString(strNodeName, "SkeletonType", DAnsiStr(strName.c_str()));
     }
 
     return true;

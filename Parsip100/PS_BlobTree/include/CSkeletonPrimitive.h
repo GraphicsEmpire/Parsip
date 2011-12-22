@@ -183,12 +183,13 @@ public:
             return bntPrimSkeleton;
     }
 
-    virtual vec3f getPolySeedPoint()
+private:
+    vec3f getPolySeedPoint()
     {
         vec3f c = m_skeleton->getPolySeedPoint();
         c = m_transform.applyForwardTransform(c);
         return c;
-    }
+    }    
 };
 
 }

@@ -172,34 +172,15 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
         curID = ctPrims;
         ctPrims++;
 
-        CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
-        vec4f c = sprim->getMaterial().diffused;
-        COctree oct = sprim->getOctree();
+        //
+        prims[curID].orgID = root->getID();
+        prims[curID].color = root->getMaterial().diffused;
+
+        prims[curID].octLo = vec4f(root->getOctree().lower, 0.0f);
+        prims[curID].octHi = vec4f(root->getOctree().upper, 0.0f);
 
         float row[4];
-
-        prims[curID].type = sprim->getSkeleton()->getType();
-        prims[curID].orgID = sprim->getID();
-        prims[curID].color.set(c.x, c.y, c.z, c.w);
-
-        oct.lower.get(row);
-        prims[curID].octLo.set(row[0], row[1], row[2]);
-
-        oct.upper.get(row);
-        prims[curID].octHi.set(row[0], row[1], row[2]);
-
-        //Load Matrix
-        //Here we post multiply current primitive transformation matrix to
-        //that of branch
-        //CMatrix mtxBackward = mtxBranch;
-        //mtxBackward.multiply(sprim->getTransform().getBackwardMatrix());
-        CMatrix mtxForward  = sprim->getTransform().getForwardMatrix();
-
-        vec3f s = sprim->getTransform().getScale();
-        vec4f r = sprim->getTransform().getRotationVec4();
-        vec3f t = sprim->getTransform().getTranslate();
-
-        CMatrix mtxBackward = sprim->getTransform().getBackwardMatrix();
+        CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
         mtxBackward.getRow(row, 0);
         prims[curID].mtxBackwardR0.set(row[0], row[1], row[2], row[3]);
         mtxBackward.getRow(row, 1);
@@ -209,107 +190,116 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
         mtxBackward.getRow(row, 3);
         prims[curID].mtxBackwardR3.set(row[0], row[1], row[2], row[3]);
 
-        switch(sprim->getSkeleton()->getType())
+        if(root->getNodeType() == bntPrimSkeleton)
         {
-        case(bntPrimPoint):
-        {
-            CSkeletonPoint* skeletPoint = reinterpret_cast<CSkeletonPoint*>(sprim->getSkeleton());
-            //cfg->writeVec3f(strNodeName, "position", skeletPoint->getPosition());
-            vec3f pos = skeletPoint->getPosition();
-            prims[curID].pos.set(pos.x, pos.y, pos.z, 0.0f);
-        }
-            break;
-        case(bntPrimLine):
-        {
-            CSkeletonLine* skeletLine = reinterpret_cast<CSkeletonLine*>(sprim->getSkeleton());
-            //cfg->writeVec3f(strNodeName, "start", skeletLine->getStartPosition());
-            //cfg->writeVec3f(strNodeName, "end", skeletLine->getEndPosition());
-            vec3f s = skeletLine->getStartPosition();
-            vec3f e = skeletLine->getEndPosition();
-            prims[curID].res1.set(s.x, s.y, s.z);
-            prims[curID].res2.set(e.x, e.y, e.z);
-        }
-            break;
-        case(bntPrimRing):
-        {
-            CSkeletonRing* skeletRing = reinterpret_cast<CSkeletonRing*>(sprim->getSkeleton());
-            //cfg->writeVec3f(strNodeName, "position", skeletRing->getPosition());
-            //cfg->writeVec3f(strNodeName, "direction", skeletRing->getDirection());
-            //cfg->writeFloat(strNodeName, "radius", skeletRing->getRadius());
-            vec3f p = skeletRing->getPosition();
-            vec3f d = skeletRing->getDirection();
-            float r = skeletRing->getRadius();
-            prims[curID].pos.set(p.x, p.y, p.z);
-            prims[curID].dir.set(d.x, d.y, d.z);
-            prims[curID].res1.set(r);
-            prims[curID].res2.set(r*r);
-        }
-            break;
-        case(bntPrimDisc):
-        {
-            CSkeletonDisc* skeletDisc = reinterpret_cast<CSkeletonDisc*>(sprim->getSkeleton());
-            //cfg->writeVec3f(strNodeName, "position", skeletDisc->getPosition());
-            //cfg->writeVec3f(strNodeName, "direction", skeletDisc->getDirection());
-            //cfg->writeFloat(strNodeName, "radius", skeletDisc->getRadius());
-            vec3f p = skeletDisc->getPosition();
-            vec3f d = skeletDisc->getDirection();
-            float r = skeletDisc->getRadius();
-            prims[curID].pos.set(p.x, p.y, p.z);
-            prims[curID].dir.set(d.x, d.y, d.z);
-            prims[curID].res1.set(r);
-            prims[curID].res2.set(r*r);
-        }
-            break;
-        case(bntPrimCylinder):
-        {
-            CSkeletonCylinder* skeletCyl = reinterpret_cast<CSkeletonCylinder*>(sprim->getSkeleton());
-            //cfg->writeVec3f(strNodeName, "position", skeletCyl->getPosition());
-            //cfg->writeVec3f(strNodeName, "direction", skeletCyl->getDirection());
-            //cfg->writeFloat(strNodeName, "radius", skeletCyl->getRadius());
-            //cfg->writeFloat(strNodeName, "height", skeletCyl->getHeight());
-            vec3f p = skeletCyl->getPosition();
-            vec3f d = skeletCyl->getDirection();
-            prims[curID].pos.set(p.x, p.y, p.z);
-            prims[curID].dir.set(d.x, d.y, d.z);
-            prims[curID].res1.set(skeletCyl->getRadius());
-            prims[curID].res2.set(skeletCyl->getHeight());
-        }
-            break;
+            CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            prims[curID].type = sprim->getSkeleton()->getType();
 
-        case(bntPrimCube):
-        {
-            CSkeletonCube* skeletCube = reinterpret_cast<CSkeletonCube*>(sprim->getSkeleton());
-            //cfg->writeVec3f(strNodeName, "position", skeletCube->getPosition());
-            //cfg->writeFloat(strNodeName, "side", skeletCube->getSide());
-            vec3f p = skeletCube->getPosition();
-            float side = skeletCube->getSide();
-            prims[curID].pos.set(p.x, p.y, p.z);
-            prims[curID].res1.set(side);
-        }
-            break;
-        case(bntPrimTriangle):
-        {
-            CSkeletonTriangle* skeletTriangle = reinterpret_cast<CSkeletonTriangle*>(sprim->getSkeleton());
-            //cfg->writeVec3f(strNodeName, "corner0", skeletTriangle->getTriangleCorner(0));
-            //cfg->writeVec3f(strNodeName, "corner1", skeletTriangle->getTriangleCorner(1));
-            //cfg->writeVec3f(strNodeName, "corner2", skeletTriangle->getTriangleCorner(2));
-            vec3f p0 = skeletTriangle->getTriangleCorner(0);
-            vec3f p1 = skeletTriangle->getTriangleCorner(1);
-            vec3f p2 = skeletTriangle->getTriangleCorner(2);
+            switch(sprim->getSkeleton()->getType())
+            {
+            case(bntPrimPoint):
+            {
+                CSkeletonPoint* skeletPoint = reinterpret_cast<CSkeletonPoint*>(sprim->getSkeleton());
+                //cfg->writeVec3f(strNodeName, "position", skeletPoint->getPosition());
+                vec3f pos = skeletPoint->getPosition();
+                prims[curID].pos.set(pos.x, pos.y, pos.z, 0.0f);
+            }
+                break;
+            case(bntPrimLine):
+            {
+                CSkeletonLine* skeletLine = reinterpret_cast<CSkeletonLine*>(sprim->getSkeleton());
+                //cfg->writeVec3f(strNodeName, "start", skeletLine->getStartPosition());
+                //cfg->writeVec3f(strNodeName, "end", skeletLine->getEndPosition());
+                vec3f s = skeletLine->getStartPosition();
+                vec3f e = skeletLine->getEndPosition();
+                prims[curID].res1.set(s.x, s.y, s.z);
+                prims[curID].res2.set(e.x, e.y, e.z);
+            }
+                break;
+            case(bntPrimRing):
+            {
+                CSkeletonRing* skeletRing = reinterpret_cast<CSkeletonRing*>(sprim->getSkeleton());
+                //cfg->writeVec3f(strNodeName, "position", skeletRing->getPosition());
+                //cfg->writeVec3f(strNodeName, "direction", skeletRing->getDirection());
+                //cfg->writeFloat(strNodeName, "radius", skeletRing->getRadius());
+                vec3f p = skeletRing->getPosition();
+                vec3f d = skeletRing->getDirection();
+                float r = skeletRing->getRadius();
+                prims[curID].pos.set(p.x, p.y, p.z);
+                prims[curID].dir.set(d.x, d.y, d.z);
+                prims[curID].res1.set(r);
+                prims[curID].res2.set(r*r);
+            }
+                break;
+            case(bntPrimDisc):
+            {
+                CSkeletonDisc* skeletDisc = reinterpret_cast<CSkeletonDisc*>(sprim->getSkeleton());
+                //cfg->writeVec3f(strNodeName, "position", skeletDisc->getPosition());
+                //cfg->writeVec3f(strNodeName, "direction", skeletDisc->getDirection());
+                //cfg->writeFloat(strNodeName, "radius", skeletDisc->getRadius());
+                vec3f p = skeletDisc->getPosition();
+                vec3f d = skeletDisc->getDirection();
+                float r = skeletDisc->getRadius();
+                prims[curID].pos.set(p.x, p.y, p.z);
+                prims[curID].dir.set(d.x, d.y, d.z);
+                prims[curID].res1.set(r);
+                prims[curID].res2.set(r*r);
+            }
+                break;
+            case(bntPrimCylinder):
+            {
+                CSkeletonCylinder* skeletCyl = reinterpret_cast<CSkeletonCylinder*>(sprim->getSkeleton());
+                //cfg->writeVec3f(strNodeName, "position", skeletCyl->getPosition());
+                //cfg->writeVec3f(strNodeName, "direction", skeletCyl->getDirection());
+                //cfg->writeFloat(strNodeName, "radius", skeletCyl->getRadius());
+                //cfg->writeFloat(strNodeName, "height", skeletCyl->getHeight());
+                vec3f p = skeletCyl->getPosition();
+                vec3f d = skeletCyl->getDirection();
+                prims[curID].pos.set(p.x, p.y, p.z);
+                prims[curID].dir.set(d.x, d.y, d.z);
+                prims[curID].res1.set(skeletCyl->getRadius());
+                prims[curID].res2.set(skeletCyl->getHeight());
+            }
+                break;
 
-            prims[curID].pos.set(p0.x, p0.y, p0.z);
-            prims[curID].res1.set(p1.x, p1.y, p1.z);
-            prims[curID].res2.set(p2.x, p2.y, p2.z);
+            case(bntPrimCube):
+            {
+                CSkeletonCube* skeletCube = reinterpret_cast<CSkeletonCube*>(sprim->getSkeleton());
+                //cfg->writeVec3f(strNodeName, "position", skeletCube->getPosition());
+                //cfg->writeFloat(strNodeName, "side", skeletCube->getSide());
+                vec3f p = skeletCube->getPosition();
+                float side = skeletCube->getSide();
+                prims[curID].pos.set(p.x, p.y, p.z);
+                prims[curID].res1.set(side);
+            }
+                break;
+            case(bntPrimTriangle):
+            {
+                CSkeletonTriangle* skeletTriangle = reinterpret_cast<CSkeletonTriangle*>(sprim->getSkeleton());
+                //cfg->writeVec3f(strNodeName, "corner0", skeletTriangle->getTriangleCorner(0));
+                //cfg->writeVec3f(strNodeName, "corner1", skeletTriangle->getTriangleCorner(1));
+                //cfg->writeVec3f(strNodeName, "corner2", skeletTriangle->getTriangleCorner(2));
+                vec3f p0 = skeletTriangle->getTriangleCorner(0);
+                vec3f p1 = skeletTriangle->getTriangleCorner(1);
+                vec3f p2 = skeletTriangle->getTriangleCorner(2);
+
+                prims[curID].pos.set(p0.x, p0.y, p0.z);
+                prims[curID].res1.set(p1.x, p1.y, p1.z);
+                prims[curID].res2.set(p2.x, p2.y, p2.z);
+            }
+                break;
+            default:
+            {
+                string strName = reinterpret_cast<CSkeletonPrimitive*>(root)->getSkeleton()->getName();
+                DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", strName.c_str());
+                ReportError(strMsg.ptr());
+                FlushAllErrors();
+            }
+            }
         }
-            break;
-        default:
-        {
-            string strName = reinterpret_cast<CSkeletonPrimitive*>(root)->getSkeleton()->getName();
-            DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", strName.c_str());
-            ReportError(strMsg.ptr());
-            FlushAllErrors();
-        }
-        }
+        else
+            prims[curID].type = root->getNodeType();
+
         return curID;
     }
 }
@@ -931,6 +921,9 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         vec3f nearestPoint = NearestPointInLineSegment(pn, s, e);
         dd = nearestPoint.dist2(pn);
     }
+        break;
+    case bntPrimNull:
+        dd = 2.0f;
         break;
     default:
         ReportError("That skeleton is not been implemented yet!");

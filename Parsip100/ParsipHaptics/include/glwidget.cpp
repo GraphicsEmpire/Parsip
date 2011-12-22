@@ -28,9 +28,10 @@
 #include "ConversionToActions.h"
 
 #include "GalinMedusaGenerator.h"
+#include "SampleShapes.h"
+
 #include "CBlobTreeNetwork.h"
 #include "CBlobTreeAnimation.h"
-#include "PS_OclPolygonizer.h"
 #include "PS_Polygonizer.h"
 
 
@@ -59,13 +60,8 @@ GLfloat vertices [][3] = {{-1.0, -1.0, 1.0}, {-1.0, 1.0, 1.0}, {1.0, 1.0, 1.0},
 
 GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent)
-{
-    runOclPolygonizer();
+{    
     this->setMouseTracking(true);
-
-//    CBlobNode*  b = TheBlobNodeFactoryIndex::Instance().CreateObject(bntOpIntersect);
-  //  CBlobNode* b2 = TheBlobNodeCloneFactory::Instance().CreateObject(b);
-
 
     //Setup TBB Task Scheduling system
     tbb::task_scheduler_init init;
@@ -1333,6 +1329,7 @@ void GLWidget::actCloseProject()
     resetUndoLevels();
     //m_parsip.removeAllMPUs();
     //m_optParsip.removeAllMPUs();
+    m_layerManager.selRemoveItems();
     m_layerManager.removeAllLayers();
     m_lpSelectedBlobNode = NULL;
 
@@ -3372,7 +3369,10 @@ void GLWidget::actTestPerformStd()
 void GLWidget::actOpenMedusa()
 {
     actCloseProject();
+    //m_layerManager.addLayer(Shapes::CreateGear(10, CMaterial::mtrlBrass(), CMaterial::mtrlBlue()), "GEARBOX");
+    m_layerManager.addLayer(Shapes::createPiza(1), "PIZA");
 
+    /*
     //Select the first layer to start drawing right away
     //Galin Medusa Model
     m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Tail(), DAnsiStr("Tail").ptr());
@@ -3385,10 +3385,11 @@ void GLWidget::actOpenMedusa()
     size_t ctLayers = m_layerManager.countLayers();
     m_layerManager[ctLayers-2]->setVisible(false);
     m_layerManager[ctLayers-1]->setVisible(false);
-
     selectLayer(0);
+    */
     m_layerManager.bumpRevisions();
     emit sig_showLayerManager(getModelLayerManager());
+    actMeshPolygonize();
 }
 
 void GLWidget::switchToOrtho()

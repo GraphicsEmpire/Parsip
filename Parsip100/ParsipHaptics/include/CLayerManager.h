@@ -23,7 +23,7 @@
 
 using namespace std;
 using namespace Loki;
-
+//using namespace PS::SIMDPOLY;
 /*
  Layer will group a set of BlobNodes so that they can be polygonized together.
  Layer will also holds the resulting mesh. Attributes of Quality and Polygonization Settings
@@ -50,12 +50,23 @@ public:
     friend class CParsipOptimized;
 
 private:
-
     //Pointer to a blobTree parent node
     CBlobNode* m_lpBlobTree;
 
     //Compact Blobtree
     COMPACTBLOBTREE m_cptBlobTree;
+
+    /*
+    struct
+    {
+        SOABlobPrims  blobPrims;
+        SOABlobBoxMatrices blobBoxMatrices;
+        SOABlobPrimMatrices blobPrimMatrices;
+        SOABlobOps	  blobOps;
+        PolyMPUs 	  polyMPUs;
+    }m_simdPoly;
+    */
+
 
     //Layer Polygonizer
     CParsipOptimized m_polygonizer;

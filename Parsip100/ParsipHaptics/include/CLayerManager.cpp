@@ -574,8 +574,10 @@ int CLayer::recursive_GetBlobTreeSeedPoints(CBlobNode* node, stack<CBlobNode*> &
         {
             //It is an Skeletal Primitive
             CSkeletonPrimitive * prim = dynamic_cast<CSkeletonPrimitive*>(node);
-            vec3f seed = prim->getPolySeedPoint();
+            //vec3f seed = prim->getPolySeedPoint();
+            ReportError("Seed Point is not standard");
 
+            vec3f seed;
             CBlobNode* op = NULL;
 
             //Apply All operators on the seed point
@@ -991,7 +993,7 @@ int CLayer::convertToBinaryTree()
         }
 
         //Update data-structures
-        this->setPolySeedPointAuto();
+        //this->setPolySeedPointAuto();
         this->setOctreeFromBlobTree();
         this->flattenTransformations();
         this->queryBlobTree(true, false);

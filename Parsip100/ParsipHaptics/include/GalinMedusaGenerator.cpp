@@ -69,8 +69,6 @@ public:
     double m_params[4];
 };
 
-
-
 class SplineGenerator
 {
 public:
