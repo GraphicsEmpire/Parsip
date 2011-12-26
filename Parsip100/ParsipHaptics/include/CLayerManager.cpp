@@ -112,7 +112,7 @@ int CLayer::queryHitOctree(const CRay& ray, float t0, float t1) const
 //==================================================================
 CBlobNode* CLayer::selGetItem(int index) const
 {
-    if(m_lstSelected.isItemIndex(index))
+    if(index >= 0 && index < m_lstSelected.size())
         return static_cast<CBlobNode*>(m_lstSelected[index].first);
     else
         return NULL;
@@ -120,7 +120,7 @@ CBlobNode* CLayer::selGetItem(int index) const
 //==================================================================
 CMeshVV* CLayer::selGetMesh(int index) const
 {
-    if(m_lstSelected.isItemIndex(index))
+    if(index >= 0 && index < m_lstSelected.size())
         return static_cast<CMeshVV*>(m_lstSelected[index].second);
     else
         return NULL;
@@ -137,11 +137,11 @@ void CLayer::selRemoveItem(int index)
         }
         m_lstSelected.clear();
     }
-    else if(m_lstSelected.isItemIndex(index))
+    else if(index >= 0 && index < m_lstSelected.size())
     {
         CMeshVV* lpMesh  =  m_lstSelected[index].second;
         SAFE_DELETE(lpMesh);
-        m_lstSelected.remove(index);
+        m_lstSelected.erase(m_lstSelected.begin() + index);
     }
 }
 //==================================================================
@@ -204,7 +204,7 @@ size_t CLayer::getAllSeeds(size_t bufLen, vec3f arrSeeds[])
     return ctTotal;
 }
 
-size_t CLayer::getAllSeeds(DVec<vec3f>& lstAllSeeds)
+size_t CLayer::getAllSeeds(vector<vec3f>& lstAllSeeds)
 {
     size_t ctTotal = m_lstSeeds.size();
     lstAllSeeds.resize(ctTotal);
@@ -811,7 +811,7 @@ void CLayer::getMeshInfo( size_t& ctVertices, size_t& ctFaces )
     }
 }
 
-int CLayer::queryGetAllOctrees( DVec<vec3f>& los, DVec<vec3f>& his ) const
+int CLayer::queryGetAllOctrees( vector<vec3f>& los, vector<vec3f>& his ) const
 {	
     COctree oct;
 

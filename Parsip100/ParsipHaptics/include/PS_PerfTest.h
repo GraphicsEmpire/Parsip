@@ -1,8 +1,7 @@
 #ifndef PS_PERF_TEST_H
 #define PS_PERF_TEST_H
 
-#include "DSystem/include/DTypes.h"
-#include "DSystem/include/DContainers.h"
+#include <vector>
 #include "PS_FrameWork/include/PS_PerfLogger.h"
 #include "PS_FrameWork/include/PS_FileDirectory.h"
 
@@ -105,7 +104,7 @@ namespace PS
 		bool writeCSV();
 
 		void addTestPathFileName(DAnsiStr strPathFileName);
-		void addTestPathFileName(DVec<DAnsiStr>& lstTestFiles)
+                void addTestPathFileName(vector<DAnsiStr>& lstTestFiles)
 		{
 			m_lstTestFiles.resize(0);
 			for(size_t i=0; i < lstTestFiles.size(); i++)
@@ -115,7 +114,7 @@ namespace PS
 		void addConfig(TestConfig* cfg);
 
 		void setHeaders();
-		void setHeaders(DVec<DAnsiStr>& headers)
+                void setHeaders(vector<DAnsiStr>& headers)
 		{
 			m_headers.resize(0);
 			for(size_t i=0; i < headers.size(); i++)
@@ -157,12 +156,12 @@ namespace PS
 
 		DAnsiStr m_strFileName;
 
-		DVec<DAnsiStr> m_lstTestFiles;
-		DVec<TestConfig*> m_lstTestConfigs;
+                vector<DAnsiStr> m_lstTestFiles;
+                vector<TestConfig*> m_lstTestConfigs;
 
 		//Content of the csv file for excel output
-		DVec<DAnsiStr> m_headers;
-		DVec<DAnsiStr> m_content;
+                vector<DAnsiStr> m_headers;
+                vector<DAnsiStr> m_content;
 
 		//Writing test results behavior
 		WriteTestResults m_writeResultsBehavior;

@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include "_GlobalSettings.h"
 
-#include "DSystem/include/DContainers.h"
+//#include "DSystem/include/DContainers.h"
 #include "PS_FrameWork/include/PS_Vector.h"
 #include "PS_FrameWork/include/PS_String.h"
 #include "PS_BlobTree/include/CBlobTree.h" 
@@ -73,7 +73,7 @@ struct MPUCELL{
 struct CENTERELEMENT {	   
 	int i, j, k;		   
 };
-typedef DVec<CENTERELEMENT> CENTERLIST;
+typedef vector<CENTERELEMENT> CENTERLIST;
 
 //Structure of a corner
 //i,j,k are the address of the corner
@@ -82,7 +82,7 @@ struct CORNERELEMENT {
 	int i, j, k;		   
 	float value;		   
 };
-typedef DVec<CORNERELEMENT> CORNER_ELEMENT_LIST;
+typedef vector<CORNERELEMENT> CORNER_ELEMENT_LIST;
 
 
 //Structure to represent a single edge
@@ -92,11 +92,11 @@ struct EDGEELEMENT {
 	int i1, j1, k1, i2, j2, k2;	   
 	int vid;			   
 };
-typedef DVec<EDGEELEMENT> EDGELIST;
+typedef vector<EDGEELEMENT> EDGELIST;
 
 
-typedef DVec<int> INTLIST;
-typedef DVec<INTLIST> INTLISTS;
+typedef vector<int> INTLIST;
+typedef vector<INTLIST> INTLISTS;
 
 
 inline float RAND() 

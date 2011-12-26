@@ -4,7 +4,10 @@
 
 #define DEFAULT_GRIM_DIM 8
 
+#include <vector>
 #include "PS_FrameWork/include/PS_Vector.h"
+
+using namespace std;
 
 namespace PS{
 
@@ -113,7 +116,7 @@ namespace PS{
 	{
 	public:
 		//Edge and Vertex ID HashTable
-		DVec<EDGELIST> m_table;		   		
+                vector<EDGELIST> m_table;
 		HASHFUNC m_hashFunc;
 		bool m_bAllocated;
 

@@ -314,7 +314,7 @@ static const int g_triTableCache[256][16] = {
 class CMarchCubeTable
 {
 private:
-	DVec<INTLISTS> ctable;
+        vector<INTLISTS> ctable;
 
 	//nextClockWiseEdge: return next clockwise edge from given edge around given face
 	int nextClockWiseEdge (int edge, int face);

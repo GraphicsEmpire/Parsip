@@ -6,31 +6,20 @@ TEMPLATE = app
 TARGET = ParsipHaptics
 QT += opengl network
 DEPENDPATH += . \
-              Parsip100/ParsipHaptics \
-              Parsip100/DSystem/include \
               Parsip100/ParsipHaptics/include \
+              Parsip100/DSystem/include \              
               Parsip100/PS_BlobTree/include \
               Parsip100/PS_FrameWork/include
 INCLUDEPATH += . \
                Parsip100 \
-               Parsip100/DSystem/include \
                Parsip100/ParsipHaptics/include \
+               Parsip100/DSystem/include \
                Parsip100/PS_FrameWork/include \
-               Parsip100/PS_BlobTree/include \
-               ParsipCmd/ParsipCmd
+               Parsip100/PS_BlobTree/include
+
 
 # Input
-HEADERS += Parsip100/DSystem/include/DContainers.h \
-           Parsip100/DSystem/include/DCriticalSection.h \
-           Parsip100/DSystem/include/DIO_FileManager.h \
-           Parsip100/DSystem/include/DMemory.h \
-           Parsip100/DSystem/include/DSafeCrt.h \
-           Parsip100/DSystem/include/DThreads.h \
-           Parsip100/DSystem/include/DTypes.h \
-           Parsip100/DSystem/include/DUtils.h \
-           Parsip100/DSystem/include/DUtils_Base.h \
-           Parsip100/DSystem/include/DUtils_Files.h \
-           Parsip100/DSystem/include/DUtils_MemFile.h \           
+HEADERS += \
            Parsip100/ParsipHaptics/include/AppSettings.h \
            Parsip100/ParsipHaptics/include/_GlobalFunctions.h \
            Parsip100/ParsipHaptics/include/_GlobalSettings.h \
@@ -118,7 +107,6 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
            Parsip100/PS_FrameWork/include/PS_Matrix.h \
            Parsip100/PS_FrameWork/include/PS_Mesh.h \
            Parsip100/PS_FrameWork/include/PS_MeshBase.h \
-           Parsip100/PS_FrameWork/include/PS_MeshOGL.h \
            Parsip100/PS_FrameWork/include/PS_MeshVV.h \
            Parsip100/PS_FrameWork/include/PS_MovingAverage.h \
            Parsip100/PS_FrameWork/include/PS_Octree.h \
@@ -144,18 +132,12 @@ HEADERS += Parsip100/DSystem/include/DContainers.h \
     Parsip100/PS_BlobTree/include/PS_SketchActions.h \
     Parsip100/PS_BlobTree/include/CTurboChargedPrimitive.h \
     Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.h
+
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
          Parsip100/ParsipHaptics/mainwindow.ui
-SOURCES += Parsip100/DSystem/include/DContainers.cpp \
-           Parsip100/DSystem/include/DMemory.cpp \
-           Parsip100/DSystem/include/DSafeCrt.cpp \
-           Parsip100/DSystem/include/DThreads.cpp \
-           Parsip100/DSystem/include/DTypes.cpp \
-           Parsip100/DSystem/include/DUtils.cpp \
-           Parsip100/DSystem/include/DUtils_Files.cpp \
-           Parsip100/DSystem/include/DUtils_MemFile.cpp \
-           Parsip100/ParsipHaptics/include/AppSettings.cpp \
+
+SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
            Parsip100/ParsipHaptics/include/_GlobalFunctions.cpp \
            Parsip100/ParsipHaptics/include/CBlobTreeAnimation.cpp \
            Parsip100/ParsipHaptics/include/CBlobTreeNetwork.cpp \
@@ -252,12 +234,20 @@ CONFIG(release, debug|release) {
 #     else: TARGET = $$join(TARGET,,,d)
 # }
 
-win32:CONFIG(release, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb.lib  \
-                                              D:\Projects\Dependencies\GLEW\lib\glew32.lib
+win32:CONFIG(release, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb.lib \
+                                              D:\Projects\Dependencies\LOKI\lib\loki.lib
 else:win32:CONFIG(debug, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb_debug.lib \
-                                                 D:\Projects\Dependencies\GLEW\lib\glew32.lib
+                                                 D:\Projects\Dependencies\LOKI\lib\loki_D.lib
+
+win32: LIBS +=  D:\Projects\Dependencies\OPENCL\common\lib\Win32\OpenCL.lib \
+                D:\Projects\Dependencies\GLEW\lib\glew32.lib \
+
+
 else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/ -ltbb \
-                            -L$$PWD/../Dependencies/LOKI/lib/ -lloki
+                            -L$$PWD/../Dependencies/LOKI/lib/ -lloki \
+                            -lGLEW \
+                            -lOpenCL
+
 
 #Add all special libraries used in the project
 win32:INCLUDEPATH += D:\Projects\Dependencies\TBB\include \
@@ -280,8 +270,8 @@ else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
                         /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                         /home/pourya/Desktop/Projects/Dependencies/LOKI/include
 
-unix:!symbian: LIBS += -lGLEW \
-                       -lOpenCL
+
+
 
 
 

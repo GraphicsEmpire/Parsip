@@ -1,7 +1,6 @@
 #ifndef CBLOBTREE_NET_H
 #define CBLOBTREE_NET_H
 
-#include "DSystem/include/DContainers.h"
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QStringList>
@@ -10,12 +9,14 @@
 #include "PS_BlobTree/include/CBlobTree.h"
 #include "PS_BlobTree/include/CSkeleton.h"
 #include <map>
+#include <vector>
 
 class QTime;
 class QTcpServer;
 class QTcpSocket;
 class QStringList;
 
+using namespace std;
 using namespace PS::BLOBTREE;
 
 namespace PS{
@@ -71,7 +72,7 @@ protected:
     QTcpSocket m_socket;
     quint16  m_port;
     quint64  m_bytesSent;
-    DVec<SKETCHCMDPACKET> m_txPackets;
+    vector<SKETCHCMDPACKET> m_txPackets;
 public:
     QString	 m_strAlias;
     QString  m_strAddress;
@@ -127,8 +128,8 @@ class CDesignNet : public QObject
 private:
     QTcpServer m_tcpServer;
     QTcpSocket* m_tcpServerConnection;
-    DVec<CMember*> m_lstPending;
-    DVec<CMember*> m_lstMembers;
+    vector<CMember*> m_lstPending;
+    vector<CMember*> m_lstMembers;
     quint16 m_port;
 public:
     CDesignNet(quint16 port = DEFAULT_PORT_NUM) { m_port = port;}
@@ -212,7 +213,7 @@ protected:
     SIGNATURES  m_mapErrors;
 
 
-    DVec<DAnsiStr> m_keywords;
+    vector<DAnsiStr> m_keywords;
     size_t m_DicOffsetOps;
     size_t m_DicOffsetPrims;
     static CSketchNetCommandTranslator* sm_pCmdTranslator;

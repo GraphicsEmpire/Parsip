@@ -4,14 +4,14 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "PS_Vector.h"
 #include "PS_Material.h"
 #include "PS_String.h"
-#include "DSystem/include/DContainers.h"
+
 
 #define MAX_TEXTURE_CHANNELS 4
-
 
 using namespace std;
 
@@ -22,7 +22,7 @@ using namespace MATH;
 class CMeshVV 
 {
 public:
-        typedef DVec<U32> element_array_type;
+        typedef vector<U32> element_array_type;
         enum STREAM_FORMAT {
 		OFF,
 		OBJ,
@@ -143,7 +143,7 @@ public:
 	void clearVertices(void);
 	//===================================================
         void addFace(U32 vertexId);
-        void addFaceArray(DVec<U32>& input);
+        void addFaceArray(vector<U32>& input);
         void addFaceArray(const U32 *begin, const U32 *end);
         void addLine(U32 firstId, U32 secondId);
         void addTriangle(U32 firstId, U32 secondId, U32 thirdId);
@@ -206,19 +206,19 @@ public:
 	int m_szTexChannels;
 	//Size of an individual texture coordinate from 1-4
 	int m_szUnitTexCoord[MAX_TEXTURE_CHANNELS];
-	DVec<float> m_lstTexChannels[MAX_TEXTURE_CHANNELS];
+        vector<float> m_lstTexChannels[MAX_TEXTURE_CHANNELS];
 	
-	DVec<int> m_lstLabels;
+        vector<int> m_lstLabels;
 
 	int m_szUnitColor;
-	DVec<float> m_lstColors;
+        vector<float> m_lstColors;
 
 	int m_szUnitVertex;
-	DVec<float> m_lstVertices;
-	DVec<float> m_lstNormals;
+        vector<float> m_lstVertices;
+        vector<float> m_lstNormals;
 
         U32 m_faceMode;
-        DVec<U32> m_lstFaces;
+        vector<U32> m_lstFaces;
 };
 
 }

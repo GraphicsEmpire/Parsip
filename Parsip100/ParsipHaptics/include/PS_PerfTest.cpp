@@ -224,7 +224,7 @@ namespace PS{
 			if((strlen(line) > 0) && (ctEvents > 0))
 			{				
 				//Push the content to the front
-				m_content.push_front(DAnsiStr(line));
+                                m_content.push_back(DAnsiStr(line));
 			}
 			ctEvents++;
 		}	

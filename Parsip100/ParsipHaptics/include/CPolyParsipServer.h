@@ -1,6 +1,8 @@
 #pragma once
 #ifndef CPOLY_PARSIP_SERVER_H
 #define CPOLY_PARSIP_SERVER_H
+#include <vector>
+#include <stack>
 
 #include "_GlobalFunctions.h"
 #include "CLayerManager.h"
@@ -130,18 +132,18 @@ private:
 	vec3i m_gridBound;
 
 	// Global list of corners (keeps track of memory)	
-	Stack<MPUCELL> m_stkTempCubes;	
+        std::vector<MPUCELL> m_stkTempCubes;
 	
 	//vector of a linked list means 2D table
 	// cube center hash table
-	DVec<CENTERLIST> m_stHashTableProcessedCells;	   
+        vector<CENTERLIST> m_stHashTableProcessedCells;
 
 	//Lows and highs for all primitives
-	DVec<vec3f> m_primitiveLos;
-	DVec<vec3f> m_primitiveHis;
+        vector<vec3f> m_primitiveLos;
+        vector<vec3f> m_primitiveHis;
 
 	//List of all primitive seed points
-	DVec<vec3f> m_stPrimitiveSeeds;	
+        vector<vec3f> m_stPrimitiveSeeds;
 	vec3f m_stSeedCellCenter;	
 
 	//Surface Tracking
@@ -188,15 +190,15 @@ public:
 
 	//Adaptive SubDivision 
 	size_t subDivide();
-	size_t subDivide_Analyze(DVec<int>& arrVertexCount, DVec<int>& arrDecisionBits);	
-	size_t subDivide_Perform(DVec<int>& arrVertexCount, DVec<int>& arrDecisionBits);	
+        size_t subDivide_Analyze(vector<int>& arrVertexCount, vector<int>& arrDecisionBits);
+        size_t subDivide_Perform(vector<int>& arrVertexCount, vector<int>& arrDecisionBits);
 	int  subDivide_MoveMidPointToSurface(vec3f& m, vec3f& outputNormal, vec4f& outputColor, float target_field = ISO_VALUE, int nIterations = DEFAULT_ITERATIONS );
 
-	void setAllPrimitiveBoundsAndSeeds(const DVec<vec3f> los, const DVec<vec3f> his, const DVec<vec3f> seeds)
+        void setAllPrimitiveBoundsAndSeeds(const vector<vec3f> los, const vector<vec3f> his, const vector<vec3f> seeds)
 	{
-		m_primitiveLos.copyFrom(los);
-		m_primitiveHis.copyFrom(his);
-		m_stPrimitiveSeeds.copyFrom(seeds);
+             m_primitiveLos.assign(los.begin(), los.end());
+             m_primitiveHis.assign(his.begin(), his.end());
+             m_stPrimitiveSeeds.assign(seeds.begin(), seeds.end());
 	}
 
 	void setAdaptiveSubDivision(bool bEnable) {m_bUseAdaptiveSubDivision = bEnable;}
@@ -256,7 +258,7 @@ public:
 };
 
 struct CMPURunBody{
-	DVec<CMpu*> input;
+        vector<CMpu*> input;
 	void operator()(const blocked_range<int>& range) const
 	{
 		for(int i=range.begin(); i != range.end(); i++)
@@ -267,7 +269,7 @@ struct CMPURunBody{
 //Parallel Implicit Polygonizer
 class CParsipServer{
 private:
-	DVec<CMpu*> m_lstMPUs;
+        vector<CMpu*> m_lstMPUs;
 	double m_tsStart;
 	double m_tsEnd;
 	double m_tsSetup;
@@ -333,7 +335,7 @@ public:
 	size_t getIntersectedCellsStats() const;
 	size_t getTotalCellsInAllMPUsStats() const {return (m_gridDim-1)*(m_gridDim-1)*(m_gridDim-1)*m_lstMPUs.size();}
 	size_t getTotalCellsInIntersectedMPUsStats() const {return (m_gridDim-1)*(m_gridDim-1)*(m_gridDim-1)*getIntersectedMPUs();}
-	int	   getCoreUtilizations(DVec<size_t>& arrOutThreadIDs, DVec<double>& arrOutUtilization);
+        int	   getCoreUtilizations(vector<size_t>& arrOutThreadIDs, vector<double>& arrOutUtilization);
 	
 
 	//Return number of MPUs that has computed some surface with ST

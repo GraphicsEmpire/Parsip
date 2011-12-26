@@ -342,9 +342,9 @@ int SubDivide_MoveMidPointToSurface( CBlobNode* root,
 size_t SubDivide_ParallelPerform( CMeshVV& inMesh, CBlobNode* lpInBlob, float adaptiveParam )
 {
     int ctFaces;
-    DVec<int> arrVertexCount;
-    DVec<int> arrVertexCountScanned;
-    DVec<int> arrDecisionBits;
+    vector<int> arrVertexCount;
+    vector<int> arrVertexCountScanned;
+    vector<int> arrDecisionBits;
 
     size_t result = 0;
     size_t ctFieldEvaluations = 0;
@@ -404,10 +404,7 @@ size_t SubDivide_ParallelPerform( CMeshVV& inMesh, CBlobNode* lpInBlob, float ad
                                              &outMesh);
             tbb::parallel_for(tbb::blocked_range<int>(0, ctFaces), PerformBody, tbb::auto_partitioner());
 
-            inMesh.m_lstFaces.copyFrom(outMesh.m_lstFaces);
-            inMesh.m_lstVertices.copyFrom(outMesh.m_lstVertices);
-            inMesh.m_lstNormals.copyFrom(outMesh.m_lstNormals);
-            inMesh.m_lstColors.copyFrom(outMesh.m_lstColors);
+            inMesh.copyFrom(outMesh);
             outMesh.removeAll();
         }
         else
@@ -423,7 +420,7 @@ size_t SubDivide_ParallelPerform( CMeshVV& inMesh, CBlobNode* lpInBlob, float ad
 }
 
 //////////////////////////////////////////////////////////////////////////
-size_t SubDivide_Analyze(CMeshVV& inMesh, float adaptiveParam, DVec<int>& arrVertexCount, DVec<int>& arrDecisionBits)
+size_t SubDivide_Analyze(CMeshVV& inMesh, float adaptiveParam, vector<int>& arrVertexCount, vector<int>& arrDecisionBits)
 {
     size_t ctFaceElements = inMesh.m_lstFaces.size();
     int ctFaces = ctFaceElements / 3;

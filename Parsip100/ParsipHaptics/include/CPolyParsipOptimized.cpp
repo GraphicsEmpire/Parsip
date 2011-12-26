@@ -534,7 +534,7 @@ namespace PS{
 		return ctProcessedCells;
 	}
 
-	int CParsipOptimized::statsCoreUtilizations( DVec<size_t>& arrOutThreadIDs, DVec<double>& arrOutUtilization )
+        int CParsipOptimized::statsCoreUtilizations( vector<size_t>& arrOutThreadIDs, vector<double>& arrOutUtilization )
 	{
 		size_t id;
 

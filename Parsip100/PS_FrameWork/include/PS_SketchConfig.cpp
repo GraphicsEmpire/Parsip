@@ -78,12 +78,12 @@ int CSketchConfig::writeIntArray(DAnsiStr section, DAnsiStr variable, const std:
 
 int CSketchConfig::readPropertyList(DAnsiStr section, PropertyList& propList)
 {
-
+    return -1;
 }
 
 int CSketchConfig::writePropertyList(DAnsiStr section, const PropertyList& propList)
 {
-    //propList[i].
+    return -1;
 }
 
 }

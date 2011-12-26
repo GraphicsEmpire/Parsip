@@ -98,6 +98,6 @@ int  SubDivide_MoveMidPointToSurface(CBlobNode* root,
 //Returns estimated number of field evaluations.
 size_t SubDivide_ParallelPerform(CMeshVV& inMesh, CBlobNode* lpInBlob, float adaptiveParam);
 
-size_t SubDivide_Analyze(CMeshVV& inMesh, float adaptiveParam, DVec<int>& arrVertexCount, DVec<int>& arrDecisionBits);
+size_t SubDivide_Analyze(CMeshVV& inMesh, float adaptiveParam, vector<int>& arrVertexCount, vector<int>& arrDecisionBits);
 
 #endif

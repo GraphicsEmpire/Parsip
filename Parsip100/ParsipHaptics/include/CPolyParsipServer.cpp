@@ -145,9 +145,7 @@ void CMpu::run()
 
     if(m_bDoSurfaceTracking)
     {
-        m_stkTempCubes.clear();
-        //m_stCornerCache.clear();
-
+        m_stkTempCubes.resize(0);
         for(size_t i=0; i<m_stHashTableProcessedCells.size(); i++)
             m_stHashTableProcessedCells[i].clear();
         m_stHashTableProcessedCells.resize(m_hashFunc.cellid_hashsize);
@@ -182,8 +180,8 @@ void CMpu::run()
 
 size_t CMpu::subDivide()
 {
-    DVec<int> arrVertexCount;
-    DVec<int> arrDecisionBits;
+    vector<int> arrVertexCount;
+    vector<int> arrDecisionBits;
 
     size_t ctNeedsProcessing = 0;
     int attemps = 0;
@@ -200,7 +198,7 @@ size_t CMpu::subDivide()
     return ctNeedsProcessing;
 }
 
-size_t CMpu::subDivide_Analyze(DVec<int>& arrVertexCount, DVec<int>& arrDecisionBits)
+size_t CMpu::subDivide_Analyze(vector<int>& arrVertexCount, vector<int>& arrDecisionBits)
 {
     size_t ctFaceElements = outputMesh.m_lstFaces.size();
     int ctFaces = ctFaceElements / 3;
@@ -261,7 +259,7 @@ size_t CMpu::subDivide_Analyze(DVec<int>& arrVertexCount, DVec<int>& arrDecision
     return ctCoarseFaces;
 }
 
-size_t CMpu::subDivide_Perform(DVec<int>& arrVertexCount, DVec<int>& arrDecisionBits)
+size_t CMpu::subDivide_Perform(vector<int>& arrVertexCount, vector<int>& arrDecisionBits)
 {
     //Compute Storage Requirements
     size_t ctTotalVertices = 0;
@@ -270,7 +268,7 @@ size_t CMpu::subDivide_Perform(DVec<int>& arrVertexCount, DVec<int>& arrDecision
     int ctFaces = arrVertexCount.size();
     int iFace;
 
-    DVec<int> arrVertexCountScanned;
+    vector<int> arrVertexCountScanned;
     arrVertexCountScanned.resize(ctFaces + 1);
     arrVertexCountScanned[0] = 0;
     for(iFace=0; iFace < ctFaces; iFace++)
@@ -288,10 +286,10 @@ size_t CMpu::subDivide_Perform(DVec<int>& arrVertexCount, DVec<int>& arrDecision
     vec4f c[3];
 
     //Vertices, Normals, Faces
-    DVec<float> lstOutVertices;
-    DVec<float> lstOutNormals;
-    DVec<float> lstOutColors;
-    DVec<unsigned int> lstOutFaces;
+    vector<float> lstOutVertices;
+    vector<float> lstOutNormals;
+    vector<float> lstOutColors;
+    vector<unsigned int> lstOutFaces;
     int bits;
     size_t offsetV, offsetT;
 
@@ -530,10 +528,10 @@ size_t CMpu::subDivide_Perform(DVec<int>& arrVertexCount, DVec<int>& arrDecision
 
 
     //Copy to mesh structure
-    outputMesh.m_lstFaces.copyFrom(lstOutFaces);
-    outputMesh.m_lstVertices.copyFrom(lstOutVertices);
-    outputMesh.m_lstNormals.copyFrom(lstOutNormals);
-    outputMesh.m_lstColors.copyFrom(lstOutColors);
+    outputMesh.m_lstFaces.assign(lstOutFaces.begin(), lstOutFaces.end());
+    outputMesh.m_lstVertices.assign(lstOutVertices.begin(), lstOutVertices.end());
+    outputMesh.m_lstNormals.assign(lstOutNormals.begin(), lstOutNormals.end());
+    outputMesh.m_lstColors.assign(lstOutColors.begin(), lstOutColors.end());
 
     //Cleanup
     lstOutFaces.clear();
@@ -707,7 +705,7 @@ bool CMpu::stQueryCellFace(const MPUCELL& old, int i, int j, int k,
             adjacent.corners[n] = stSetCorner(i+BIT(n,2), j+BIT(n,1), k+BIT(n,0));
     }
 
-    m_stkTempCubes.push(adjacent);
+    m_stkTempCubes.push_back(adjacent);
     return true;
 }
 
@@ -778,7 +776,7 @@ void CMpu::cleanup()
     m_primitiveHis.clear();
     m_primitiveLos.clear();
     m_stPrimitiveSeeds.clear();
-    m_stkTempCubes.clear();
+    m_stkTempCubes.resize(0);
 
     for(size_t i=0; i<m_stHashTableProcessedCells.size(); i++)
         m_stHashTableProcessedCells[i].clear();
@@ -797,22 +795,22 @@ bool CMpu::doSurfaceTracking()
     rootCell.k = idx.z;
     for (int n = 0; n < 8; n++)
         rootCell.corners[n] = stSetCorner(idx.x + BIT(n,2), idx.y + BIT(n,1), idx.z + BIT(n,0));
-    m_stkTempCubes.push(rootCell);
+    m_stkTempCubes.push_back(rootCell);
 
     //stSetProcessedCell(0, 0, 0);
 
     //set corners of initial cube:
     stSetProcessedCell(idx.x, idx.y, idx.z);
 
-    //DVec<CELL*> lstCells;
+    //vector<CELL*> lstCells;
     //PASS 1: Tracking all the cubes on the surface
-    while (!m_stkTempCubes.isEmpty())
+    while (m_stkTempCubes.size() > 0)
     {
         //Process Cube Faces and find nearby cubes
-        MPUCELL cell = m_stkTempCubes.top();
+        MPUCELL cell = m_stkTempCubes.back();
 
         //Remove front item from stack
-        m_stkTempCubes.pop();
+        m_stkTempCubes.pop_back();
 
         //test six faces then add to stack
         //Left face
@@ -1134,9 +1132,9 @@ void CParsipServer::setup(CLayer* aLayer, int id, int griddim)
 
 
     //Get all primitive octrees and seeds in this layer
-    DVec<vec3f> lstOctreeLos;
-    DVec<vec3f> lstOctreeHis;
-    DVec<vec3f> lstSeeds;
+    vector<vec3f> lstOctreeLos;
+    vector<vec3f> lstOctreeHis;
+    vector<vec3f> lstSeeds;
     aLayer->queryGetAllOctrees(lstOctreeLos, lstOctreeHis);
     aLayer->getAllSeeds(lstSeeds);
     vec3f allSides		= oct.upper - oct.lower;
@@ -1394,7 +1392,7 @@ CMpu* CParsipServer::getLastestMPU() const
     return latestMPU;
 }
 
-int CParsipServer::getCoreUtilizations( DVec<size_t>& arrOutThreadIDs, DVec<double>& arrOutUtilization )
+int CParsipServer::getCoreUtilizations( vector<size_t>& arrOutThreadIDs, vector<double>& arrOutUtilization )
 {
     size_t id;
 

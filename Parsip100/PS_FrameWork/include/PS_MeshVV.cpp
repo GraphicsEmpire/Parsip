@@ -754,7 +754,7 @@ void CMeshVV::addFace(unsigned int vertexId)
 	m_lstFaces.push_back(vertexId);
 }
 
-void CMeshVV::addFaceArray(DVec<unsigned int>& input)
+void CMeshVV::addFaceArray(vector<unsigned int>& input)
 {
 	for(size_t i=0; i < input.size(); i++)
 		m_lstFaces.push_back(input[i]);
@@ -2356,25 +2356,41 @@ bool CMeshVV::appendFrom(const CMeshVV& rhs)
 	size_t offsetFace = countVertices();
 	
 	if (!rhs.m_lstLabels.empty())
-		m_lstLabels.appendFrom(rhs.m_lstLabels);
+        {
+                m_lstLabels.insert(m_lstLabels.end(),
+                                   rhs.m_lstLabels.begin(),
+                                   rhs.m_lstLabels.end());
+        }
 
 	if (!rhs.m_lstColors.empty())
-		m_lstColors.appendFrom(rhs.m_lstColors);
+        {
+                m_lstColors.insert(m_lstColors.end(),
+                                   rhs.m_lstColors.begin(),
+                                   rhs.m_lstColors.end());
+        }
 
 	if (!rhs.m_lstNormals.empty())
-		m_lstNormals.appendFrom(rhs.m_lstNormals);
+        {
+            m_lstNormals.insert(m_lstNormals.end(),
+                                rhs.m_lstNormals.begin(),
+                                rhs.m_lstNormals.end());
+        }
 	
 	if (!rhs.m_lstVertices.empty())
-		m_lstVertices.appendFrom(rhs.m_lstVertices);
+                m_lstVertices.insert(m_lstVertices.end(),
+                                     rhs.m_lstVertices.begin(),
+                                     rhs.m_lstVertices.end());
 
 	if (!rhs.m_lstFaces.empty())
 	{
 		size_t idxContinue = m_lstFaces.size();
-		m_lstFaces.grow(rhs.m_lstFaces.size());
+                m_lstFaces.insert(m_lstFaces.end(),
+                                  rhs.m_lstFaces.begin(),
+                                  rhs.m_lstFaces.end());
 		
 		for(size_t i = 0; i<rhs.m_lstFaces.size(); i++)
 		{
-			m_lstFaces[idxContinue + i] = rhs.m_lstFaces[i] + offsetFace;
+                        m_lstFaces[idxContinue + i] += offsetFace;
 		}		
 	}
 
@@ -2384,7 +2400,11 @@ bool CMeshVV::appendFrom(const CMeshVV& rhs)
 	{
 		m_szUnitTexCoord[iChannel] = rhs.m_szUnitTexCoord[iChannel];
 		if (!rhs.m_lstTexChannels[iChannel].empty())
-			m_lstTexChannels[iChannel].appendFrom(rhs.m_lstTexChannels[iChannel]);
+                {
+                    m_lstTexChannels[iChannel].insert(m_lstTexChannels[iChannel].end(),
+                                                      rhs.m_lstTexChannels[iChannel].begin(),
+                                                      rhs.m_lstTexChannels[iChannel].end());
+                }
 	}
 
 	if (!isValid())
@@ -2405,21 +2425,26 @@ bool CMeshVV::copyFrom( const CMeshVV& rhs )
 	m_faceMode = rhs.m_faceMode;
 
 	if (!rhs.m_lstLabels.empty())
-		m_lstLabels.copyFrom(rhs.m_lstLabels);		
+                m_lstLabels.assign(rhs.m_lstLabels.begin(),
+                                   rhs.m_lstLabels.end());
 
 	m_szUnitColor = rhs.m_szUnitColor;
 	if (!rhs.m_lstColors.empty())
-		m_lstColors.copyFrom(rhs.m_lstColors);
+                m_lstColors.assign(rhs.m_lstColors.begin(),
+                                   rhs.m_lstColors.end());
 		
 	if (!rhs.m_lstNormals.empty())
-		m_lstNormals.copyFrom(rhs.m_lstNormals);
+                m_lstNormals.assign(rhs.m_lstNormals.begin(),
+                                    rhs.m_lstNormals.end());
 
 	m_szUnitVertex = rhs.m_szUnitVertex;	
 	if (!rhs.m_lstVertices.empty())
-		m_lstVertices.appendFrom(rhs.m_lstVertices);
+                m_lstVertices.assign(rhs.m_lstVertices.begin(),
+                                     rhs.m_lstVertices.end());
 
 	if (!rhs.m_lstFaces.empty())
-		m_lstFaces.copyFrom(rhs.m_lstFaces);
+                m_lstFaces.assign(rhs.m_lstFaces.begin(),
+                                  rhs.m_lstFaces.end());
 
 	//Copy textures
 	m_szTexChannels  = rhs.m_szTexChannels;	
@@ -2427,7 +2452,8 @@ bool CMeshVV::copyFrom( const CMeshVV& rhs )
 	{
 		m_szUnitTexCoord[iChannel] = rhs.m_szUnitTexCoord[iChannel];
 		if (!rhs.m_lstTexChannels[iChannel].empty())
-			m_lstTexChannels[iChannel].copyFrom(rhs.m_lstTexChannels[iChannel]);
+                        m_lstTexChannels[iChannel].assign(rhs.m_lstTexChannels[iChannel].begin(),
+                                                          rhs.m_lstTexChannels[iChannel].end());
 	}
 
 	if (!isValid())

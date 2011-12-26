@@ -7,7 +7,7 @@
 class CEdgeTable
 {
 	//Edge and Vertex ID HashTable
-	DVec<EDGELIST> m_table;		   
+        vector<EDGELIST> m_table;
 
 public:
 	CEdgeTable()

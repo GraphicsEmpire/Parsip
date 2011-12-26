@@ -8,7 +8,7 @@ using namespace std;
 using namespace PS;
 using namespace PS::BLOBTREE;
 
-int SIMDPOLY_Reset();
+void SIMDPOLY_Reset();
 void SIMDPOLY_Draw(bool bDrawNormals = false);
 int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator);
 

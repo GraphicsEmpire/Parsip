@@ -1,7 +1,7 @@
 #include "PS_HighPerformanceRender.h"
-#include "PS_Polygonizer.h"
 #include "PS_ErrorManager.h"
 #include "BlobTreeLibraryAll.h"
+#include "ParsipCmd/ParsipCmd/PS_Polygonizer.h"
 
 #define __NO_STD_VECTOR // Use cl::vector and cl::string and
 #define __NO_STD_STRING // not STL versions, more on this later
@@ -35,13 +35,13 @@ const char *KernelSource = "\n"		      \
         "}                                        \n" \
         "\n";
 
-int SIMDPOLY_ResetPolygonizer()
+
+void SIMDPOLY_ResetPolygonizer()
 {
     g_blobPrims.ctPrims = 0;
     g_blobOps.ctOps = 0;
     g_blobPrimMatrices.count = 0;
     g_blobBoxMatrices.count = 0;
-
     g_polyMPUs.ctMPUs = 0;
 }
 
@@ -586,3 +586,4 @@ int RunOclPolygonizer()
 
     return 0;
 }
+

@@ -14,8 +14,6 @@
 #include "PS_BlobTree/include/CSkeleton.h"
 #include "PS_BlobTree/include/CSkeletonPrimitive.h"
 
-//#include "PS_Polygonizer.h"
-
 #include "CompactBlobTree.h"
 #include "CPolyParsipOptimized.h"
 #include "_GlobalFunctions.h"
@@ -72,13 +70,13 @@ private:
     CParsipOptimized m_polygonizer;
 
     //List of seed points and the primitives that they originated from
-    DVec<PAIR_NODESEED> m_lstSeeds;
+    vector<PAIR_NODESEED> m_lstSeeds;
 
     //Selected pairs of BlobTree Nodes and their corresponding meshes
-    DVec<PAIR_NODEMESH> m_lstSelected;
+    vector<PAIR_NODEMESH> m_lstSelected;
 
     //Keeping a list of nodes
-    DVec<CBlobNode*> m_lstQuery;
+    vector<CBlobNode*> m_lstQuery;
 
     //Octree for Collision Detection
     COctree m_octree;
@@ -196,13 +194,13 @@ public:
     //Actions For All Nodes in the Query List
     CBlobNode* queryGetItem(int index) const
     {
-        if(m_lstQuery.isItemIndex(index))
+        if(index >= 0 && index < m_lstQuery.size())
             return m_lstQuery[index];
         else
             return NULL;
     }
 
-    int queryGetAllOctrees(DVec<vec3f>& los, DVec<vec3f>& his) const;
+    int queryGetAllOctrees(vector<vec3f>& los, vector<vec3f>& his) const;
     int queryHitOctree(const CRay& ray, float t0, float t1) const;
 
     //Selection
@@ -217,7 +215,7 @@ public:
     vec3f getSeed(size_t index);
     bool getSeed(size_t index, PAIR_NODESEED &seed);
     size_t getAllSeeds(size_t bufLen, vec3f arrSeeds[]);
-    size_t getAllSeeds(DVec<vec3f>& lstAllSeeds);
+    size_t getAllSeeds(vector<vec3f>& lstAllSeeds);
     void removeAllSeeds();
     vec3f getPolySeedPoint() const { return m_ptStart;}
     void setPolySeedPoint(vec3f ptStart) { m_ptStart = ptStart;}

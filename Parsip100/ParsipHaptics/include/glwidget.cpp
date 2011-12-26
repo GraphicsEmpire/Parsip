@@ -32,7 +32,6 @@
 
 #include "CBlobTreeNetwork.h"
 #include "CBlobTreeAnimation.h"
-#include "PS_Polygonizer.h"
 
 
 using namespace PS::FILESTRINGUTILS;
@@ -1073,7 +1072,7 @@ void GLWidget::drawLayerManager()
 {
     //glDisable(GL_LIGHTING);
     //CMeshVV* aMesh = NULL;
-    DVec<vec3f> lstSeeds;
+    vector<vec3f> lstSeeds;
     size_t ctLayers = m_layerManager.countLayers();
     bool bIsActiveLayer = false;
     vec4f clBlack(0.0f, 0.0f, 0.0f, 1.0f);
@@ -2939,9 +2938,9 @@ void GLWidget::drawGraph()
         FTPixmapFont font("C:\\Windows\\Fonts\\Calibri.ttf");
         if(font.Error()) return;
 
- DVec<size_t> arrCoreThreadIDs;
- DVec<double> arrCoreUtilizations;
- DVec<int>	 arrCoreProcessedMPUs;
+ vector<size_t> arrCoreThreadIDs;
+ vector<double> arrCoreUtilizations;
+ vector<int>	 arrCoreProcessedMPUs;
 
 
  int ctMPUs  = parsip->countMPUs();
@@ -3099,7 +3098,7 @@ void GLWidget::actTestPerformUtilizationTest()
 {
     if(m_layerManager.countLayers() == 0) return;
 
-    DVec<DAnsiStr> strHeaders;
+    vector<DAnsiStr> strHeaders;
     DAnsiStr strOut = PS::FILESTRINGUTILS::ExtractFilePath(GetExePath()) + DAnsiStr("CoresUtilization.csv");
 
     PS::CPerfTest* perfCoreUtilizations = new PS::CPerfTest();
@@ -3112,8 +3111,8 @@ void GLWidget::actTestPerformUtilizationTest()
     perfCoreUtilizations->setHeaders(strHeaders);
 
     //Run experiments with this amount of threads
-    DVec<size_t> arrThreads;
-    DVec<double> arrUtilization;
+    vector<size_t> arrThreads;
+    vector<double> arrUtilization;
 
 
     for(int i=0; i<TheAppSettings::Instance().setParsip.testRuns; i++)
@@ -3152,7 +3151,7 @@ void GLWidget::actTestPerformIncreasingThreads()
 {
     if(m_layerManager.countLayers() == 0) return;
 
-    DVec<DAnsiStr> strHeaders;
+    vector<DAnsiStr> strHeaders;
     DAnsiStr strOut = PS::FILESTRINGUTILS::ExtractFilePath(GetExePath()) + DAnsiStr("CoresUtilization.csv");
     PS::CPerfTest* perfCoreUtilizations = new PS::CPerfTest();
     perfCoreUtilizations->setOutputFileName(strOut, PS::CPerfTest::wtrCreateNew);
@@ -3205,8 +3204,8 @@ void GLWidget::actTestPerformIncreasingThreads()
     double tsSetup, tsPoly;
     size_t ctV, ctT;
 
-    DVec<size_t> arrThreads;
-    DVec<double> arrUtilization;
+    vector<size_t> arrThreads;
+    vector<double> arrUtilization;
     size_t testNumber;
 
     for(int iCore=1; iCore<=ctCores; iCore++)
@@ -3287,7 +3286,7 @@ void GLWidget::actTestPerformStd()
     PS::CPerfTest* perftest = new PS::CPerfTest();
     perftest->setAppendMode(PS::CPerfTest::wtrCreateNew);
 
-    DVec<DAnsiStr> strHeaders;
+    vector<DAnsiStr> strHeaders;
     strHeaders.push_back(DAnsiStr("test#"));
     strHeaders.push_back(DAnsiStr("Cores Used"));
     strHeaders.push_back(DAnsiStr("Blob Primitives"));

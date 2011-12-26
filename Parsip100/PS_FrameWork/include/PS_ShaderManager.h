@@ -8,7 +8,6 @@
 #ifndef GL_SHADERMANAGER_H_
 #define GL_SHADERMANAGER_H_
 
-#include "DSystem/include/DContainers.h"
 #include "PS_ResourceManager.h"
 #include "PS_ShaderGLSL.h"
 #include "loki/Singleton.h"

@@ -88,7 +88,7 @@ int CMember::recvAck( const SKETCHCMDPACKET& packet )
         p = m_txPackets[i];
         if(p.msgID == packet.msgID)
         {
-            m_txPackets.remove(i);
+            m_txPackets.erase(m_txPackets.begin() + i);
             return packet.ack;
         }
     }
@@ -232,7 +232,7 @@ bool CDesignNet::removeMember( const QString& strAlias )
     CMember* mem = findMember(strAlias, &index);
     if(mem != NULL)
     {
-        m_lstMembers.remove(index);
+        m_lstMembers.erase(m_lstMembers.begin() + index);
         SAFE_DELETE(mem);
         return true;
     }
@@ -424,7 +424,7 @@ int CDesignNet::actNetUpgradeToMembers()
         a = m_lstPending[i];
         if(a->isAlive())
         {
-            m_lstPending.detach(m_lstPending.begin() + i);
+            m_lstPending.erase(m_lstPending.begin() + i);
             m_lstMembers.push_back(a);
             count++;
         }
@@ -447,7 +447,7 @@ int CDesignNet::actNetDowngradeToPending()
         a = m_lstMembers[i];
         if(!a->isAlive())
         {
-            m_lstMembers.detach(m_lstMembers.begin() + i);
+            m_lstMembers.erase(m_lstMembers.begin() + i);
             m_lstPending.push_back(a);
 
             count++;
@@ -545,13 +545,13 @@ CSketchNetCommandTranslator::CSketchNetCommandTranslator()
     m_mapTXBlobNodes[bntOpIntersect]  = "INTERSECTION";
 
     //TX Prim Maps
-    m_mapTXBlobNodes[sktPoint]	  = "SPHERE";
-    m_mapTXBlobNodes[sktLine]	  = "CAPSULE";
-    m_mapTXBlobNodes[sktCube]	  = "CUBE";
-    m_mapTXBlobNodes[sktCylinder] = "CYLINDER";
-    m_mapTXBlobNodes[sktRing]	  = "TORUS";
-    m_mapTXBlobNodes[sktDisc]	  = "DISC";
-    m_mapTXBlobNodes[sktTriangle] = "CONE";
+    m_mapTXBlobNodes[bntPrimPoint]	  = "SPHERE";
+    m_mapTXBlobNodes[bntPrimLine]	  = "CAPSULE";
+    m_mapTXBlobNodes[bntPrimCube]	  = "CUBE";
+    m_mapTXBlobNodes[bntPrimCylinder] = "CYLINDER";
+    m_mapTXBlobNodes[bntPrimRing]	  = "TORUS";
+    m_mapTXBlobNodes[bntPrimDisc]	  = "DISC";
+    m_mapTXBlobNodes[bntPrimTriangle] = "CONE";
 
     //Errors
     //PS_ERROR err_noerror	 = "No Error.";
@@ -599,13 +599,13 @@ CSketchNetCommandTranslator::CSketchNetCommandTranslator()
     m_mapTokens["INTERSECTION"] = bntOpIntersect;
 
     //Add primitives
-    m_mapTokens["SPHERE"]	= sktPoint;
-    m_mapTokens["CAPSULE"]  = sktLine;
-    m_mapTokens["CUBE"]		= sktCube;
-    m_mapTokens["CYLINDER"] = sktCylinder;
-    m_mapTokens["TORUS"]	= sktRing;
-    m_mapTokens["DISC"]		= sktDisc;
-    m_mapTokens["CONE"]		= sktTriangle;
+    m_mapTokens["SPHERE"]	= bntPrimPoint;
+    m_mapTokens["CAPSULE"]      = bntPrimLine;
+    m_mapTokens["CUBE"]		= bntPrimCube;
+    m_mapTokens["CYLINDER"]     = bntPrimCylinder;
+    m_mapTokens["TORUS"]	= bntPrimRing;
+    m_mapTokens["DISC"]		= bntPrimDisc;
+    m_mapTokens["CONE"]		= bntPrimTriangle;
 }
 
 bool CSketchNetCommandTranslator::translateStrToPacket( const QString& strInputCmd, SKETCHCMDPACKET& output )

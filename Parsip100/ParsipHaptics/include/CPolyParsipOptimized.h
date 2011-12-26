@@ -2,9 +2,8 @@
 #ifndef CPOLYPARSIP_OPTIMIZED_H
 #define CPOLYPARSIP_OPTIMIZED_H
 
+#include <vector>
 #include "_GlobalFunctions.h"
-//#include "CLayerManager.h"
-
 #include "CCubeTable.h"
 
 #include "tbb/parallel_reduce.h"
@@ -147,7 +146,7 @@ namespace PS{
 		float m_isovalue;
 		float m_cellsize;
 		vec3f m_modelUpperCorner;		
-		DVec<CSIMDMPU*>  m_vPartitions;
+                vector<CSIMDMPU*>  m_vPartitions;
 
 
 	private:
@@ -158,7 +157,7 @@ namespace PS{
 	public:
 		CSIMDMPURunBody(COMPACTBLOBTREE* lpCptBlob, 
 						const vec3f& upperCorner, 
-						const DVec<CSIMDMPU*>& vPartitions,
+                                                const vector<CSIMDMPU*>& vPartitions,
 						float cellsize = DEFAULT_CELL_SIZE, 
 						float isovalue = ISO_VALUE)
 		{
@@ -166,7 +165,7 @@ namespace PS{
 			m_cellsize		   = cellsize;
 			m_isovalue		   = isovalue;
 			m_modelUpperCorner = upperCorner;						
-			m_vPartitions.copyFrom(vPartitions);	
+                        m_vPartitions.assign(vPartitions.begin(), vPartitions.end());
 
 			//Get Memory
 			m_cptBlob = new COMPACTBLOBTREE(*lpCptBlob);
@@ -182,7 +181,8 @@ namespace PS{
 			m_cellsize		   = parent.m_cellsize;
 			m_isovalue		   = parent.m_isovalue;
 			m_modelUpperCorner = parent.m_modelUpperCorner;			
-			m_vPartitions.copyFrom(parent.m_vPartitions);
+                        m_vPartitions.assign(parent.m_vPartitions.begin(),
+                                             parent.m_vPartitions.end());
 
 			//Get Memory
 			m_cptBlob = new COMPACTBLOBTREE(*parent.m_cptBlob);
@@ -226,7 +226,7 @@ namespace PS{
 	class CParsipOptimized
 	{
 	private:
-		DVec<CSIMDMPU*> m_lstMPUs;
+                vector<CSIMDMPU*> m_lstMPUs;
 		double m_tsStart;		
 		double m_tsPolygonize;
 		double m_tsSetup;
@@ -300,7 +300,7 @@ namespace PS{
 		size_t statsIntersectedCellsCount() const;
 		size_t statsTotalCellInAllMPUs() const {return (GRID_DIM-1)*(GRID_DIM-1)*(GRID_DIM-1)*m_lstMPUs.size();}
 		size_t statsTotalCellsInIntersectedMPUs() const {return (GRID_DIM-1)*(GRID_DIM-1)*(GRID_DIM-1)*statsIntersectedMPUs();}
-		int	   statsCoreUtilizations(DVec<size_t>& arrOutThreadIDs, DVec<double>& arrOutUtilization);
+                int	   statsCoreUtilizations(vector<size_t>& arrOutThreadIDs, vector<double>& arrOutUtilization);
 
 	};
 	

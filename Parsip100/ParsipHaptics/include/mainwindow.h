@@ -10,7 +10,6 @@
 #include <QTcpSocket>
 #include <QTime>
 #include <QActionGroup>
-#include "DSystem/include/DContainers.h"
 #include "CBlobTreeNetwork.h"
 #include "DlgFieldFunctionEditor.h"
 

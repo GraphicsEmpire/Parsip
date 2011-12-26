@@ -290,7 +290,7 @@ private:
     GLuint m_glShaderSelTime;
 
     //Undo/Redo Functionality
-    DVec<CSketchConfig*> m_lstUndo;
+    vector<CSketchConfig*> m_lstUndo;
     int m_curUndoLevel;
     int m_ctUndoLevels;
 

@@ -13,7 +13,6 @@
 #include <string>
 #include <fstream>
 
-#include "DSystem/include/DContainers.h"
 #include "PS_String.h"
 #include "_dataTypes.h"
 
@@ -98,7 +97,7 @@ namespace PS{
 		bool writeFile();
 		void flushPendingEvents();
 	private:
-		DVec<DAnsiStr>  m_content;
+                vector<DAnsiStr>  m_content;
 		vector<EVENTENTRY*> m_pendingEvents;
 		DAnsiStr m_strFileName;
 
