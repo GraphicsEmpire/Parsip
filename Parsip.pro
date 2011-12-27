@@ -51,7 +51,6 @@ HEADERS += \
            Parsip100/PS_BlobTree/include/_constSettings.h \
            Parsip100/PS_BlobTree/include/BlobTreeBuilder.h \
            Parsip100/PS_BlobTree/include/BlobTreeLibraryAll.h \
-           Parsip100/PS_BlobTree/include/BlobTreeScripting.h \
            Parsip100/PS_BlobTree/include/CAdaptiveUniformGrid3d.h \
            Parsip100/PS_BlobTree/include/CBlend.h \
            Parsip100/PS_BlobTree/include/CBlobTree.h \
@@ -269,6 +268,7 @@ win32:DEPENDPATH += D:\Projects\Dependencies\TBB\include \
 else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
                         /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                         /home/pourya/Desktop/Projects/Dependencies/LOKI/include
+
 
 
 
