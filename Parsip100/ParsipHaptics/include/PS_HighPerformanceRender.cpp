@@ -35,8 +35,8 @@ const char *KernelSource = "\n"		      \
         "}                                        \n" \
         "\n";
 
-
-void SIMDPOLY_ResetPolygonizer()
+//Reset Polygonizer data-structures
+void SIMDPOLY_Reset()
 {
     g_blobPrims.ctPrims = 0;
     g_blobOps.ctOps = 0;
@@ -45,6 +45,7 @@ void SIMDPOLY_ResetPolygonizer()
     g_polyMPUs.ctMPUs = 0;
 }
 
+//Linearize BlobTree
 int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator)
 {
     int curID = -1;
@@ -410,6 +411,10 @@ void SIMDPOLY_Draw(bool bDrawNormals)
     }
 }
 
+int SIMDPOLY_Run(float cellsize)
+{
+    return PS::SIMDPOLY::Polygonize(cellsize, g_blobPrims, g_blobPrimMatrices, g_blobOps, g_polyMPUs);
+}
 
 //OpenCL polygonizer
 int RunOclPolygonizer()

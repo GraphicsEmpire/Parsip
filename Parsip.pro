@@ -130,7 +130,8 @@ HEADERS += \
     Parsip100/ParsipHaptics/include/SampleShapes.h \
     Parsip100/PS_BlobTree/include/PS_SketchActions.h \
     Parsip100/PS_BlobTree/include/CTurboChargedPrimitive.h \
-    Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.h
+    Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.h \
+    Parsip100/PS_FrameWork/include/PS_Tracker.h
 
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
@@ -206,7 +207,7 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonPoint.cpp \
     Parsip100/PS_FrameWork/include/PS_Property.cpp \
     Parsip100/PS_BlobTree/include/CNullPrimitive.cpp \
-    Parsip100/ParsipHaptics/include/PS_HighPerformanceRendering.cpp
+    Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -268,6 +269,9 @@ win32:DEPENDPATH += D:\Projects\Dependencies\TBB\include \
 else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
                         /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                         /home/pourya/Desktop/Projects/Dependencies/LOKI/include
+
+
+
 
 
 

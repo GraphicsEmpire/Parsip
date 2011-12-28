@@ -158,12 +158,12 @@ public:
 	bool isOperator() { return true;}
 	BlobNodeType getNodeType() {return bntOpWarpBend;}
 
-        bool saveScript(CSketchConfig* lpSketchScript, int idOffset = 0)
+        bool saveScript(CSketchConfig* lpSketchScript)
         {
-            bool bres = saveGenericInfoScript(lpSketchScript, idOffset);
+            bool bres = saveGenericInfoScript(lpSketchScript);
 
             //Write parameters for RicciBlend
-            DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID() + idOffset);
+            DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
             lpSketchScript->writeFloat(strNodeName, "rate", this->getBendRate());
             lpSketchScript->writeFloat(strNodeName, "center", this->getBendCenter());
             lpSketchScript->writeFloat(strNodeName, "left bound", this->getBendRegion().left);

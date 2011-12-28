@@ -8,11 +8,14 @@
 #include "PS_FrameWork/include/PS_MeshVV.h"
 #include "PS_FrameWork/include/PS_Octree.h"
 #include "PS_FrameWork/include/PS_String.h"
+#include "PS_FrameWork/include/PS_Tracker.h"
+
 
 #include "PS_BlobTree/include/CVolumeBox.h"
 #include "PS_BlobTree/include/CBlobTree.h"
 #include "PS_BlobTree/include/CSkeleton.h"
 #include "PS_BlobTree/include/CSkeletonPrimitive.h"
+
 
 #include "CompactBlobTree.h"
 #include "CPolyParsipOptimized.h"
@@ -42,6 +45,11 @@ struct CmdBlobTreeParams
     CBlobNode* lpReplacementNode;
 };
 
+
+/*!
+  * Each layer is a separate BlobTree with its own parameters for rendering.
+  *
+  */
 class CLayer
 {
 public:
@@ -53,18 +61,6 @@ private:
 
     //Compact Blobtree
     COMPACTBLOBTREE m_cptBlobTree;
-
-    /*
-    struct
-    {
-        SOABlobPrims  blobPrims;
-        SOABlobBoxMatrices blobBoxMatrices;
-        SOABlobPrimMatrices blobPrimMatrices;
-        SOABlobOps	  blobOps;
-        PolyMPUs 	  polyMPUs;
-    }m_simdPoly;
-    */
-
 
     //Layer Polygonizer
     CParsipOptimized m_polygonizer;
@@ -92,11 +88,10 @@ private:
     float m_adaptiveParam;
 
     //Identify changes for next polygonization
-    int m_revision;
+    RevisionTracker m_tracker;
 
-    //Group ID
-    int m_idLastBlobNode;
-
+    //ID Assignment to new nodes
+    RevisionTracker m_idDispenser;
 
     //Is layer visible?
     bool  m_bVisible;
@@ -142,10 +137,11 @@ public:
     CBlobNode* recursive_FindNodeByID(int id, CBlobNode* root);
     int recursive_MaxNodeID(int maxID, CBlobNode* root);
     bool recursive_ExecuteCmdBlobtreeNode(CBlobNode* root, CBlobNode* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
-    int recursive_WriteBlobNode(CSketchConfig* cfg, CBlobNode* node, int idOffset = 0);
-    int recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id, int idOffset = 0);
-    int recursive_ReadBlobNodeV0(CSketchConfig* cfg, CBlobNode* parent, int id, int& idIncremental);
 
+    /*!
+      * Recursively reads a BlobTree from Disk
+      */
+    int recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id);
 
     //Implicit BlobTree
     CBlobNode* getBlob() const { return m_lpBlobTree; }
@@ -153,19 +149,9 @@ public:
     bool hasBlob() const { return (m_lpBlobTree != NULL);}
 
     //Track changes
-    int getRevision() const {return m_revision;}
-    void bumpRevision()  { m_revision++;}
-    bool hasChanged() const {return (m_revision > 0);}
-    void resetRevision() { m_revision = 0;}
+    RevisionTracker& getTracker() {return m_tracker;}
+    RevisionTracker& getIDDispenser() {return m_idDispenser;}
 
-    int fetchLastNodeID() const { return m_idLastBlobNode;}
-    void setLastNodeID(int unusedID) { m_idLastBlobNode = unusedID;}
-    void resetLastBlobNodeID() { m_idLastBlobNode = 0;}
-    int fetchIncrementLastNodeID()
-    {
-        m_idLastBlobNode++;
-        return m_idLastBlobNode-1;
-    }
 
     //Visibility
     void setVisible(bool bVisible) { m_bVisible = bVisible;}
@@ -264,7 +250,6 @@ private:
 
 public:
     CLayerManager() { m_idxActiveLayer = -1;}
-
     CLayerManager(CLayer * aLayer);
 
     void removeAllLayers();
@@ -276,9 +261,9 @@ public:
     void	 bumpRevisions();
     void	 resetRevisions();
 
-
+    //Access to layers
     bool	 isLayerIndex(int index) const;
-    CLayer*  getLayer(int index) const;
+    CLayer*      getLayer(int index) const;
     int		 getActiveLayerIndex() const {return m_idxActiveLayer;}
     bool	 hasActiveLayer() const {return isLayerIndex(m_idxActiveLayer);}
 
@@ -328,12 +313,12 @@ public:
 
     bool saveAsVolumeData(const char* strDir, int w, int h, int d);
 
-    //Serialization
-    bool saveScript(CSketchConfig* cfg);
+    //Serialization    
     bool saveScript(const DAnsiStr& strFN);
+    bool saveScript(int idxLayer, CSketchConfig* lpSketchConfig);
 
-    bool loadScript(CSketchConfig* cfg);
     bool loadScript(const DAnsiStr& strFN);
+    bool loadScript(CSketchConfig* lpSketchConfig);
 
 
     CLayer* operator[](int index)

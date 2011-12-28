@@ -26,6 +26,7 @@
 #include "_GlobalSettings.h"
 #include "CCubeTable.h"
 #include "ConversionToActions.h"
+#include "PS_HighPerformanceRender.h"
 
 #include "GalinMedusaGenerator.h"
 #include "SampleShapes.h"
@@ -627,7 +628,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                 size_t ctSelected = active->selCountItems();
                 if((ctSelected > 0) && (displacement.isZero() == false))
                 {
-                    active->bumpRevision();
+                    active->getTracker().bump();
                     for(size_t i=0; i<ctSelected; i++)
                     {
                         CBlobNode* node = active->selGetItem(i);
@@ -1094,6 +1095,9 @@ void GLWidget::drawLayerManager()
             m_glShaderNormalMesh->bind();
             glEnable(GL_LIGHTING);
 
+
+            SIMDPOLY_Draw();
+
             //Draw mesh in WireFrame Mode
             if(TheAppSettings::Instance().setDisplay.showMesh == smWireFrame)
             {
@@ -1404,9 +1408,9 @@ void GLWidget::actMeshPolygonize(int idxLayer)
     //Reset stats
     aLayer->getPolygonizer()->resetStats();
 
-    if(aLayer->hasChanged())
+    if(aLayer->getTracker().isChanged())
     {
-        aLayer->resetRevision();
+        aLayer->getTracker().reset();
         //aLayer->setPolySeedPointAuto();
         aLayer->setOctreeFromBlobTree();
         aLayer->flattenTransformations();
@@ -1417,6 +1421,12 @@ void GLWidget::actMeshPolygonize(int idxLayer)
         //m_parsip.setAdaptiveSubdivision(TheAppSettings::Instance().setParsip.bUseAdaptiveSubDivision);
         if(aLayer->isVisible())
         {
+            int isOperator = 0;
+            SIMDPOLY_Reset();
+            SIMDPOLY_LinearizeBlobTree(aLayer->getBlob(), -1, isOperator);
+            SIMDPOLY_Run(aLayer->getCellSize());
+
+
             aLayer->setupCompactTree(aLayer->getBlob());
 
             aLayer->getPolygonizer()->setup(aLayer->getCompactTree(),
@@ -1481,7 +1491,7 @@ void GLWidget::setPrimitiveColorFromColorDlg()
                                static_cast<float>(clNew.alpha())*invFactor);
             sprim->setMaterial(ColorToMaterial(diffused));
 
-            active->bumpRevision();
+            active->getTracker().bump();
             actMeshPolygonize(m_layerManager.getActiveLayerIndex());
 
             emit sig_setPrimitiveColor(clNew);
@@ -1866,7 +1876,7 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
     */
 
     //Bump Version
-    m_layerManager.getActiveLayer()->bumpRevision();
+    m_layerManager.getActiveLayer()->getTracker().bump();
 
     //Repolygonize the model since some changes occured in properties
     actMeshPolygonize(m_layerManager.getActiveLayerIndex());
@@ -2014,7 +2024,7 @@ void GLWidget::dataChanged_tblLayers( const QModelIndex& topLeft, const QModelIn
     {
         bool bVis = (m_modelLayerManager->itemFromIndex(topLeft)->checkState() == Qt::Checked);
         m_layerManager[row]->setVisible(bVis);
-        m_layerManager[row]->bumpRevision();
+        m_layerManager[row]->getTracker().bump();
         updateGL();
     }
 }
@@ -2195,7 +2205,7 @@ void GLWidget::select_tblColorRibbon(const QModelIndex& topLeft)
         vec4f dif = m_materials[m_idxRibbonSelection].diffused * (255.0f, 255.0f, 255.0f, 255.0f);
         sprim->setMaterial(m_materials[m_idxRibbonSelection]);
 
-        active->bumpRevision();
+        active->getTracker().bump();
         emit sig_setPrimitiveColor(QColor((int)dif.x, (int)dif.y, (int)dif.z, (int)dif.w));
         emit sig_showColorRibbon(getModelColorRibbon());
         actMeshPolygonize(m_layerManager.getActiveLayerIndex());
@@ -2277,18 +2287,18 @@ void GLWidget::actLayerDuplicate()
     if(aLayer != NULL)
     {
         //Create a Memory stream for Blob Content
-        CSketchConfig* cfg = new CSketchConfig();
-        aLayer->recursive_WriteBlobNode(cfg, aLayer->getBlob(), 0);
+        CSketchConfig* lpSketchConfig = new CSketchConfig();
+        aLayer->getBlob()->saveScript(lpSketchConfig);
 
         //Create the new layer
         DAnsiStr strLayerName = PS::printToAStr("Layer %d", m_layerManager.countLayers());
         m_layerManager.addLayer(NULL, strLayerName.ptr());
         aLayer = m_layerManager.getLast();
-        aLayer->recursive_ReadBlobNode(cfg, NULL, 0);
-        aLayer->bumpRevision();
+        aLayer->recursive_ReadBlobNode(lpSketchConfig, NULL, 0);
+        aLayer->getTracker().bump();
 
         //Delete memory stream
-        SAFE_DELETE(cfg);
+        SAFE_DELETE(lpSketchConfig);
 
         emit sig_showLayerManager(getModelLayerManager());
         emit sig_enableHasLayer(m_layerManager.countLayers() > 0);
@@ -2505,7 +2515,7 @@ void GLWidget::actEditDelete()
     {
         if(active->recursive_ExecuteCmdBlobtreeNode(active->getBlob(), node, cbtDelete))
         {
-            active->bumpRevision();
+            active->getTracker().bump();
             actMeshPolygonize(m_layerManager.getActiveLayerIndex());
         }
     }
@@ -2533,7 +2543,7 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
         {
             //Create a global union node first
             CBlobNode* globalUnion = TheBlobNodeFactoryIndex::Instance().CreateObject(bntOpUnion);
-            globalUnion->setID(aLayer->fetchIncrementLastNodeID());
+            globalUnion->setID(aLayer->getIDDispenser().bump());
             aLayer->setBlob(globalUnion);
             root = aLayer->getBlob();
         }
@@ -2548,7 +2558,7 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
     if(preferredID >= 0)
         primitive->setID(preferredID);
     else
-        primitive->setID(aLayer->fetchIncrementLastNodeID());
+        primitive->setID(aLayer->getIDDispenser().bump());
     aLayer->getBlob()->addChild(primitive);
     primitive->getTransform().addTranslate(pos);
 
@@ -2559,7 +2569,7 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
     }
 
     //Set revision
-    aLayer->bumpRevision();
+    aLayer->getTracker().bump();
 
     int idxLayer = m_layerManager.getActiveLayerIndex();
     actMeshPolygonize(idxLayer);
@@ -2596,7 +2606,7 @@ CBlobNode* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
     if(preferredID >= 0)
         op->setID(preferredID);
     else
-        op->setID(aLayer->fetchIncrementLastNodeID());
+        op->setID(aLayer->getIDDispenser().bump());
 
     //Find parent and update relationships
     CBlobNode* dstParent = NULL;
@@ -2645,7 +2655,7 @@ CBlobNode* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
     if(bSendToNet &&(CDesignNet::GetDesignNet()->countMembers() > 0))
         actNetSendCommand(cmdOperator, op, op->getMaterial().diffused);
 
-    aLayer->bumpRevision();
+    aLayer->getTracker().bump();
 
     int idxLayer = m_layerManager.getActiveLayerIndex();
 
@@ -2778,9 +2788,9 @@ void GLWidget::userInterfaceReady()
     emit sig_setParsipCellSize(static_cast<int>(DEFAULT_CELL_SIZE * CELL_SIZE_SCALE));
     //============================================================================
     //Select the first layer to start drawing right away
-    m_layerManager.addLayer(NULL, "Layer 0");
-    selectLayer(0);
+    m_layerManager.addLayer(NULL, "Layer 0");    
     m_layerManager.bumpRevisions();
+    selectLayer(0);
     emit sig_showLayerManager(getModelLayerManager());
 
     //Set Threads Count
@@ -2886,7 +2896,7 @@ void GLWidget::actEditPaste()
 void GLWidget::addUndoLevel()
 {
     CSketchConfig* pUndoLevel = new CSketchConfig();
-    m_layerManager.saveScript(pUndoLevel);
+    m_layerManager.saveScript(m_layerManager.getActiveLayerIndex(), pUndoLevel);
 
     if(m_ctUndoLevels < MAX_UNDO_LEVEL)
     {
@@ -3626,7 +3636,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
 
         if(result == ackSuccess)
         {
-            active->bumpRevision();
+            active->getTracker().bump();
             actMeshPolygonize(m_layerManager.getActiveLayerIndex());
         }
 
@@ -3768,7 +3778,7 @@ void GLWidget::advanceAnimation()
     CAnimManagerSingleton::Instance().advanceAnimation(m_animTime);
 
     //Polygonize
-    active->bumpRevision();
+    active->getTracker().bump();
     actMeshPolygonize();
 
     //Increment
@@ -3800,7 +3810,7 @@ void GLWidget::actEditConvertToBinaryTree()
     }
 
     //Re-polygonize
-    m_layerManager.getActiveLayer()->bumpRevision();
+    m_layerManager.getActiveLayer()->getTracker().bump();
     actMeshPolygonize(m_layerManager.getActiveLayerIndex());
     emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
 }
@@ -3873,7 +3883,7 @@ void GLWidget::actAnimSetStartLoc()
     {
         obj->gotoStart();
 
-        active->bumpRevision();
+        active->getTracker().bump();
         actMeshPolygonize(m_layerManager.getActiveLayerIndex());
     }
 }
@@ -3888,7 +3898,7 @@ void GLWidget::actAnimSetEndLoc()
     {
         obj->gotoEnd();
 
-        active->bumpRevision();
+        active->getTracker().bump();
         actMeshPolygonize(m_layerManager.getActiveLayerIndex());
     }
 }

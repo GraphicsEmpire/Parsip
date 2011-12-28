@@ -183,6 +183,7 @@ public:
             return bntPrimSkeleton;
     }
 
+    bool saveScript(CSketchConfig* lpSketchScript);
 private:
     vec3f getPolySeedPoint()
     {

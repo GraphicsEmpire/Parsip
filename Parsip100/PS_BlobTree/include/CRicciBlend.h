@@ -149,12 +149,12 @@ public:
     bool isOperator() { return true;}
     BlobNodeType getNodeType() {return bntOpRicciBlend;}
 
-    bool saveScript(CSketchConfig* lpSketchScript, int idOffset = 0)
+    bool saveScript(CSketchConfig* lpSketchScript)
     {
-        bool bres = saveGenericInfoScript(lpSketchScript, idOffset);
+        bool bres = saveGenericInfoScript(lpSketchScript);
 
         //Write parameters for RicciBlend
-        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID() + idOffset);
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
         lpSketchScript->writeFloat(strNodeName, "power", this->getN());
         return bres;
     }

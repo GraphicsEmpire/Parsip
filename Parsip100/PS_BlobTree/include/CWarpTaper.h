@@ -213,12 +213,12 @@ public:
     bool isOperator() { return true;}
     BlobNodeType getNodeType() {return bntOpWarpTaper;}
 
-    bool saveScript(CSketchConfig* lpSketchScript, int idOffset = 0)
+    bool saveScript(CSketchConfig* lpSketchScript)
     {
-        bool bres = saveGenericInfoScript(lpSketchScript, idOffset);
+        bool bres = saveGenericInfoScript(lpSketchScript);
 
         //Write parameters for RicciBlend
-        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID() + idOffset);
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
         lpSketchScript->writeFloat(strNodeName, "factor", this->getWarpFactor());
         lpSketchScript->writeInt(strNodeName, "base axis", static_cast<int>(this->getAxisAlong()));
         lpSketchScript->writeInt(strNodeName, "taper axis", static_cast<int>(this->getAxisTaper()));

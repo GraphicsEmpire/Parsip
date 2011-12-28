@@ -17,6 +17,14 @@ namespace{
 namespace PS{
 namespace BLOBTREE{
 
+bool CSkeletonPrimitive::saveScript(CSketchConfig* lpSketchScript)
+{
+    bool bres = saveGenericInfoScript(lpSketchScript);
+    if(m_skeleton)
+        bres &= m_skeleton->saveScript(lpSketchScript, this->getID());
+    return bres;
+}
+
 bool CSkeletonPrimitive::findSeedPoint(bool bFindHot, float iso_value, vec3f& p, float& fp)
 {
     if(bFindHot == (fp > iso_value)) return true;

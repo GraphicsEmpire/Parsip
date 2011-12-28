@@ -8,10 +8,8 @@
 #include "PS_FrameWork/include/PS_Vector.h"
 #include "PS_FrameWork/include/PS_GeometryFuncs.h"
 #include "PS_FrameWork/include/PS_Octree.h"
-#include "PS_FrameWork/include/PS_String.h"
 #include "PS_FrameWork/include/PS_SketchConfig.h"
 
-#include "BlobTreeScripting.h"
 #include "CVolumeSphere.h"
 #include "_constSettings.h"
 

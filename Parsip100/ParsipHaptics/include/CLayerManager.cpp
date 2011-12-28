@@ -9,17 +9,8 @@
 #include "PS_FrameWork/include/PS_AppConfig.h"
 #include "PS_FrameWork/include/PS_ErrorManager.h"
 #include "PS_BlobTree/include/BlobTreeBuilder.h"
-/*
-#include "PS_BlobTree/include/CWarpBend.h"
-#include "PS_BlobTree/include/CWarpShear.h"
-#include "PS_BlobTree/include/CWarpTaper.h"
-#include "PS_BlobTree/include/CWarpTwist.h"
-#include "PS_BlobTree/include/CAffine.h"
-#include "PS_BlobTree/include/CSkeletonPrimitive.h"
-*/
 
 #include "PS_BlobTree/include/BlobTreeLibraryAll.h"
-#include "PS_BlobTree/include/BlobTreeScripting.h"
 
 /*
 Layer will group a set of BlobNodes so that they can be polygonized together.
@@ -37,27 +28,21 @@ CLayer::CLayer()
 {
     m_lpMesh	 = NULL;
     m_lpBlobTree = NULL;
-    m_bVisible = true;
-    m_revision		 = 0;
-    m_idLastBlobNode = 0;
+    m_bVisible   = true;
 }
 
 CLayer::CLayer(CBlobNode * node)
 {
     m_lpMesh     = NULL;
     m_lpBlobTree = node;
-    m_bVisible = true;
-    m_revision		 = 0;
-    m_idLastBlobNode = 0;
+    m_bVisible   = true;    
 }
 
 CLayer::CLayer(const CMeshVV& mesh)
 {
     setMesh(mesh);
     m_lpBlobTree = NULL;
-    m_bVisible = true;
-    m_revision		 = 0;
-    m_idLastBlobNode = 0;
+    m_bVisible = true;        
 }
 
 CLayer::~CLayer()
@@ -455,16 +440,8 @@ int CLayer::recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobNo
 
 }
 
-int CLayer::recursive_WriteBlobNode(CSketchConfig* cfg, CBlobNode* node, int idOffset)
-{
-    if(cfg == NULL) return -1;
-    if(node == NULL) return -1;
-
-    return node->saveScript(cfg, idOffset);
-}
-
 //////////////////////////////////////////////////////////////////////////
-int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id, int idOffset)
+int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id)
 {
     if(cfg == NULL) return 0;
 
@@ -497,7 +474,7 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
 
         //Read Operator params
         opNode->loadScript(cfg, id);
-        opNode->setID(id - idOffset);
+        opNode->setID(id);
 
         //Build Children
         int res = 0;
@@ -508,7 +485,7 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
 
             //Find all the children for this operator
             for(U32 i=0; i<arrayInt.size(); i++)
-                res += recursive_ReadBlobNode(cfg, opNode, arrayInt[i], idOffset);
+                res += recursive_ReadBlobNode(cfg, opNode, arrayInt[i]);
             arrayInt.clear();
         }
 
@@ -538,7 +515,7 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
         //Set Params
         primNode->loadScript(cfg, id);
         primNode->getSkeleton()->loadScript(cfg, id);
-        primNode->setID(id - idOffset);
+        primNode->setID(id);
         if(parent == NULL)
             m_lpBlobTree = primNode;
         else
@@ -875,12 +852,12 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
                 else
                 {
                     cur = TheBlobNodeCloneFactory::Instance().CreateObject(clonned);
-                    cur->setID(this->fetchIncrementLastNodeID());
+                    cur->setID(this->getIDDispenser().bump());
                 }
 
                 //Clone child
                 clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
-                clonnedChild->setID(this->fetchIncrementLastNodeID());
+                clonnedChild->setID(this->getIDDispenser().bump());
 
                 //Add clonned child to parent
                 cur->addChild(clonnedChild);
@@ -896,7 +873,7 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
             if(prev)
             {
                 clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getLastChild());
-                clonnedChild->setID(this->fetchIncrementLastNodeID());
+                clonnedChild->setID(this->getIDDispenser().bump());
 
                 //Last node has 2 children
                 prev->addChild(clonnedChild);
@@ -913,7 +890,7 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
                 {
                     //Clone child
                     clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
-                    clonnedChild->setID(this->fetchIncrementLastNodeID());
+                    clonnedChild->setID(this->getIDDispenser().bump());
 
                     //Add clone child to clonned parent
                     clonned->addChild(clonnedChild);
@@ -924,7 +901,7 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
                 else
                 {                    
                     clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("NULL");
-                    clonnedChild->setID(this->fetchIncrementLastNodeID());
+                    clonnedChild->setID(this->getIDDispenser().bump());
 
                     //Add clone child to clonned parent
                     clonned->addChild(clonnedChild);
@@ -976,11 +953,11 @@ int CLayer::convertToBinaryTree()
     int ctErrors = recursive_countBinaryTreeErrors(root);
     if(ctErrors > 0)
     {
-        this->resetLastBlobNodeID();
+        this->getIDDispenser().reset();
 
         //Create a clone of the node
         CBlobNode* replacement = TheBlobNodeCloneFactory::Instance().CreateObject(root);
-        replacement->setID(this->fetchIncrementLastNodeID());
+        replacement->setID(this->getIDDispenser().bump());
         if(recursive_convertToBinaryTree(root, replacement) > 0)
         {
             SAFE_DELETE(root);
@@ -1280,13 +1257,13 @@ size_t CLayerManager::countOctrees() const
 void CLayerManager::bumpRevisions()
 {
     for(size_t i=0; i<m_lstLayers.size(); i++)
-        getLayer(i)->bumpRevision();
+        getLayer(i)->getTracker().bump();
 }
 
 void CLayerManager::resetRevisions()
 {
     for(size_t i=0; i<m_lstLayers.size(); i++)
-        getLayer(i)->resetRevision();
+        getLayer(i)->getTracker().reset();
 }
 
 int CLayerManager::hitLayerOctree( const CRay& ray, float t0, float t1 ) const
@@ -1343,42 +1320,60 @@ bool CLayerManager::saveScript( const DAnsiStr& strFN )
 {
     if(m_lstLayers.size() == 0) return false;
 
-    CSketchConfig* cfg = new CSketchConfig(strFN, CAppConfig::fmWrite);
-    bool bres = saveScript(cfg);
-    SAFE_DELETE(cfg);
+    bool bres;
+    if(this->countLayers() > 1)
+    {
+        bres = true;
+
+        DAnsiStr strPath = PS::FILESTRINGUTILS::ExtractFilePath(strFN);
+        DAnsiStr strTitle = PS::FILESTRINGUTILS::ExtractFileTitleOnly(strFN);
+        for(int i=0; i<this->countLayers(); i++)
+        {
+            DAnsiStr strActualPath = strPath + strTitle;
+            strActualPath += printToAStr("_L%d.scene", i+1);
+            CSketchConfig* lpSketchConfig = new CSketchConfig(strActualPath, CAppConfig::fmWrite);
+            bres &= saveScript(i, lpSketchConfig);
+            SAFE_DELETE(lpSketchConfig);
+        }
+    }
+    else
+    {
+        CSketchConfig* lpSketchConfig = new CSketchConfig(strFN, CAppConfig::fmWrite);
+        bres = saveScript(0, lpSketchConfig);
+        SAFE_DELETE(lpSketchConfig);
+    }
+
     return bres;
 }
 
-bool CLayerManager::saveScript( CSketchConfig* cfg )
+bool CLayerManager::saveScript(int idxLayer, CSketchConfig* lpSketchConfig )
 {
-    if(cfg == NULL) return false;
+    if(lpSketchConfig == NULL) return false;
+    if(!isLayerIndex(idxLayer)) return false;
 
-    CLayer* aLayer = NULL;
+    CLayer* aLayer = getLayer(idxLayer);
 
     vector<int> layersRoot;
-    int offset = 0;
-    for(size_t i=0; i<m_lstLayers.size(); i++)
+    if(aLayer->hasBlob())
     {
-        aLayer = getLayer(i);
-        if(aLayer->hasBlob())
-        {
-            layersRoot.push_back(aLayer->getBlob()->getID() + offset);
-            aLayer->recursive_WriteBlobNode(cfg, aLayer->getBlob(), offset);
-            offset += aLayer->fetchLastNodeID();
-        }
-        else
-            layersRoot.push_back(-1);
+        layersRoot.push_back(aLayer->getBlob()->getID());
+        aLayer->getBlob()->saveScript(lpSketchConfig);
     }
+    else
+        layersRoot.push_back(-1);
 
-    cfg->writeInt("Global", "FileVersion", SCENE_FILE_VERSION);
-    cfg->writeInt("Global", "NumLayers", m_lstLayers.size());
-    cfg->writeIntArray("Global", "RootIDs", layersRoot);
+
+    lpSketchConfig->writeInt("Global", "FileVersion", SCENE_FILE_VERSION);
+    lpSketchConfig->writeInt("Global", "NumLayers", m_lstLayers.size());
+    lpSketchConfig->writeInt("Global", "CurrentLayer", idxLayer + 1);
+    lpSketchConfig->writeIntArray("Global", "RootIDs", layersRoot);
     return true;
 }
 
 bool CLayerManager::loadScript( const DAnsiStr& strFN )
 {
     if(!PS::FILESTRINGUTILS::FileExists(strFN.ptr())) return false;
+    //DAnsiStr strTitle = PS::FILESTRINGUTILS::ExtractFileTitleOnly(strFN);
 
     CSketchConfig* cfg = new CSketchConfig(strFN, CAppConfig::fmRead);
     bool bres = loadScript(cfg);
@@ -1386,20 +1381,20 @@ bool CLayerManager::loadScript( const DAnsiStr& strFN )
     return bres;
 }
 
-bool CLayerManager::loadScript( CSketchConfig* cfg )
+bool CLayerManager::loadScript( CSketchConfig* lpSketchConfig )
 {
     removeAllLayers();
-    int ctLayers = cfg->readInt("Global", "NumLayers");
+    int ctLayers = lpSketchConfig->readInt("Global", "NumLayers");
     if(ctLayers <= 0)
         return false;
 
-    int fileVersion = cfg->readInt("Global", "FileVersion");
+    int fileVersion = lpSketchConfig->readInt("Global", "FileVersion");
 
     vector<int> layersRoot;
-    cfg->readIntArray("Global", "RootIDs", ctLayers, layersRoot);
+    lpSketchConfig->readIntArray("Global", "RootIDs", ctLayers, layersRoot);
 
     CLayer* aLayer = NULL;
-    for(size_t i=0; i<layersRoot.size(); i++)
+    for(U32 i=0; i<layersRoot.size(); i++)
     {
         aLayer = new CLayer();
         aLayer->setCellSize(DEFAULT_CELL_SIZE);
@@ -1409,13 +1404,13 @@ bool CLayerManager::loadScript( CSketchConfig* cfg )
         aLayer->setGroupName(printToAStr("Layer %d", i));
         if(layersRoot[i] >= 0)
         {
-            aLayer->recursive_ReadBlobNode(cfg, NULL, layersRoot[i], layersRoot[i]);
-            aLayer->bumpRevision();
+            aLayer->recursive_ReadBlobNode(lpSketchConfig, NULL, layersRoot[i]);
+            aLayer->getTracker().bump();
         }
 
         //Update lastNodeID
         int lastUsedID = aLayer->recursive_MaxNodeID(-1, aLayer->getBlob());
-        aLayer->setLastNodeID(lastUsedID + 1);
+        aLayer->getIDDispenser().set(lastUsedID + 1);
 
         addLayer(aLayer);
     }

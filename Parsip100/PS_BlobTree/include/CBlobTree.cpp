@@ -6,11 +6,11 @@
 namespace PS{
 namespace BLOBTREE {
 
-bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig, int idOffset)
+bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig)
 {
     //First write current operator
     //Use the same id passed in as parameter for writing the operator
-    DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID() + idOffset);
+    DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
 
     //Type
     lpSketchConfig->writeBool(strNodeName, "IsOperator", this->isOperator());
@@ -30,7 +30,7 @@ bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig, int idOffse
         for(U32 i=0; i<this->countChildren(); i++)
         {
             arrayInt.push_back(this->getChild(i)->getID());
-            this->getChild(i)->saveScript(lpSketchConfig, idOffset);
+            this->getChild(i)->saveScript(lpSketchConfig);
         }
 
         lpSketchConfig->writeIntArray(strNodeName, "ChildrenIDs", arrayInt);
@@ -42,15 +42,9 @@ bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig, int idOffse
         lpSketchConfig->writeVec4f(strNodeName, "MtrlAmbient", m.ambient);
         lpSketchConfig->writeVec4f(strNodeName, "MtrlDiffused", m.diffused);
         lpSketchConfig->writeVec4f(strNodeName, "MtrlSpecular", m.specular);
-        lpSketchConfig->writeFloat(strNodeName, "MtrlShininess", m.shininess);
-
-        std::string strName;
-        if(this->getNodeType() == bntPrimSkeleton)
-            strName = reinterpret_cast<CSkeletonPrimitive*>(this)->getSkeleton()->getName();
-        else
-            strName = this->getName();
+        lpSketchConfig->writeFloat(strNodeName, "MtrlShininess", m.shininess);        
         //Write skeleton Name
-        lpSketchConfig->writeString(strNodeName, "SkeletonType", DAnsiStr(strName.c_str()));
+        lpSketchConfig->writeString(strNodeName, "SkeletonType", DAnsiStr(this->getName().c_str()));
     }
 
     return true;

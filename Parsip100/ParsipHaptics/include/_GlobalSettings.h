@@ -14,7 +14,7 @@
 #define MAX_UNDO_LEVEL	   10
 #define MAX_NAME_LEN	   32
 #define MAX_DATETIME_LEN   26
-#define SCENE_FILE_VERSION 2
+#define SCENE_FILE_VERSION 3
 
 const std::string appname = "PARSIP";
 const std::string companyname = "POURYASHIRAZIAN";

@@ -336,9 +336,9 @@ public:
 
     //New Functions
     virtual std::string getName() = 0;
-    virtual bool saveScript(CSketchConfig* lpSketchScript, int idOffset = 0)
+    virtual bool saveScript(CSketchConfig* lpSketchScript)
     {
-        return saveGenericInfoScript(lpSketchScript, idOffset);
+        return saveGenericInfoScript(lpSketchScript);
     }
 
     virtual bool loadScript(CSketchConfig* lpSketchScript, int id)
@@ -367,7 +367,7 @@ protected:
     CEditLock m_lock;
     CAffineTransformation m_transform;
 
-    bool saveGenericInfoScript(CSketchConfig* lpSketchConfig, int idOffset = 0);
+    bool saveGenericInfoScript(CSketchConfig* lpSketchConfig);
     bool loadGenericInfoScript(CSketchConfig* lpSketchConfig, int id);
 };
 
