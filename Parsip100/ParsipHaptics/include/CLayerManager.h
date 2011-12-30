@@ -105,8 +105,7 @@ private:
     int recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobNode* node);
 
     int recursive_GetBlobTreeSeedPoints(CBlobNode* node, stack<CBlobNode*> &stkOperators);
-    int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);
-    int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned);
+    int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);    
     int recursive_countBinaryTreeErrors( CBlobNode* node );
 
 public:
@@ -133,8 +132,9 @@ public:
 
     void cleanup();
 
-    CBlobNode* findNodeByID(int id);
+    CBlobNode* findNodeByID(int id);    
     CBlobNode* recursive_FindNodeByID(int id, CBlobNode* root);
+    int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned);
     int recursive_MaxNodeID(int maxID, CBlobNode* root);
     bool recursive_ExecuteCmdBlobtreeNode(CBlobNode* root, CBlobNode* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
 

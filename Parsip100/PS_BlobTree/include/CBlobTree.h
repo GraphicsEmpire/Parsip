@@ -302,15 +302,15 @@ public:
         return n;
     }
     //////////////////////////////////////////////////////////////////////////
-    /**
-      * Computes fieldvalue and gradient of the model at point p, uses delta for optimized forward differencing,
-   * Four field evaluations will be performed.
-      * @param p the point to find gradient for
-      * @param delta forward differencing
-   * @param outGradient Output param for Un-normalized gradient
-   * @param outField Output param for computed fieldvalue at point p
-      * @return 4 which is the number of field evaluations
-      */
+    /*!
+     * Computes fieldvalue and gradient of the model at point p, uses delta for optimized forward differencing,
+     * Four field evaluations will be performed.
+     * @param p the point to find gradient for
+     * @param delta forward differencing
+     * @param outGradient Output param for Un-normalized gradient
+     * @param outField Output param for computed fieldvalue at point p
+     * @return 4 which is the number of field evaluations
+     */
     virtual int fieldValueAndGradient(vec3f p, float delta, vec3f &outGradient, float &outField)
     {
         float fp = fieldValue(p);
@@ -348,12 +348,43 @@ public:
 
     virtual int getProperties(PropertyList& outProperties)
     {
-        return 0;
+        if(!isOperator())
+        {
+            outProperties.resize(0);
+            outProperties.add(m_transform.getScale(), "scale");
+            outProperties.add(m_transform.getTranslate(), "translate");
+
+            vec3f axis;
+            float angleDeg;
+            m_transform.getRotation().getAxisAngle(axis, angleDeg);
+            outProperties.add(vec4f(axis, angleDeg), "rotate");
+            return 3;
+        }
+        else
+            return 0;
     }
 
     virtual int setProperties(const PropertyList& inProperties)
     {
-        return 0;
+        if(inProperties.size() == 0)
+            return 0;
+
+        int idxProp = PropertyList::FindProperty(inProperties, "scale");
+        if(idxProp >= 0)
+            this->getTransform().setScale(inProperties[idxProp].asVec3());
+
+        idxProp = PropertyList::FindProperty(inProperties, "translate");
+        if(idxProp >= 0)
+            this->getTransform().setTranslate(inProperties[idxProp].asVec3());
+
+
+        idxProp = PropertyList::FindProperty(inProperties, "rotate");
+        if(idxProp >= 0)
+        {
+            vec4f rot = inProperties[idxProp].asVec4();
+            this->getTransform().setRotation(rot.w, rot.xyz());
+        }
+        return 3;
     }
 
     void copyGenericInfo(const CBlobNode* rhs);

@@ -42,6 +42,47 @@ public:
 
     ~Property() {}
 
+    DAnsiStr asString(int floatPrecision = 3) const;
+
+    int asInt() const
+    {
+        assert(value.valStr.length() > 0);
+        return atoi(value.valStr.cptr());
+    }
+
+    float asFloat() const
+    {
+        assert(value.valStr.length() > 0);
+        return atof(value.valStr.cptr());
+    }
+
+    vec2f asVec2() const
+    {
+        assert(value.valStr.length() > 0);
+        vec2f v;
+        sscanf(value.valStr.cptr(), "%f %f", &v.x, &v.y);
+        return v;
+    }
+
+    vec3f asVec3() const
+    {
+        assert(value.valStr.length() > 0);
+        vec3f v;
+        sscanf(value.valStr.cptr(), "%f %f %f", &v.x, &v.y, &v.z);
+        return v;
+    }
+
+    vec4f asVec4() const
+    {
+        assert(value.valStr.length() > 0);
+        vec4f v;
+        sscanf(value.valStr.cptr(), "%f %f %f %f", &v.x, &v.y, &v.z, &v.w);
+        return v;
+    }
+
+    //Converts current string property to the destination data type
+    bool convertTo(PROPERTYTYPE destType);
+
     int valInt() const
     {
         assert(dtype == ttInt);
@@ -73,7 +114,7 @@ public:
         return value.valStr;
     }
 
-    DAnsiStr asString(int floatPrecision = 2) const;
+
 
     operator const int () const {return this->valInt();}
     operator const float () const {return this->valFloat();}
@@ -113,7 +154,7 @@ public:
 
     static int FindProperty(const PropertyList& propList,
                             const char* lpName,
-                            PROPERTYTYPE expectedType = ttInt,
+                            PROPERTYTYPE expectedType = ttUnknown,
                             int fromIdx = 0);
 
 

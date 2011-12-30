@@ -275,6 +275,11 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
             prims[curID].res2.set(p2.x, p2.y, p2.z);
         }
             break;
+        case(bntPrimNull):
+        {
+            prims[curID].pos.set(0, 0 ,0);
+        }
+        break;
         default:
         {
             DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", root->getName());

@@ -1,7 +1,7 @@
 #include "PS_HighPerformanceRender.h"
 #include "PS_ErrorManager.h"
 #include "BlobTreeLibraryAll.h"
-#include "ParsipCmd/ParsipCmd/PS_Polygonizer.h"
+#include "ParsipMultiCoreRenderingLib/PS_Polygonizer.h"
 
 #define __NO_STD_VECTOR // Use cl::vector and cl::string and
 #define __NO_STD_STRING // not STL versions, more on this later

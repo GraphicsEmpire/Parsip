@@ -38,7 +38,7 @@
          <x>0</x>
          <y>0</y>
          <width>688</width>
-         <height>694</height>
+         <height>712</height>
         </rect>
        </property>
       </widget>
@@ -1171,7 +1171,7 @@
      <x>0</x>
      <y>0</y>
      <width>994</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1279,6 +1279,7 @@
     <addaction name="actEditTransformSkeleton"/>
     <addaction name="separator"/>
     <addaction name="actEditCopy"/>
+    <addaction name="separator"/>
     <addaction name="actEditField"/>
     <addaction name="actEditConvert"/>
     <addaction name="actEditFieldProbe"/>

@@ -90,8 +90,7 @@ GLWidget::GLWidget(QWidget *parent)
     m_modelLayerManager         = NULL;
     m_modelBlobNodeProperty     = NULL;
     m_modelStats                = NULL;
-    m_modelColorRibbon		= NULL;
-    m_lpSelectedBlobNode	= NULL;
+    m_modelColorRibbon		= NULL;    
     m_lpUIWidget                = NULL;
 
     m_idxRibbonSelection = 0;
@@ -1334,7 +1333,6 @@ void GLWidget::actCloseProject()
     //m_optParsip.removeAllMPUs();
     m_layerManager.selRemoveItems();
     m_layerManager.removeAllLayers();
-    m_lpSelectedBlobNode = NULL;
 
     emit sig_showLayerManager(NULL);
     emit sig_showBlobTree(NULL);
@@ -1421,10 +1419,11 @@ void GLWidget::actMeshPolygonize(int idxLayer)
         //m_parsip.setAdaptiveSubdivision(TheAppSettings::Instance().setParsip.bUseAdaptiveSubDivision);
         if(aLayer->isVisible())
         {
-            int isOperator = 0;
-            SIMDPOLY_Reset();
-            SIMDPOLY_LinearizeBlobTree(aLayer->getBlob(), -1, isOperator);
-            SIMDPOLY_Run(aLayer->getCellSize());
+            //int isOperator = 0;
+            //aLayer->convertToBinaryTree();
+            //SIMDPOLY_Reset();
+            //SIMDPOLY_LinearizeBlobTree(aLayer->getBlob(), -1, isOperator);
+            //SIMDPOLY_Run(aLayer->getCellSize());
 
 
             aLayer->setupCompactTree(aLayer->getBlob());
@@ -1686,8 +1685,7 @@ QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobNode* lpNode)
                   static_cast<int>(dif.w * 255.0f));
         emit sig_setPrimitiveColor(cl);
     }
-*/
-    m_lpSelectedBlobNode = lpNode;
+*/    
     connect(m_modelBlobNodeProperty, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(dataChanged_tblBlobProperty(QModelIndex, QModelIndex)));
     return m_modelBlobNodeProperty;
 }
@@ -1696,7 +1694,6 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
 {
     //Check active layer
     if(!m_layerManager.hasActiveLayer()) return;
-    if(m_lpSelectedBlobNode == NULL) return;
 
     //Check if we have an associated primitive
     //CLayer* actLayer = m_layerManager.getActiveLayer();
@@ -1705,6 +1702,12 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
     int row = topLeft.row();
     int col = topLeft.column();
     if(col != 1) return;
+
+    PropertyList lstProps;
+    //Val, Name
+    lstProps.add(DAnsiStr(m_modelBlobNodeProperty->item(row, 1)->text().toAscii()),
+                 m_modelBlobNodeProperty->item(row, 0)->text().toAscii());
+    m_layerManager.getActiveLayer()->selGetItem(0)->setProperties(lstProps);
 
     //Set Affine things
     /*
@@ -2870,22 +2873,16 @@ void GLWidget::actEditCopy()
     if(active->getBlob() == NULL) return;
     if(active->selCountItems() == 0) return;
 
-    /*
-    int rootID = active->fetchIncrementLastNodeID();
-    int added = 0;
-    CBlobNode* clonned = cloneBlobTree(active->selGetItem(), rootID, &added);
-    while(added > 0)
+    CBlobNode* clonned = TheBlobNodeCloneFactory::Instance().CreateObject(active->selGetItem());
+    clonned->setID(active->getIDDispenser().bump());
+    if(active->recursive_convertToBinaryTree(active->selGetItem(), clonned) > 0)
     {
-        active->fetchIncrementLastNodeID();
-        added--;
+        active->getBlob()->addChild(clonned);
+        actMeshPolygonize(m_layerManager.getActiveLayerIndex());
+        emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
     }
-
-    clonned->getTransform().addTranslate(vec3f(0.5, 0.5, 0.5));
-    active->getBlob()->addChild(clonned);
-    */
-
-    actMeshPolygonize(m_layerManager.getActiveLayerIndex());
-    emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
+    else
+        SAFE_DELETE(clonned);
 }
 
 void GLWidget::actEditPaste()

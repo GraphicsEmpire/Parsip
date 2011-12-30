@@ -276,7 +276,6 @@ private:
     GLuint			  m_glChessBoard;
     GLuint			  m_glTopCornerCube;
     vector<vec3f>		  m_lstSketchControlPoints;
-    CBlobNode*		  m_lpSelectedBlobNode;
 
     QStandardItemModel*	m_modelBlobNodeProperty;
     QStandardItemModel*	m_modelBlobTree;

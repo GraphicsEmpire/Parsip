@@ -3,6 +3,52 @@
 
 namespace PS{
 
+
+bool Property::convertTo(PROPERTYTYPE destType)
+{
+    if(value.valStr.length() == 0)
+        return false;
+    if(destType == ttStr)
+        return false;
+
+    this->dtype = destType;
+    switch(destType)
+    {
+    case(ttInt):
+    {
+        value.valInt  = atoi(value.valStr.cptr());
+    }
+    break;
+    case(ttFLT):
+    {
+        value.valFloat = atof(value.valStr.cptr());
+    }
+    break;
+    case(ttVec2):
+    {
+        sscanf(value.valStr.cptr(), "%f %f", &value.valVec2.x, &value.valVec2.y);
+    }
+    break;
+    case(ttVec3):
+    {
+        sscanf(value.valStr.cptr(), "%f %f %f",
+               &value.valVec3.x, &value.valVec3.y, &value.valVec3.z);
+    }
+    break;
+    case(ttVec4):
+    {
+        sscanf(value.valStr.cptr(), "%f %f %f %f",
+               &value.valVec4.x, &value.valVec4.y, &value.valVec4.z, &value.valVec4.w);
+    }
+    break;
+
+    }
+
+    return true;
+}
+
+
+
 DAnsiStr Property::asString(int floatPrecision) const
 {
     DAnsiStr strValue;
@@ -94,28 +140,6 @@ void PropertyList::add(const DAnsiStr& val, const char* lpName)
     this->push_back(p);
 }
 
-/*
-Property& PropertyList::findProperty(const char* lpName,
-                                     PROPERTYTYPE expectedType,
-                                     int fromIdx)
-
-{
-    Property unknown;
-    if(fromIdx < 0 || fromIdx >= this->size())
-        fromIdx = 0;
-
-    for(int i=fromIdx; i<(int)this->size(); i++)
-    {
-        if(this->at(i).dtype == expectedType)
-        {
-            if(this->at(i).name == DAnsiStr(lpName))
-                return this->at(i);
-        }
-    }
-
-    return unknown;
-}
-*/
 int PropertyList::FindProperty(const PropertyList& propList,
                         const char* lpName,
                         PROPERTYTYPE expectedType,
@@ -125,12 +149,23 @@ int PropertyList::FindProperty(const PropertyList& propList,
     if(fromIdx < 0 || fromIdx >= propList.size())
         fromIdx = 0;
 
-    for(int i=fromIdx; i<(int)propList.size(); i++)
+    if(expectedType == ttUnknown)
     {
-        if(propList[i].dtype == expectedType)
+        for(int i=fromIdx; i<(int)propList.size(); i++)
         {
             if(propList[i].name == DAnsiStr(lpName))
                 return i;
+        }
+    }
+    else
+    {
+        for(int i=fromIdx; i<(int)propList.size(); i++)
+        {
+            if(propList[i].dtype == expectedType)
+            {
+                if(propList[i].name == DAnsiStr(lpName))
+                    return i;
+            }
         }
     }
 

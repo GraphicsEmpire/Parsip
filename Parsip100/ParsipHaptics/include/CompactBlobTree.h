@@ -17,42 +17,42 @@ using namespace PS::MATH;
 
 struct TreeNodeCache
 {
-	vec4f xyzf[MAX_TREENODE_FVCACHE];
-	float hashVal[MAX_TREENODE_FVCACHE];
-	int ctFilled;
+    vec4f xyzf[MAX_TREENODE_FVCACHE];
+    float hashVal[MAX_TREENODE_FVCACHE];
+    int ctFilled;
 };
 
 //Compact Structure for all primitives
 struct BlobPrimitive
 {
-        int orgID;
-        BlobNodeType type;
-	vec4f color;
-	vec4f pos;
-	vec4f dir;
-	vec4f res1;
-	vec4f res2;
-	vec4f octLo;
-	vec4f octHi;	
-	vec4f mtxBackwardR0;
-	vec4f mtxBackwardR1;
-	vec4f mtxBackwardR2;
-	vec4f mtxBackwardR3;	
-//	TreeNodeCache fvCache;
+    int orgID;
+    BlobNodeType type;
+    vec4f color;
+    vec4f pos;
+    vec4f dir;
+    vec4f res1;
+    vec4f res2;
+    vec4f octLo;
+    vec4f octHi;
+    vec4f mtxBackwardR0;
+    vec4f mtxBackwardR1;
+    vec4f mtxBackwardR2;
+    vec4f mtxBackwardR3;
+    //	TreeNodeCache fvCache;
 };
 
 //Compact Structure for all operators
 struct BlobOperator
 {
-	BlobNodeType type;
-        int orgID;
-	int ctKids;
-	//int kidIds[MAX_COMPACT_KIDS_COUNT];
-        vector<int> kidIds;
-	vec4f params;	
-	vec4f octLo;
-	vec4f octHi;
-//	TreeNodeCache fvCache;
+    BlobNodeType type;
+    int orgID;
+    int ctKids;
+    //int kidIds[MAX_COMPACT_KIDS_COUNT];
+    vector<int> kidIds;
+    vec4f params;
+    vec4f octLo;
+    vec4f octHi;
+    //	TreeNodeCache fvCache;
 };
 
 struct PCMCONTEXT
@@ -69,90 +69,90 @@ struct PCMCONTEXT
 class COMPACTBLOBTREE
 {
 public:
-	int ctPrims;
-	BlobPrimitive prims[MAX_BLOB_ENTRIES];
+    int ctPrims;
+    BlobPrimitive prims[MAX_BLOB_ENTRIES];
 
-        int ctOps;
-	BlobOperator ops[MAX_BLOB_ENTRIES];
+    int ctOps;
+    BlobOperator ops[MAX_BLOB_ENTRIES];
 
-        int ctPCMNodes;
-        PCMCONTEXT pcmCONTEXT;
+    int ctPCMNodes;
+    PCMCONTEXT pcmCONTEXT;
 public:
-	
-	COMPACTBLOBTREE()
-	{
-		reset();
-	}
 
-	COMPACTBLOBTREE(const COMPACTBLOBTREE& rhs)
-	{
-		reset();
-		copyFrom(rhs);
-	}
+    COMPACTBLOBTREE()
+    {
+        reset();
+    }
 
-	COMPACTBLOBTREE(CBlobNode* root)
-	{
-		reset();
-		convert(root);
-	}
+    COMPACTBLOBTREE(const COMPACTBLOBTREE& rhs)
+    {
+        reset();
+        copyFrom(rhs);
+    }
+
+    COMPACTBLOBTREE(CBlobNode* root)
+    {
+        reset();
+        convert(root);
+    }
 
 
-	//FieldValue
-	float fieldvalue(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);	
-	float fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPrim = NULL);
-	float fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
-        vec4f gradientAtNode(bool isOp, int id, const vec4f& p, float fp, float delta );
-        float fieldAtNode(bool isOp, int id, const vec4f& p);
-        int   getID(bool isOp, int treeOrgID);
-        //float fieldValueAndGradientAtNodecopyFrom(int id, const vec4f& p, vec4f& grad, float delta );
+    //FieldValue
+    float fieldvalue(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
+    float fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPrim = NULL);
+    float fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
+    vec4f gradientAtNode(bool isOp, int id, const vec4f& p, float fp, float delta );
+    float fieldAtNode(bool isOp, int id, const vec4f& p);
+    int   getID(bool isOp, int treeOrgID);
+    //float fieldValueAndGradientAtNodecopyFrom(int id, const vec4f& p, vec4f& grad, float delta );
 
-        float computePCM(const vec4f& p,
-                         const vec4f& pcmParam,
-                         const vec4f& oct1Lo,
-                         const vec4f& oct1Hi,
-                         const vec4f& oct2Lo,
-                         const vec4f& oct2Hi,
-                         int idSelf,
-                         int idChild1, int idChild2,
-                         float fp1, float fp2);
+    float computePCM(const vec4f& p,
+                     const vec4f& pcmParam,
+                     const vec4f& oct1Lo,
+                     const vec4f& oct1Hi,
+                     const vec4f& oct2Lo,
+                     const vec4f& oct2Hi,
+                     int idSelf,
+                     int idChild1, int idChild2,
+                     float fp1, float fp2);
 
-        vec3f marchTowardNode(bool isOp, int id, const vec3f& p, const vec3f& grad, float& fp);
-        //vec3f marchTowardNode(bool isOp, int id, vec3f& p, float& fp);
-        float computePropagationDeformation(float dist, float k, float a0, float w);
+    vec3f marchTowardNode(bool isOp, int id, const vec3f& p, const vec3f& grad, float& fp);
+    //vec3f marchTowardNode(bool isOp, int id, vec3f& p, float& fp);
+    float computePropagationDeformation(float dist, float k, float a0, float w);
 
-	//Base Color	
-	vec4f baseColor(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);		
-	vec4f baseColorOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);		
+    //Base Color
+    vec4f baseColor(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
+    vec4f baseColorOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
 
-	//Output normal vector
-	vec4f normal(const vec4f& p, float inFieldValue, float delta);
+    //Output normal vector
+    vec4f normal(const vec4f& p, float inFieldValue, float delta);
 
-	//Outputs gradient in [x, y, z] and fieldvalue in w part
-	vec4f fieldValueAndGradient(const vec4f& p, float delta);
+    //Outputs gradient in [x, y, z] and fieldvalue in w part
+    vec4f fieldValueAndGradient(const vec4f& p, float delta);
 
-	void reset()
-	{
-		ctPrims = 0; 
-		ctOps = 0;                
-                ctPCMNodes = 0;
-	}
+    void reset()
+    {
+        ctPrims = 0;
+        ctOps = 0;
+        ctPCMNodes = 0;
+    }
 
-	int convert(CBlobNode* root);
-	void copyFrom(const COMPACTBLOBTREE& rhs);
+    int convert(CBlobNode* root);
+    void copyFrom(const COMPACTBLOBTREE& rhs);
 private:
-	int convert(CBlobNode* root, int parentID /*, const CMatrix& mtxBranch*/);
-	vec4f warpBend( const vec4f& pin, float bendRate, float bendCenter, const CInterval& bendRegion);
-	vec4f warpTwist(const vec4f& pin, float factor, MajorAxices axis);
+    int convert(CBlobNode* root, int parentID /*, const CMatrix& mtxBranch*/);
+    vec4f warpBend( const vec4f& pin, float bendRate, float bendCenter, const CInterval& bendRegion);
+    vec4f warpTwist(const vec4f& pin, float factor, MajorAxices axis);
 
-	vec3f taperAlongX(vec3f p, float factor, MajorAxices axisTaper);
-	vec3f taperAlongY(vec3f p, float factor, MajorAxices axisTaper);
-	vec3f taperAlongZ(vec3f p, float factor, MajorAxices axisTaper);
-	vec4f warpTaper(const vec4f& pin, float factor, MajorAxices axisAlong, MajorAxices axisTaper);
+    vec3f taperAlongX(vec3f p, float factor, MajorAxices axisTaper);
+    vec3f taperAlongY(vec3f p, float factor, MajorAxices axisTaper);
+    vec3f taperAlongZ(vec3f p, float factor, MajorAxices axisTaper);
+    vec4f warpTaper(const vec4f& pin, float factor, MajorAxices axisAlong, MajorAxices axisTaper);
 
-	vec3f shearAlongX(vec3f p, float factor, MajorAxices axisDependent);
-	vec3f shearAlongY(vec3f p, float factor, MajorAxices axisDependent);
-	vec3f shearAlongZ(vec3f p, float factor, MajorAxices axisDependent);
-	vec4f warpShear(const vec4f& pin, float factor, MajorAxices axisAlong, MajorAxices axisDependent);
+    vec3f shearAlongX(vec3f p, float factor, MajorAxices axisDependent);
+    vec3f shearAlongY(vec3f p, float factor, MajorAxices axisDependent);
+    vec3f shearAlongZ(vec3f p, float factor, MajorAxices axisDependent);
+    vec4f warpShear(const vec4f& pin, float factor, MajorAxices axisAlong, MajorAxices axisDependent);
 
 };
 
@@ -175,19 +175,19 @@ inline bool intersects( const vec4f& lo1, const vec4f& hi1, const vec4f& lo2, co
 //////////////////////////////////////////////////////////////////////////
 /*
 int ComputeRootNewtonRaphsonSIMD(COMPACTBLOBTREE* cptBlob, 
-								 const svec4f& p1, const svec4f& p2, 
-								 float fp1, float fp2, 
-								 svec4f& output, float& outputField,
-								 float target_field = ISO_VALUE, int iterations = DEFAULT_ITERATIONS);
-								 */
+         const svec4f& p1, const svec4f& p2,
+         float fp1, float fp2,
+         svec4f& output, float& outputField,
+         float target_field = ISO_VALUE, int iterations = DEFAULT_ITERATIONS);
+         */
 
 int ComputeRootNewtonRaphsonVEC4(COMPACTBLOBTREE* cptBlob, 
-								 float* lpStoreFVOps, 
-								 float* lpStoreFVPrims,
-								 const vec4f& p1, const vec4f& p2, 
-								 float fp1, float fp2, 
-								 vec4f& output, float& outputField,
-								 float target_field = ISO_VALUE, int iterations = DEFAULT_ITERATIONS);
+                                 float* lpStoreFVOps,
+                                 float* lpStoreFVPrims,
+                                 const vec4f& p1, const vec4f& p2,
+                                 float fp1, float fp2,
+                                 vec4f& output, float& outputField,
+                                 float target_field = ISO_VALUE, int iterations = DEFAULT_ITERATIONS);
 
 
 

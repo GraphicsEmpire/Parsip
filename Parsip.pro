@@ -131,7 +131,8 @@ HEADERS += \
     Parsip100/PS_BlobTree/include/PS_SketchActions.h \
     Parsip100/PS_BlobTree/include/CTurboChargedPrimitive.h \
     Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.h \
-    Parsip100/PS_FrameWork/include/PS_Tracker.h
+    Parsip100/PS_FrameWork/include/PS_Tracker.h \
+    Parsip100/PS_FrameWork/include/PS_ComputeDevice.h
 
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
@@ -207,7 +208,8 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
     Parsip100/PS_BlobTree/include/CSkeletonPoint.cpp \
     Parsip100/PS_FrameWork/include/PS_Property.cpp \
     Parsip100/PS_BlobTree/include/CNullPrimitive.cpp \
-    Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.cpp
+    Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.cpp \
+    Parsip100/PS_FrameWork/include/PS_ComputeDevice.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -241,6 +243,7 @@ else:win32:CONFIG(debug, debug|release): LIBS += D:\Projects\Dependencies\TBB\li
 
 win32: LIBS +=  D:\Projects\Dependencies\OPENCL\common\lib\Win32\OpenCL.lib \
                 D:\Projects\Dependencies\GLEW\lib\glew32.lib \
+                $$PWD/lib/ParsipMultiCoreRenderingLib.lib
 
 
 else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/ -ltbb \
@@ -269,6 +272,18 @@ win32:DEPENDPATH += D:\Projects\Dependencies\TBB\include \
 else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
                         /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                         /home/pourya/Desktop/Projects/Dependencies/LOKI/include
+
+OTHER_FILES += \
+    Parsip100/Distrib/Resources/Shaders/TPhongVS.glsl \
+    Parsip100/Distrib/Resources/Shaders/TPhongFS.glsl \
+    Parsip100/Distrib/Resources/Shaders/TPhongVS.glsl \
+    Parsip100/Distrib/Resources/Shaders/TPhongFS.glsl \
+    Parsip100/Distrib/Resources/Shaders/Polygonizer.cl
+
+
+
+
+
 
 
 
