@@ -132,7 +132,14 @@ HEADERS += \
     Parsip100/PS_BlobTree/include/CTurboChargedPrimitive.h \
     Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.h \
     Parsip100/PS_FrameWork/include/PS_Tracker.h \
-    Parsip100/PS_FrameWork/include/PS_ComputeDevice.h
+    Parsip100/PS_FrameWork/include/PS_ComputeDevice.h \
+    Parsip100/PS_SimdPoly/PS_VectorMath.h \
+    Parsip100/PS_SimdPoly/PS_SIMDVecN.h \
+    Parsip100/PS_SimdPoly/PS_SIMDSpecialMathFuncs.h \
+    Parsip100/PS_SimdPoly/PS_Polygonizer.h \
+    Parsip100/PS_SimdPoly/PS_MATRIX4.h \
+    Parsip100/PS_SimdPoly/PS_MathBase.h \
+    Parsip100/PS_SimdPoly/_CellConfigTable.h
 
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
@@ -209,7 +216,8 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
     Parsip100/PS_FrameWork/include/PS_Property.cpp \
     Parsip100/PS_BlobTree/include/CNullPrimitive.cpp \
     Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.cpp \
-    Parsip100/PS_FrameWork/include/PS_ComputeDevice.cpp
+    Parsip100/PS_FrameWork/include/PS_ComputeDevice.cpp \
+    Parsip100/PS_SimdPoly/PS_Polygonizer.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -279,6 +287,8 @@ OTHER_FILES += \
     Parsip100/Distrib/Resources/Shaders/TPhongVS.glsl \
     Parsip100/Distrib/Resources/Shaders/TPhongFS.glsl \
     Parsip100/Distrib/Resources/Shaders/Polygonizer.cl
+
+
 
 
 
