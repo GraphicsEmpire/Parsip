@@ -74,17 +74,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->chkShowChessBoard, SIGNAL(toggled(bool)), m_glWidget, SLOT(setDisplayChessBoard(bool)));
     connect(ui->cboMaterial, SIGNAL(currentIndexChanged(int)), m_glWidget, SLOT(setDisplayMtrlMeshWires(int)));
 
+    //File Menu
+    connect(ui->actFileOpen, SIGNAL(triggered()), m_glWidget, SLOT(actFileOpen()));
+    connect(ui->actFileModelMedusa, SIGNAL(triggered()), m_glWidget, SLOT(actFileModelMedusa()));
+    connect(ui->actFileModelPiza, SIGNAL(triggered()), m_glWidget, SLOT(actFileModelPiza()));
     connect(ui->actFileExportMesh, SIGNAL(triggered()), m_glWidget, SLOT(actFileExportMesh()));
-    connect(ui->actFileOpen, SIGNAL(triggered()), m_glWidget, SLOT(actOpenProject()));
-    connect(ui->actFileOpenLoadBenchmark, SIGNAL(triggered()), m_glWidget, SLOT(actOpenMedusa()));
-    connect(ui->actFileSave, SIGNAL(triggered()), m_glWidget, SLOT(actSaveProject()));
-    connect(ui->actFileClose, SIGNAL(triggered()), m_glWidget, SLOT(actCloseProject()));
+    connect(ui->actFileSave, SIGNAL(triggered()), m_glWidget, SLOT(actFileSave()));
+    connect(ui->actFileClose, SIGNAL(triggered()), m_glWidget, SLOT(actFileClose()));
     connect(ui->actFileExit, SIGNAL(triggered()), this, SLOT(close()));
 
+    //Mesh Menu
     connect(ui->actMeshSubDivide, SIGNAL(triggered()), m_glWidget, SLOT(actMeshSubDivide()));
     connect(ui->actMeshPolygonize, SIGNAL(triggered()), m_glWidget, SLOT(actMeshPolygonize()));
     connect(ui->actMeshInsert, SIGNAL(triggered()), m_glWidget, SLOT(actMeshInsert()));
 
+    //Animation Menu
     connect(ui->actAnimDrawGuide, SIGNAL(triggered()), m_glWidget, SLOT(actAnimDrawGuide()));
     connect(ui->actAnimStart, SIGNAL(triggered()), m_glWidget, SLOT(actAnimStart()));
     connect(ui->actAnimStop, SIGNAL(triggered()), m_glWidget, SLOT(actAnimStop()));
@@ -157,6 +161,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actEditTransformSkeleton, SIGNAL(triggered(bool)), m_glWidget, SLOT(actEditTransformSkeleton(bool)));
     connect(ui->actEditConvert, SIGNAL(triggered()), m_glWidget, SLOT(actEditConvertToBinaryTree()));
     connect(ui->actEditFieldProbe, SIGNAL(triggered(bool)), m_glWidget, SLOT(actEditProbe(bool)));
+    connect(ui->actEditBlobTreeStats, SIGNAL(triggered()), m_glWidget, SLOT(actEditBlobTreeStats()));
 
 
 

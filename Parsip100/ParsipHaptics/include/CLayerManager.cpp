@@ -700,22 +700,20 @@ void CLayer::setMesh(const DAnsiStr& strFileName)
     m_lpMesh->open(strFileName);
 }
 
-bool CLayer::saveAsVolumeData(const char* strFileName, int w, int h, int d)
+bool CLayer::saveAsVolumeData(const char* chrFileName, int w, int h, int d)
 {
-
-    FILE* stream;
-    int err = fopen_s(&stream, strFileName, "w+");
-    if( err != 0 )
+    ofstream ofs(chrFileName, ofstream::binary);
+    if(!ofs.is_open())
         return false;
 
-    U8* buffer = new U8[w*h*d];
+    char* buffer = new char[w*h*d];
     if(saveAsVolumeData(buffer, w, h, d))
     {
-        size_t nWritten = fwrite(buffer, sizeof(U8), w*h*d, stream);
-        fclose(stream);
+        ofs.write(buffer, w*h*d);
+        ofs.close();
 
         delete [] buffer; buffer = NULL;
-        return (nWritten == w*h*d);
+        return true;
     }
     else
     {
@@ -817,7 +815,7 @@ CBlobNode* CLayer::findNodeByID( int id )
     return recursive_FindNodeByID(id, m_lpBlobTree);
 }
 
-int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
+int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned, bool bPadWithNullPrimitive)
 {
     if ((node == NULL)||(clonned == NULL))
     {
@@ -899,15 +897,18 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned )
                     res += recursive_convertToBinaryTree(node->getChild(i), clonnedChild);
                 }
                 else
-                {                    
-                    clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("NULL");
-                    clonnedChild->setID(this->getIDDispenser().bump());
+                {
+                    if(bPadWithNullPrimitive)
+                    {
+                        clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("NULL");
+                        clonnedChild->setID(this->getIDDispenser().bump());
 
-                    //Add clone child to clonned parent
-                    clonned->addChild(clonnedChild);
+                        //Add clone child to clonned parent
+                        clonned->addChild(clonnedChild);
 
-                    ReportError("Found a unary operator while processing. Replaced second primitive with a NULL primitive.");
-                    FlushAllErrors();
+                        ReportError("Found a unary operator while processing. Replaced second primitive with a NULL primitive.");
+                        FlushAllErrors();
+                    }
 
                     res++;
                 }
@@ -947,7 +948,7 @@ int CLayer::recursive_countBinaryTreeErrors( CBlobNode* node )
 }
 
 
-int CLayer::convertToBinaryTree()
+int CLayer::convertToBinaryTree(bool bPadWithNULLPrimitive)
 {
     CBlobNode* root = this->getBlob();
     int ctErrors = recursive_countBinaryTreeErrors(root);
@@ -958,7 +959,7 @@ int CLayer::convertToBinaryTree()
         //Create a clone of the node
         CBlobNode* replacement = TheBlobNodeCloneFactory::Instance().CreateObject(root);
         replacement->setID(this->getIDDispenser().bump());
-        if(recursive_convertToBinaryTree(root, replacement) > 0)
+        if(recursive_convertToBinaryTree(root, replacement, bPadWithNULLPrimitive) > 0)
         {
             SAFE_DELETE(root);
             this->setBlob(replacement);

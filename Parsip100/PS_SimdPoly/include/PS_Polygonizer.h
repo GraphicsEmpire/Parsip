@@ -82,9 +82,12 @@ namespace SIMDPOLY{
 
 //////////////////////////////////////////////////////////
 #ifndef BLOBTREE_DEFINITIONS
-enum SkeletonType {sktPoint, sktLine, sktCylinder, sktDisc, sktRing, sktCube, sktTriangle};
-enum OperatorType {opUnion, opIntersect, opDif, opSmoothDif, opBlend, opRicciBlend, opGradientBlend,
-				   opAffine, opWarpTwist, opWarpTaper, opWarpBend, opWarpShear};
+
+enum BlobNodeType{bntPrimCylinder, bntPrimDisc, bntPrimLine, bntPrimPoint, bntPrimRing, bntPrimPolygon,
+                          bntPrimCube, bntPrimTriangle, bntPrimCatmullRomCurve, bntPrimSkeleton, bntPrimQuadricPoint,
+                          bntPrimFastQuadraticPointSet, bntPrimHalfPlane, bntPrimNull,
+                          bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend, bntOpGradientBlend,
+                          bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
 #endif
 
 //Total Data Structure Per Each Core : Including Input BlobPrims, Ops, MPU mesh

@@ -282,7 +282,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID/*, const CMatrix& mtx
         break;
         default:
         {
-            DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", root->getName());
+            DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", root->getName().c_str());
             ReportError(strMsg.ptr());
             FlushAllErrors();
         }

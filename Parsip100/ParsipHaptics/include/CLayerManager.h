@@ -16,6 +16,7 @@
 #include "PS_BlobTree/include/CSkeleton.h"
 #include "PS_BlobTree/include/CSkeletonPrimitive.h"
 
+#include "PS_HighPerformanceRender.h"
 
 #include "CompactBlobTree.h"
 #include "CPolyParsipOptimized.h"
@@ -64,6 +65,10 @@ private:
 
     //Layer Polygonizer
     CParsipOptimized m_polygonizer;
+
+    //SIMD POLY
+    SimdPoly m_simdPoly;
+
 
     //List of seed points and the primitives that they originated from
     vector<PAIR_NODESEED> m_lstSeeds;
@@ -118,7 +123,7 @@ public:
 
     //Get Polygonizer
     //CParsipOptimized& getPolygonizer() { return m_optParsip;}
-    int convertToBinaryTree();
+    int convertToBinaryTree(bool bPadWithNullPrimitive);
 
 
     void setupCompactTree(CBlobNode* root)
@@ -129,12 +134,13 @@ public:
 
     COMPACTBLOBTREE* getCompactTree() {return &m_cptBlobTree;}
     CParsipOptimized* getPolygonizer() {return &m_polygonizer;}
+    SimdPoly& getSimdPoly() {return m_simdPoly;}
 
     void cleanup();
 
     CBlobNode* findNodeByID(int id);    
     CBlobNode* recursive_FindNodeByID(int id, CBlobNode* root);
-    int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned);
+    int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned, bool bPadWithNullPrimitive = true);
     int recursive_MaxNodeID(int maxID, CBlobNode* root);
     bool recursive_ExecuteCmdBlobtreeNode(CBlobNode* root, CBlobNode* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
 
@@ -237,7 +243,7 @@ public:
 
 
     bool saveAsVolumeData(U8* buffer, int w, int h, int d);
-    bool saveAsVolumeData(const char* strFileName, int w, int h, int d);
+    bool saveAsVolumeData(const char* chrFileName, int w, int h, int d);
 };
 
 //LayerManager is the entire Data-Structure for the Scene

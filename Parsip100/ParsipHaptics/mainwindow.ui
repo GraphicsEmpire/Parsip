@@ -38,7 +38,7 @@
          <x>0</x>
          <y>0</y>
          <width>688</width>
-         <height>712</height>
+         <height>694</height>
         </rect>
        </property>
       </widget>
@@ -1171,7 +1171,7 @@
      <x>0</x>
      <y>0</y>
      <width>994</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1179,7 +1179,9 @@
      <string>File</string>
     </property>
     <addaction name="actFileOpen"/>
-    <addaction name="actFileOpenLoadBenchmark"/>
+    <addaction name="separator"/>
+    <addaction name="actFileModelMedusa"/>
+    <addaction name="actFileModelPiza"/>
     <addaction name="separator"/>
     <addaction name="actFileSave"/>
     <addaction name="actFileExportMesh"/>
@@ -1282,7 +1284,9 @@
     <addaction name="separator"/>
     <addaction name="actEditField"/>
     <addaction name="actEditConvert"/>
+    <addaction name="separator"/>
     <addaction name="actEditFieldProbe"/>
+    <addaction name="actEditBlobTreeStats"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1832,9 +1836,9 @@
     <string>T</string>
    </property>
   </action>
-  <action name="actFileOpenLoadBenchmark">
+  <action name="actFileModelMedusa">
    <property name="text">
-    <string>Load Benchmark Model</string>
+    <string>Load Medusa</string>
    </property>
   </action>
   <action name="actAnimDrawGuide">
@@ -1914,6 +1918,16 @@
   <action name="actAddGradientBlend">
    <property name="text">
     <string>Gradient Blend</string>
+   </property>
+  </action>
+  <action name="actFileModelPiza">
+   <property name="text">
+    <string>Load Piza Tower</string>
+   </property>
+  </action>
+  <action name="actEditBlobTreeStats">
+   <property name="text">
+    <string>BlobTree Stats...</string>
    </property>
   </action>
  </widget>

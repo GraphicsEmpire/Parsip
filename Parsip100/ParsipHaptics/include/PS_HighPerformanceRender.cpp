@@ -1,7 +1,7 @@
 #include "PS_HighPerformanceRender.h"
 #include "PS_ErrorManager.h"
 #include "BlobTreeLibraryAll.h"
-#include "ParsipMultiCoreRenderingLib/PS_Polygonizer.h"
+#include "PS_SimdPoly/include/PS_Polygonizer.h"
 
 #define __NO_STD_VECTOR // Use cl::vector and cl::string and
 #define __NO_STD_STRING // not STL versions, more on this later
@@ -14,12 +14,6 @@
 
 using namespace PS;
 using namespace PS::SIMDPOLY;
-
-SOABlobPrims        g_blobPrims;
-SOABlobOps          g_blobOps;
-SOABlobPrimMatrices g_blobPrimMatrices;
-SOABlobBoxMatrices  g_blobBoxMatrices;
-PolyMPUs            g_polyMPUs;
 
 #define DATA_SIZE (1024*1240)
 
@@ -35,26 +29,25 @@ const char *KernelSource = "\n"		      \
         "}                                        \n" \
         "\n";
 
-//Reset Polygonizer data-structures
-void SIMDPOLY_Reset()
+
+void SimdPoly::reset()
 {
-    g_blobPrims.ctPrims = 0;
-    g_blobOps.ctOps = 0;
-    g_blobPrimMatrices.count = 0;
-    g_blobBoxMatrices.count = 0;
-    g_polyMPUs.ctMPUs = 0;
+    m_blobPrims.ctPrims = 0;
+    m_blobOps.ctOps = 0;
+    m_blobPrimMatrices.count = 0;
+    m_blobBoxMatrices.count = 0;
+    m_polyMPUs.ctMPUs = 0;
 }
 
-//Linearize BlobTree
-int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator)
+int SimdPoly::linearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator)
 {
     int curID = -1;
     if(parentID == -1)
     {
         vec3f lo = root->getOctree().lower;
         vec3f hi = root->getOctree().upper;
-        g_blobPrims.bboxLo = svec3f(lo.x, lo.y, lo.z);
-        g_blobPrims.bboxHi = svec3f(hi.x, hi.y, hi.z);
+        m_blobPrims.bboxLo = svec3f(lo.x, lo.y, lo.z);
+        m_blobPrims.bboxHi = svec3f(hi.x, hi.y, hi.z);
 
         //Set identity matrix
         float identity[] = {1.0f, 0.0f, 0.0f, 0.0f,
@@ -62,28 +55,28 @@ int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator
                             0.0f, 0.0f, 1.0f, 0.0f,
                             0.0f, 0.0f, 0.0f, 1.0f};
 
-        g_blobPrimMatrices.count = 1;
-        g_blobBoxMatrices.count = 1;
+        m_blobPrimMatrices.count = 1;
+        m_blobBoxMatrices.count = 1;
         for(U32 i=0; i<PRIM_MATRIX_STRIDE; i++)
-            g_blobPrimMatrices.matrix[i] = identity[i];
+            m_blobPrimMatrices.matrix[i] = identity[i];
         for(U32 i=0; i<BOX_MATRIX_STRIDE; i++)
-            g_blobBoxMatrices.matrix[i] = identity[i];
+            m_blobBoxMatrices.matrix[i] = identity[i];
     }
 
     //Operator
     outIsOperator = root->isOperator();
     if(outIsOperator)
     {
-        if(g_blobOps.ctOps >= MAX_TREE_NODES)
+        if(m_blobOps.ctOps >= MAX_TREE_NODES)
         {
             ReportError("Exceeded maximum number of allowed Operators");
             FlushAllErrors();
             return PS_ERROR_OPERATOR_OVERFLOW;
         }
 
-        curID = g_blobOps.ctOps;
-        g_blobOps.ctOps++;
-        g_blobOps.opType[curID] = root->getNodeType();
+        curID = m_blobOps.ctOps;
+        m_blobOps.ctOps++;
+        m_blobOps.opType[curID] = root->getNodeType();
 
         if(root->countChildren() != 2)
         {
@@ -94,22 +87,22 @@ int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator
 
         int isOp[2];
         int kidID[2];
-        kidID[0] = SIMDPOLY_LinearizeBlobTree(root->getChild(0), curID, isOp[0]);
-        kidID[1] = SIMDPOLY_LinearizeBlobTree(root->getChild(1), curID, isOp[1]);
-        g_blobOps.opLeftChild[curID]  = kidID[0];
-        g_blobOps.opRightChild[curID] = kidID[1];
-        g_blobOps.opChildKind[curID]  = isOp[0]*2 + isOp[1];
+        kidID[0] = this->linearizeBlobTree(root->getChild(0), curID, isOp[0]);
+        kidID[1] = this->linearizeBlobTree(root->getChild(1), curID, isOp[1]);
+        m_blobOps.opLeftChild[curID]  = kidID[0];
+        m_blobOps.opRightChild[curID] = kidID[1];
+        m_blobOps.opChildKind[curID]  = isOp[0]*2 + isOp[1];
 
         vec3f lo = root->getOctree().lower;
         vec3f hi = root->getOctree().upper;
         //ReadBox from BlobTree
-        g_blobOps.vBoxLoX[curID] = lo.x;
-        g_blobOps.vBoxLoY[curID] = lo.y;
-        g_blobOps.vBoxLoZ[curID] = lo.z;
+        m_blobOps.vBoxLoX[curID] = lo.x;
+        m_blobOps.vBoxLoY[curID] = lo.y;
+        m_blobOps.vBoxLoZ[curID] = lo.z;
 
-        g_blobOps.vBoxHiX[curID] = hi.x;
-        g_blobOps.vBoxHiY[curID] = hi.y;
-        g_blobOps.vBoxHiZ[curID] = hi.z;
+        m_blobOps.vBoxHiX[curID] = hi.x;
+        m_blobOps.vBoxHiY[curID] = hi.y;
+        m_blobOps.vBoxHiZ[curID] = hi.z;
 
 
         switch(root->getNodeType())
@@ -117,51 +110,51 @@ int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator
         case(bntOpPCM):
         {
             CPcm* lpPCM = reinterpret_cast<CPcm*>(root);
-            g_blobOps.resX[curID] = lpPCM->getPropagateLeft();
-            g_blobOps.resY[curID] = lpPCM->getPropagateRight();
-            g_blobOps.resZ[curID] = lpPCM->getAlphaLeft();
-            g_blobOps.resW[curID] = lpPCM->getAlphaRight();
+            m_blobOps.resX[curID] = lpPCM->getPropagateLeft();
+            m_blobOps.resY[curID] = lpPCM->getPropagateRight();
+            m_blobOps.resZ[curID] = lpPCM->getAlphaLeft();
+            m_blobOps.resW[curID] = lpPCM->getAlphaRight();
         }
             break;
         case(bntOpRicciBlend):
         {
             CRicciBlend* ricci = reinterpret_cast<CRicciBlend*>(root);
             float n = ricci->getN();
-            g_blobOps.resX[curID] = n;
+            m_blobOps.resX[curID] = n;
             if(n != 0.0f)
-                g_blobOps.resY[curID] = 1.0f / n;
+                m_blobOps.resY[curID] = 1.0f / n;
         }
             break;
         case(bntOpWarpTwist):
         {
             CWarpTwist* twist = reinterpret_cast<CWarpTwist*>(root);
-            g_blobOps.resX[curID] = twist->getWarpFactor();
-            g_blobOps.resY[curID] = static_cast<float>(twist->getMajorAxis());
+            m_blobOps.resX[curID] = twist->getWarpFactor();
+            m_blobOps.resY[curID] = static_cast<float>(twist->getMajorAxis());
         }
             break;
         case(bntOpWarpTaper):
         {
             CWarpTaper* taper = reinterpret_cast<CWarpTaper*>(root);
-            g_blobOps.resX[curID] = taper->getWarpFactor();
-            g_blobOps.resY[curID] = static_cast<float>(taper->getAxisAlong());
-            g_blobOps.resZ[curID] = static_cast<float>(taper->getAxisTaper());
+            m_blobOps.resX[curID] = taper->getWarpFactor();
+            m_blobOps.resY[curID] = static_cast<float>(taper->getAxisAlong());
+            m_blobOps.resZ[curID] = static_cast<float>(taper->getAxisTaper());
         }
             break;
         case(bntOpWarpBend):
         {
             CWarpBend* bend = reinterpret_cast<CWarpBend*>(root);
-            g_blobOps.resX[curID] = bend->getBendRate();
-            g_blobOps.resY[curID] = bend->getBendCenter();
-            g_blobOps.resZ[curID] = bend->getBendRegion().left;
-            g_blobOps.resW[curID] = bend->getBendRegion().right;
+            m_blobOps.resX[curID] = bend->getBendRate();
+            m_blobOps.resY[curID] = bend->getBendCenter();
+            m_blobOps.resZ[curID] = bend->getBendRegion().left;
+            m_blobOps.resW[curID] = bend->getBendRegion().right;
         }
             break;
         case(bntOpWarpShear):
         {
             CWarpShear* shear = reinterpret_cast<CWarpShear*>(root);
-            g_blobOps.resX[curID] = shear->getWarpFactor();
-            g_blobOps.resY[curID] = static_cast<float>(shear->getAxisAlong());
-            g_blobOps.resZ[curID] = static_cast<float>(shear->getAxisDependent());
+            m_blobOps.resX[curID] = shear->getWarpFactor();
+            m_blobOps.resY[curID] = static_cast<float>(shear->getAxisAlong());
+            m_blobOps.resZ[curID] = static_cast<float>(shear->getAxisDependent());
         }
             break;
         }
@@ -170,43 +163,43 @@ int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator
     }
     else
     {
-        if(g_blobPrims.ctPrims >= MAX_TREE_NODES)
+        if(m_blobPrims.ctPrims >= MAX_TREE_NODES)
         {
             ReportError("Exceeded maximum number of allowed primitives");
             FlushAllErrors();
             return PS_ERROR_PRIM_OVERFLOW;
         }
 
-        curID = g_blobPrims.ctPrims;
-        g_blobPrims.ctPrims++;
+        curID = m_blobPrims.ctPrims;
+        m_blobPrims.ctPrims++;
 
         //
         vec4f d = root->getMaterial().diffused;
-        g_blobPrims.colorX[curID] = d.x;
-        g_blobPrims.colorY[curID] = d.y;
-        g_blobPrims.colorZ[curID] = d.z;
+        m_blobPrims.colorX[curID] = d.x;
+        m_blobPrims.colorY[curID] = d.y;
+        m_blobPrims.colorZ[curID] = d.z;
 
         vec3f lo = root->getOctree().lower;
         vec3f hi = root->getOctree().upper;
 
         //ReadBox from BlobTree
-        g_blobPrims.vPrimBoxLoX[curID] = lo.x;
-        g_blobPrims.vPrimBoxLoY[curID] = lo.y;
-        g_blobPrims.vPrimBoxLoZ[curID] = lo.z;
+        m_blobPrims.vPrimBoxLoX[curID] = lo.x;
+        m_blobPrims.vPrimBoxLoY[curID] = lo.y;
+        m_blobPrims.vPrimBoxLoZ[curID] = lo.z;
 
-        g_blobPrims.vPrimBoxHiX[curID] = hi.x;
-        g_blobPrims.vPrimBoxHiY[curID] = hi.y;
-        g_blobPrims.vPrimBoxHiZ[curID] = hi.z;
+        m_blobPrims.vPrimBoxHiX[curID] = hi.x;
+        m_blobPrims.vPrimBoxHiY[curID] = hi.y;
+        m_blobPrims.vPrimBoxHiZ[curID] = hi.z;
 
         CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
         if(mtxBackward.isIdentity())
         {
-            g_blobPrims.idxMatrix[curID] = 0;
+            m_blobPrims.idxMatrix[curID] = 0;
         }
         else
         {
-            int idxMat = g_blobPrimMatrices.count;
-            g_blobPrims.idxMatrix[curID] = idxMat;
+            int idxMat = m_blobPrimMatrices.count;
+            m_blobPrims.idxMatrix[curID] = idxMat;
             idxMat *= PRIM_MATRIX_STRIDE;
 
             float row[16];
@@ -216,174 +209,194 @@ int SIMDPOLY_LinearizeBlobTree(CBlobNode* root, int parentID, int& outIsOperator
             mtxBackward.getRow(&row[12], 3);
 
             for(int i=0; i<PRIM_MATRIX_STRIDE; i++)
-                g_blobPrimMatrices.matrix[idxMat + i] = row[i];
+                m_blobPrimMatrices.matrix[idxMat + i] = row[i];
+            m_blobPrimMatrices.count++;
         }
 
-        if(root->getNodeType() == bntPrimSkeleton)
+        m_blobPrims.skeletType[curID] = root->getNodeType();
+
+        switch(root->getNodeType())
         {
-            CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
-            g_blobPrims.skeletType[curID] = sprim->getSkeleton()->getType();
+        case(bntPrimPoint):
+        {
+            CSkeletonPrimitive *sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            CSkeletonPoint* skeletPoint = reinterpret_cast<CSkeletonPoint*>(sprim->getSkeleton());
+            vec3f pos = skeletPoint->getPosition();
 
-            switch(sprim->getSkeleton()->getType())
-            {
-            case(bntPrimPoint):
-            {
-                CSkeletonPoint* skeletPoint = reinterpret_cast<CSkeletonPoint*>(sprim->getSkeleton());
-                vec3f pos = skeletPoint->getPosition();
-
-                g_blobPrims.posX[curID] = pos.x;
-                g_blobPrims.posY[curID] = pos.y;
-                g_blobPrims.posZ[curID] = pos.z;
-            }
-                break;
-            case(bntPrimLine):
-            {
-                CSkeletonLine* skeletLine = reinterpret_cast<CSkeletonLine*>(sprim->getSkeleton());
-                //cfg->writeVec3f(strNodeName, "start", skeletLine->getStartPosition());
-                //cfg->writeVec3f(strNodeName, "end", skeletLine->getEndPosition());
-                vec3f s = skeletLine->getStartPosition();
-                vec3f e = skeletLine->getEndPosition();
-
-                g_blobPrims.posX[curID] = s.x;
-                g_blobPrims.posY[curID] = s.y;
-                g_blobPrims.posZ[curID] = s.z;
-                g_blobPrims.dirX[curID] = e.x;
-                g_blobPrims.dirY[curID] = e.y;
-                g_blobPrims.dirZ[curID] = e.z;
-            }
-                break;
-            case(bntPrimRing):
-            {
-                CSkeletonRing* skeletRing = reinterpret_cast<CSkeletonRing*>(sprim->getSkeleton());
-                //cfg->writeVec3f(strNodeName, "position", skeletRing->getPosition());
-                //cfg->writeVec3f(strNodeName, "direction", skeletRing->getDirection());
-                //cfg->writeFloat(strNodeName, "radius", skeletRing->getRadius());
-                vec3f p = skeletRing->getPosition();
-                vec3f d = skeletRing->getDirection();
-                float r = skeletRing->getRadius();
-
-                g_blobPrims.posX[curID] = p.x;
-                g_blobPrims.posY[curID] = p.y;
-                g_blobPrims.posZ[curID] = p.z;
-                g_blobPrims.dirX[curID] = d.x;
-                g_blobPrims.dirY[curID] = d.y;
-                g_blobPrims.dirZ[curID] = d.z;
-                g_blobPrims.resX[curID] = r;
-                g_blobPrims.resY[curID] = r*r;
-
-            }
-                break;
-            case(bntPrimDisc):
-            {
-                CSkeletonDisc* skeletDisc = reinterpret_cast<CSkeletonDisc*>(sprim->getSkeleton());
-                //cfg->writeVec3f(strNodeName, "position", skeletDisc->getPosition());
-                //cfg->writeVec3f(strNodeName, "direction", skeletDisc->getDirection());
-                //cfg->writeFloat(strNodeName, "radius", skeletDisc->getRadius());
-                vec3f p = skeletDisc->getPosition();
-                vec3f d = skeletDisc->getDirection();
-                float r = skeletDisc->getRadius();
-                g_blobPrims.posX[curID] = p.x;
-                g_blobPrims.posY[curID] = p.y;
-                g_blobPrims.posZ[curID] = p.z;
-                g_blobPrims.dirX[curID] = d.x;
-                g_blobPrims.dirY[curID] = d.y;
-                g_blobPrims.dirZ[curID] = d.z;
-                g_blobPrims.resX[curID] = r;
-                g_blobPrims.resY[curID] = r*r;
-            }
-                break;
-            case(bntPrimCylinder):
-            {
-                CSkeletonCylinder* skeletCyl = reinterpret_cast<CSkeletonCylinder*>(sprim->getSkeleton());
-                //cfg->writeVec3f(strNodeName, "position", skeletCyl->getPosition());
-                //cfg->writeVec3f(strNodeName, "direction", skeletCyl->getDirection());
-                //cfg->writeFloat(strNodeName, "radius", skeletCyl->getRadius());
-                //cfg->writeFloat(strNodeName, "height", skeletCyl->getHeight());
-                vec3f p = skeletCyl->getPosition();
-                vec3f d = skeletCyl->getDirection();
-                g_blobPrims.posX[curID] = p.x;
-                g_blobPrims.posY[curID] = p.y;
-                g_blobPrims.posZ[curID] = p.z;
-                g_blobPrims.dirX[curID] = d.x;
-                g_blobPrims.dirY[curID] = d.y;
-                g_blobPrims.dirZ[curID] = d.z;
-                g_blobPrims.resX[curID] = skeletCyl->getRadius();
-                g_blobPrims.resY[curID] = skeletCyl->getHeight();
-            }
-                break;
-
-            case(bntPrimCube):
-            {
-                CSkeletonCube* skeletCube = reinterpret_cast<CSkeletonCube*>(sprim->getSkeleton());
-                //cfg->writeVec3f(strNodeName, "position", skeletCube->getPosition());
-                //cfg->writeFloat(strNodeName, "side", skeletCube->getSide());
-                vec3f p = skeletCube->getPosition();
-                float side = skeletCube->getSide();
-                g_blobPrims.posX[curID] = p.x;
-                g_blobPrims.posY[curID] = p.y;
-                g_blobPrims.posZ[curID] = p.z;
-                g_blobPrims.resX[curID] = side;
-
-            }
-                break;
-            case(bntPrimTriangle):
-            {
-                CSkeletonTriangle* skeletTriangle = reinterpret_cast<CSkeletonTriangle*>(sprim->getSkeleton());
-                //cfg->writeVec3f(strNodeName, "corner0", skeletTriangle->getTriangleCorner(0));
-                //cfg->writeVec3f(strNodeName, "corner1", skeletTriangle->getTriangleCorner(1));
-                //cfg->writeVec3f(strNodeName, "corner2", skeletTriangle->getTriangleCorner(2));
-                vec3f p0 = skeletTriangle->getTriangleCorner(0);
-                vec3f p1 = skeletTriangle->getTriangleCorner(1);
-                vec3f p2 = skeletTriangle->getTriangleCorner(2);
-                g_blobPrims.posX[curID] = p0.x;
-                g_blobPrims.posY[curID] = p0.y;
-                g_blobPrims.posZ[curID] = p0.z;
-                g_blobPrims.dirX[curID] = p1.x;
-                g_blobPrims.dirY[curID] = p1.y;
-                g_blobPrims.dirZ[curID] = p1.z;
-                g_blobPrims.resX[curID] = p2.x;
-                g_blobPrims.resY[curID] = p2.y;
-                g_blobPrims.resX[curID] = p2.z;
-            }
-                break;
-            default:
-            {
-                string strName = reinterpret_cast<CSkeletonPrimitive*>(root)->getSkeleton()->getName();
-                DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", strName.c_str());
-                ReportError(strMsg.ptr());
-                FlushAllErrors();
-            }
-            }
+            m_blobPrims.posX[curID] = pos.x;
+            m_blobPrims.posY[curID] = pos.y;
+            m_blobPrims.posZ[curID] = pos.z;
         }
-        else
-            g_blobPrims.skeletType[curID] = root->getNodeType();
+            break;
+        case(bntPrimLine):
+        {
+            CSkeletonPrimitive *sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            CSkeletonLine* skeletLine = reinterpret_cast<CSkeletonLine*>(sprim->getSkeleton());
+            //cfg->writeVec3f(strNodeName, "start", skeletLine->getStartPosition());
+            //cfg->writeVec3f(strNodeName, "end", skeletLine->getEndPosition());
+            vec3f s = skeletLine->getStartPosition();
+            vec3f e = skeletLine->getEndPosition();
+
+            m_blobPrims.posX[curID] = s.x;
+            m_blobPrims.posY[curID] = s.y;
+            m_blobPrims.posZ[curID] = s.z;
+            m_blobPrims.dirX[curID] = e.x;
+            m_blobPrims.dirY[curID] = e.y;
+            m_blobPrims.dirZ[curID] = e.z;
+        }
+            break;
+        case(bntPrimRing):
+        {
+            CSkeletonPrimitive *sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            CSkeletonRing* skeletRing = reinterpret_cast<CSkeletonRing*>(sprim->getSkeleton());
+            //cfg->writeVec3f(strNodeName, "position", skeletRing->getPosition());
+            //cfg->writeVec3f(strNodeName, "direction", skeletRing->getDirection());
+            //cfg->writeFloat(strNodeName, "radius", skeletRing->getRadius());
+            vec3f p = skeletRing->getPosition();
+            vec3f d = skeletRing->getDirection();
+            float r = skeletRing->getRadius();
+
+            m_blobPrims.posX[curID] = p.x;
+            m_blobPrims.posY[curID] = p.y;
+            m_blobPrims.posZ[curID] = p.z;
+            m_blobPrims.dirX[curID] = d.x;
+            m_blobPrims.dirY[curID] = d.y;
+            m_blobPrims.dirZ[curID] = d.z;
+            m_blobPrims.resX[curID] = r;
+            m_blobPrims.resY[curID] = r*r;
+
+        }
+            break;
+        case(bntPrimDisc):
+        {
+            CSkeletonPrimitive *sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            CSkeletonDisc* skeletDisc = reinterpret_cast<CSkeletonDisc*>(sprim->getSkeleton());
+            //cfg->writeVec3f(strNodeName, "position", skeletDisc->getPosition());
+            //cfg->writeVec3f(strNodeName, "direction", skeletDisc->getDirection());
+            //cfg->writeFloat(strNodeName, "radius", skeletDisc->getRadius());
+            vec3f p = skeletDisc->getPosition();
+            vec3f d = skeletDisc->getDirection();
+            float r = skeletDisc->getRadius();
+            m_blobPrims.posX[curID] = p.x;
+            m_blobPrims.posY[curID] = p.y;
+            m_blobPrims.posZ[curID] = p.z;
+            m_blobPrims.dirX[curID] = d.x;
+            m_blobPrims.dirY[curID] = d.y;
+            m_blobPrims.dirZ[curID] = d.z;
+            m_blobPrims.resX[curID] = r;
+            m_blobPrims.resY[curID] = r*r;
+        }
+            break;
+        case(bntPrimCylinder):
+        {
+            CSkeletonPrimitive *sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            CSkeletonCylinder* skeletCyl = reinterpret_cast<CSkeletonCylinder*>(sprim->getSkeleton());
+            //cfg->writeVec3f(strNodeName, "position", skeletCyl->getPosition());
+            //cfg->writeVec3f(strNodeName, "direction", skeletCyl->getDirection());
+            //cfg->writeFloat(strNodeName, "radius", skeletCyl->getRadius());
+            //cfg->writeFloat(strNodeName, "height", skeletCyl->getHeight());
+            vec3f p = skeletCyl->getPosition();
+            vec3f d = skeletCyl->getDirection();
+            m_blobPrims.posX[curID] = p.x;
+            m_blobPrims.posY[curID] = p.y;
+            m_blobPrims.posZ[curID] = p.z;
+            m_blobPrims.dirX[curID] = d.x;
+            m_blobPrims.dirY[curID] = d.y;
+            m_blobPrims.dirZ[curID] = d.z;
+            m_blobPrims.resX[curID] = skeletCyl->getRadius();
+            m_blobPrims.resY[curID] = skeletCyl->getHeight();
+        }
+            break;
+
+        case(bntPrimCube):
+        {
+            CSkeletonPrimitive *sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            CSkeletonCube* skeletCube = reinterpret_cast<CSkeletonCube*>(sprim->getSkeleton());
+            //cfg->writeVec3f(strNodeName, "position", skeletCube->getPosition());
+            //cfg->writeFloat(strNodeName, "side", skeletCube->getSide());
+            vec3f p = skeletCube->getPosition();
+            float side = skeletCube->getSide();
+            m_blobPrims.posX[curID] = p.x;
+            m_blobPrims.posY[curID] = p.y;
+            m_blobPrims.posZ[curID] = p.z;
+            m_blobPrims.resX[curID] = side;
+
+        }
+            break;
+        case(bntPrimTriangle):
+        {
+            CSkeletonPrimitive *sprim = reinterpret_cast<CSkeletonPrimitive*>(root);
+            CSkeletonTriangle* skeletTriangle = reinterpret_cast<CSkeletonTriangle*>(sprim->getSkeleton());
+            //cfg->writeVec3f(strNodeName, "corner0", skeletTriangle->getTriangleCorner(0));
+            //cfg->writeVec3f(strNodeName, "corner1", skeletTriangle->getTriangleCorner(1));
+            //cfg->writeVec3f(strNodeName, "corner2", skeletTriangle->getTriangleCorner(2));
+            vec3f p0 = skeletTriangle->getTriangleCorner(0);
+            vec3f p1 = skeletTriangle->getTriangleCorner(1);
+            vec3f p2 = skeletTriangle->getTriangleCorner(2);
+            m_blobPrims.posX[curID] = p0.x;
+            m_blobPrims.posY[curID] = p0.y;
+            m_blobPrims.posZ[curID] = p0.z;
+            m_blobPrims.dirX[curID] = p1.x;
+            m_blobPrims.dirY[curID] = p1.y;
+            m_blobPrims.dirZ[curID] = p1.z;
+            m_blobPrims.resX[curID] = p2.x;
+            m_blobPrims.resY[curID] = p2.y;
+            m_blobPrims.resX[curID] = p2.z;
+        }
+            break;
+        case(bntPrimNull):
+        {
+            m_blobPrims.posX[curID] = 0.0f;
+            m_blobPrims.posY[curID] = 0.0f;
+            m_blobPrims.posZ[curID] = 0.0f;
+        }
+        break;
+        default:
+        {
+            DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", root->getName().c_str());
+            ReportError(strMsg.ptr());
+            FlushAllErrors();
+        }
+        }
 
         return curID;
     }
 }
 
-void SIMDPOLY_Draw(bool bDrawNormals)
+int SimdPoly::linearizeBlobTree(CBlobNode* root)
 {
-    if(g_polyMPUs.ctMPUs == 0) return;
+    int isOperator;
+    this->reset();
+    return this->linearizeBlobTree(root, -1, isOperator);
+}
 
-    for (U32 i=0; i<g_polyMPUs.ctMPUs; i++)
+int SimdPoly::run(float cellsize)
+{
+    return PS::SIMDPOLY::Polygonize(cellsize, m_blobPrims, m_blobPrimMatrices, m_blobOps, m_polyMPUs);
+}
+
+void SimdPoly::draw(bool bDrawNormals)
+{
+    if(m_polyMPUs.ctMPUs == 0) return;
+
+    for (U32 i=0; i<m_polyMPUs.ctMPUs; i++)
     {
-        if(g_polyMPUs.vMPUs[i].ctTriangles > 0)
+        if(m_polyMPUs.vMPUs[i].ctTriangles > 0)
         {
             //Color is RGB
-            glColorPointer(3, GL_FLOAT, 0, g_polyMPUs.vMPUs[i].vColor);
+            glColorPointer(3, GL_FLOAT, 0, m_polyMPUs.vMPUs[i].vColor);
             glEnableClientState(GL_COLOR_ARRAY);
 
             //Normals
-            glNormalPointer(GL_FLOAT, 0, g_polyMPUs.vMPUs[i].vNorm);
+            glNormalPointer(GL_FLOAT, 0, m_polyMPUs.vMPUs[i].vNorm);
             glEnableClientState(GL_NORMAL_ARRAY);
 
             //Vertex Unit is 3
-            glVertexPointer(3, GL_FLOAT, 0, g_polyMPUs.vMPUs[i].vPos);
+            glVertexPointer(3, GL_FLOAT, 0, m_polyMPUs.vMPUs[i].vPos);
             glEnableClientState(GL_VERTEX_ARRAY);
 
-            glDrawElements(GL_TRIANGLES, (GLsizei)g_polyMPUs.vMPUs[i].ctTriangles * 3, GL_UNSIGNED_SHORT, g_polyMPUs.vMPUs[i].triangles);
-            //glDrawElements(GL_LINE_LOOP, (GLsizei)g_polyMPUs.vMPUs[i].ctTriangles * 3, GL_UNSIGNED_SHORT, g_polyMPUs.vMPUs[i].triangles);
+            glDrawElements(GL_TRIANGLES, (GLsizei)m_polyMPUs.vMPUs[i].ctTriangles * 3, GL_UNSIGNED_SHORT, m_polyMPUs.vMPUs[i].triangles);
+            //glDrawElements(GL_LINE_LOOP, (GLsizei)m_polyMPUs.vMPUs[i].ctTriangles * 3, GL_UNSIGNED_SHORT, m_polyMPUs.vMPUs[i].triangles);
 
             glDisableClientState(GL_COLOR_ARRAY);
             glDisableClientState(GL_NORMAL_ARRAY);
@@ -394,10 +407,10 @@ void SIMDPOLY_Draw(bool bDrawNormals)
             {
                 glColor3f(1.0f, 0.0f, 0.0f);
 
-                for(U32 j=0; j<g_polyMPUs.vMPUs[i].ctVertices; j++)
+                for(U32 j=0; j<m_polyMPUs.vMPUs[i].ctVertices; j++)
                 {
-                    svec3f v = svec3f(g_polyMPUs.vMPUs[i].vPos[j*3], g_polyMPUs.vMPUs[i].vPos[j*3 +1], g_polyMPUs.vMPUs[i].vPos[j*3 + 2]);
-                    svec3f n = svec3f(g_polyMPUs.vMPUs[i].vNorm[j*3], g_polyMPUs.vMPUs[i].vNorm[j*3 +1], g_polyMPUs.vMPUs[i].vNorm[j*3 + 2]);
+                    svec3f v = svec3f(m_polyMPUs.vMPUs[i].vPos[j*3], m_polyMPUs.vMPUs[i].vPos[j*3 +1], m_polyMPUs.vMPUs[i].vPos[j*3 + 2]);
+                    svec3f n = svec3f(m_polyMPUs.vMPUs[i].vNorm[j*3], m_polyMPUs.vMPUs[i].vNorm[j*3 +1], m_polyMPUs.vMPUs[i].vNorm[j*3 + 2]);
 
                     svec3f e = vadd3f(v, vscale3f(0.5f, n));
 
@@ -409,11 +422,7 @@ void SIMDPOLY_Draw(bool bDrawNormals)
             }
         }
     }
-}
 
-int SIMDPOLY_Run(float cellsize)
-{
-    return PS::SIMDPOLY::Polygonize(cellsize, g_blobPrims, g_blobPrimMatrices, g_blobOps, g_polyMPUs);
 }
 
 //OpenCL polygonizer
@@ -591,4 +600,5 @@ int RunOclPolygonizer()
 
     return 0;
 }
+
 

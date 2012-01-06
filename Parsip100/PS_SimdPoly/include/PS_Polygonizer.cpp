@@ -72,7 +72,7 @@ int PrepareBBoxes(float cellsize, SOABlobPrims& blobPrims, SOABlobBoxMatrices& b
         {
             switch(blobPrims.skeletType[i])
             {
-            case(sktPoint):
+            case(bntPrimPoint):
             {
                 blobPrims.vPrimBoxLoX[i] = blobPrims.posX[i] - isoDist;
                 blobPrims.vPrimBoxLoY[i] = blobPrims.posY[i] - isoDist;
@@ -83,7 +83,7 @@ int PrepareBBoxes(float cellsize, SOABlobPrims& blobPrims, SOABlobBoxMatrices& b
                 blobPrims.vPrimBoxHiZ[i] = blobPrims.posZ[i] + isoDist;
             }
                 break;
-            case(sktLine):
+            case(bntPrimLine):
             {
                 svec3f s0 = svec3f(blobPrims.posX[i], blobPrims.posY[i], blobPrims.posZ[i]);
                 svec3f s1 = svec3f(blobPrims.dirX[i], blobPrims.dirY[i], blobPrims.dirZ[i]);
@@ -98,7 +98,7 @@ int PrepareBBoxes(float cellsize, SOABlobPrims& blobPrims, SOABlobBoxMatrices& b
                 blobPrims.vPrimBoxHiZ[i] = s1.z + expand.z;
             }
                 break;
-            case(sktRing):
+            case(bntPrimRing):
             {
                 svec3f pos = svec3f(blobPrims.posX[i], blobPrims.posY[i], blobPrims.posZ[i]);
                 svec3f dir = svec3f(blobPrims.dirX[i], blobPrims.dirY[i], blobPrims.dirZ[i]);
@@ -118,7 +118,7 @@ int PrepareBBoxes(float cellsize, SOABlobPrims& blobPrims, SOABlobBoxMatrices& b
                 blobPrims.vPrimBoxHiZ[i] = pos.z + expand.z;
             }
                 break;
-            case(sktDisc):
+            case(bntPrimDisc):
             {
                 svec3f pos = svec3f(blobPrims.posX[i], blobPrims.posY[i], blobPrims.posZ[i]);
                 svec3f dir = svec3f(blobPrims.dirX[i], blobPrims.dirY[i], blobPrims.dirZ[i]);
@@ -138,7 +138,7 @@ int PrepareBBoxes(float cellsize, SOABlobPrims& blobPrims, SOABlobBoxMatrices& b
                 blobPrims.vPrimBoxHiZ[i] = pos.z + expand.z;
             }
                 break;
-            case(sktCylinder):
+            case(bntPrimCylinder):
             {
                 svec3f s0 = svec3f(blobPrims.posX[i], blobPrims.posY[i], blobPrims.posZ[i]);
                 svec3f dir = svec3f(blobPrims.dirX[i], blobPrims.dirY[i], blobPrims.dirZ[i]);
@@ -157,7 +157,7 @@ int PrepareBBoxes(float cellsize, SOABlobPrims& blobPrims, SOABlobBoxMatrices& b
                 blobPrims.vPrimBoxHiZ[i] = s1.z + expand.z;
             }
                 break;
-            case(sktCube):
+            case(bntPrimCube):
             {
                 svec3f s0 = svec3f(blobPrims.posX[i], blobPrims.posY[i], blobPrims.posZ[i]);
                 float side = blobPrims.resX[i] + isoDist;
@@ -174,7 +174,7 @@ int PrepareBBoxes(float cellsize, SOABlobPrims& blobPrims, SOABlobBoxMatrices& b
                 blobPrims.vPrimBoxHiZ[i] = shi.z;
             }
                 break;
-            case(sktTriangle):
+            case(bntPrimTriangle):
             {
                 svec3f s0 = svec3f(blobPrims.posX[i], blobPrims.posY[i], blobPrims.posZ[i]);
                 svec3f s1 = svec3f(blobPrims.dirX[i], blobPrims.dirY[i], blobPrims.dirZ[i]);
@@ -972,7 +972,7 @@ void FieldComputer::computePrimitiveField(const Float_& pX, const Float_& pY, co
 
     switch(m_blobPrims.skeletType[idxPrimitive])
     {
-    case(sktPoint):
+    case(bntPrimPoint):
     {
         //this is just for a sphere
         Float_ distX = Float_(m_blobPrims.posX[idxPrimitive]) - ptX;
@@ -981,7 +981,7 @@ void FieldComputer::computePrimitiveField(const Float_& pX, const Float_& pY, co
         dist2 = (distX * distX) + (distY * distY) + (distZ * distZ);
     }
         break;
-    case(sktLine):
+    case(bntPrimLine):
     {
         Float_ line0X = Float_(m_blobPrims.posX[idxPrimitive]);
         Float_ line0Y = Float_(m_blobPrims.posY[idxPrimitive]);
@@ -1009,7 +1009,7 @@ void FieldComputer::computePrimitiveField(const Float_& pX, const Float_& pY, co
         dist2 = (distX * distX) + (distY * distY) + (distZ * distZ);
     }
         break;
-    case(sktCylinder):
+    case(bntPrimCylinder):
     {
         Float_ posX = ptX - Float_(m_blobPrims.posX[idxPrimitive]);
         Float_ posY = ptY - Float_(m_blobPrims.posY[idxPrimitive]);
@@ -1037,7 +1037,7 @@ void FieldComputer::computePrimitiveField(const Float_& pX, const Float_& pY, co
         dist2 = x*x + y*y;
     }
         break;
-    case(sktTriangle):
+    case(bntPrimTriangle):
     {
         Float_ tri0X = Float_(m_blobPrims.posX[idxPrimitive]);
         Float_ tri0Y = Float_(m_blobPrims.posY[idxPrimitive]);
@@ -1056,7 +1056,7 @@ void FieldComputer::computePrimitiveField(const Float_& pX, const Float_& pY, co
     }
         break;
 
-    case(sktCube):
+    case(bntPrimCube):
     {
         Float_ posX = Float_(m_blobPrims.posX[idxPrimitive]);
         Float_ posY = Float_(m_blobPrims.posY[idxPrimitive]);
@@ -1096,7 +1096,7 @@ void FieldComputer::computePrimitiveField(const Float_& pX, const Float_& pY, co
     }
         break;
 
-    case(sktDisc):
+    case(bntPrimDisc):
     {
         Float_ dX = ptX - Float_(m_blobPrims.posX[idxPrimitive]);
         Float_ dY = ptY - Float_(m_blobPrims.posY[idxPrimitive]);
@@ -1131,7 +1131,7 @@ void FieldComputer::computePrimitiveField(const Float_& pX, const Float_& pY, co
     }
         break;
 
-    case(sktRing):
+    case(bntPrimRing):
     {
         Float_ dX = ptX - Float_(m_blobPrims.posX[idxPrimitive]);
         Float_ dY = ptY - Float_(m_blobPrims.posY[idxPrimitive]);
@@ -1281,56 +1281,56 @@ int FieldComputer::fieldValue(const Float_& pX, const Float_& pY, const Float_& 
                 opType = m_blobOps.opType[idxOp];
                 switch(opType)
                 {
-                case(opBlend):
+                case(bntOpBlend):
                 {
                     outField = leftChildField + rightChildField;
                 }
                     break;
-                case(opRicciBlend):
+                case(bntOpRicciBlend):
                 {
                     Float_ ricciPower = Float_(m_blobOps.resY[idxOp]);
                     outField = SimdPower(leftChildField + rightChildField, ricciPower);
                 }
                     break;
-                case(opUnion):
+                case(bntOpUnion):
                 {
                     outField = SimdMax(leftChildField, rightChildField);
                 }
                     break;
-                case(opIntersect):
+                case(bntOpIntersect):
                 {
                     outField = SimdMin(leftChildField, rightChildField);
                 }
                     break;
-                case(opDif):
+                case(bntOpDif):
                 {
                     Float_ maxField(1.0f);
                     outField = SimdMin(leftChildField, maxField - rightChildField);
                 }
                     break;
-                case(opSmoothDif):
+                case(bntOpSmoothDif):
                 {
                     Float_ maxField(1.0f);
                     outField = leftChildField * (maxField - rightChildField);
                 }
                     break;
 
-                case(opWarpBend):
+                case(bntOpWarpBend):
                 {
                     outField = leftChildField;
                 }
                     break;
-                case(opWarpTwist):
+                case(bntOpWarpTwist):
                 {
                     outField = leftChildField;
                 }
                     break;
-                case(opWarpTaper):
+                case(bntOpWarpTaper):
                 {
                     outField = leftChildField;
                 }
                     break;
-                case(opWarpShear):
+                case(bntOpWarpShear):
                 {
                     outField = leftChildField;
                 }
@@ -1472,7 +1472,7 @@ int FieldComputer::fieldValueAndColor(const Float_& pX, const Float_& pY, const 
                 opType = m_blobOps.opType[idxOp];
                 switch(opType)
                 {
-                case(opBlend): case(opRicciBlend):
+                case(bntOpBlend): case(bntOpRicciBlend):
                 {
                     Float_ half(0.5f);
                     Float_ one(1.0f);
@@ -1486,7 +1486,7 @@ int FieldComputer::fieldValueAndColor(const Float_& pX, const Float_& pY, const 
                     outColorZ = leftChildField * leftChildColorZ + rightChildField * rightChildColorZ;
                 }
                     break;
-                case(opUnion): case(opIntersect):
+                case(bntOpUnion): case(bntOpIntersect):
                 {
                     Float_ zero(0.0f);
                     Float_ one(1.0f);
@@ -1499,7 +1499,7 @@ int FieldComputer::fieldValueAndColor(const Float_& pX, const Float_& pY, const 
                     outColorZ = leftChildField * leftChildColorZ + rightChildField * rightChildColorZ;
                 }
                     break;
-                case(opDif): case(opSmoothDif):
+                case(bntOpDif): case(bntOpSmoothDif):
                 {
                     Float_ one(1.0f);
 
@@ -1512,7 +1512,7 @@ int FieldComputer::fieldValueAndColor(const Float_& pX, const Float_& pY, const 
                 }
                     break;
 
-                case(opWarpBend):case(opWarpTwist):case(opWarpTaper):case(opWarpShear):
+                case(bntOpWarpTwist):case(bntOpWarpTaper):case(bntOpWarpBend):case(bntOpWarpShear):
                 {
                     outColorX = leftChildColorX;
                     outColorY = leftChildColorY;

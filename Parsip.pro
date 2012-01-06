@@ -7,7 +7,7 @@ TARGET = ParsipHaptics
 QT += opengl network
 DEPENDPATH += . \
               Parsip100/ParsipHaptics/include \
-              Parsip100/DSystem/include \              
+              Parsip100/DSystem/include \
               Parsip100/PS_BlobTree/include \
               Parsip100/PS_FrameWork/include
 INCLUDEPATH += . \
@@ -132,18 +132,21 @@ HEADERS += \
     Parsip100/PS_BlobTree/include/CTurboChargedPrimitive.h \
     Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.h \
     Parsip100/PS_FrameWork/include/PS_Tracker.h \
-    Parsip100/PS_FrameWork/include/PS_ComputeDevice.h \  
+    Parsip100/PS_FrameWork/include/PS_ComputeDevice.h \
     Parsip100/PS_SimdPoly/include/PS_VectorMath.h \
     Parsip100/PS_SimdPoly/include/PS_SIMDVecN.h \
     Parsip100/PS_SimdPoly/include/PS_SIMDSpecialMathFuncs.h \
     Parsip100/PS_SimdPoly/include/PS_Polygonizer.h \
     Parsip100/PS_SimdPoly/include/PS_MATRIX4.h \
     Parsip100/PS_SimdPoly/include/PS_MathBase.h \
-    Parsip100/PS_SimdPoly/include/_CellConfigTable.h
+    Parsip100/PS_SimdPoly/include/_CellConfigTable.h \
+    Parsip100/ParsipHaptics/DlgPizaModel.h \
+    Parsip100/ParsipHaptics/include/DlgPizaModel.h
 
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
-         Parsip100/ParsipHaptics/mainwindow.ui
+         Parsip100/ParsipHaptics/mainwindow.ui \
+    Parsip100/ParsipHaptics/DlgPizaModel.ui
 
 SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
            Parsip100/ParsipHaptics/include/_GlobalFunctions.cpp \
@@ -217,7 +220,8 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
     Parsip100/PS_BlobTree/include/CNullPrimitive.cpp \
     Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.cpp \
     Parsip100/PS_FrameWork/include/PS_ComputeDevice.cpp \
-    Parsip100/PS_SimdPoly/include/PS_Polygonizer.cpp
+    Parsip100/PS_SimdPoly/include/PS_Polygonizer.cpp \
+    Parsip100/ParsipHaptics/include/DlgPizaModel.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -287,58 +291,6 @@ OTHER_FILES += \
     Parsip100/Distrib/Resources/Shaders/TPhongVS.glsl \
     Parsip100/Distrib/Resources/Shaders/TPhongFS.glsl \
     Parsip100/Distrib/Resources/Shaders/Polygonizer.cl
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

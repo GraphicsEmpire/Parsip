@@ -28,11 +28,11 @@
 #include "ConversionToActions.h"
 #include "PS_HighPerformanceRender.h"
 
-#include "GalinMedusaGenerator.h"
-#include "SampleShapes.h"
-
 #include "CBlobTreeNetwork.h"
 #include "CBlobTreeAnimation.h"
+#include "GalinMedusaGenerator.h"
+#include "SampleShapes.h"
+#include "DlgPizaModel.h"
 
 
 using namespace PS::FILESTRINGUTILS;
@@ -1094,8 +1094,7 @@ void GLWidget::drawLayerManager()
             m_glShaderNormalMesh->bind();
             glEnable(GL_LIGHTING);
 
-
-            SIMDPOLY_Draw();
+            alayer->getSimdPoly().draw(false);
 
             //Draw mesh in WireFrame Mode
             if(TheAppSettings::Instance().setDisplay.showMesh == smWireFrame)
@@ -1225,15 +1224,15 @@ void GLWidget::drawLayerManager()
     }
 }
 
-void GLWidget::actOpenProject()
+void GLWidget::actFileOpen()
 {
     QString strFileName = QFileDialog::getOpenFileName(this, tr("Open Scene"),
                                                        GetExePath().ptr(),
                                                        tr("Blobtree Scene(*.scene);;SketchNET Actions(*.acts);;Obj Mesh(*.obj);;Parsip Binary Mesh File(*.msh)"));
-    actOpenProject(strFileName);
+    actFileOpen(strFileName);
 }
 
-void GLWidget::actOpenProject(QString strFile)
+void GLWidget::actFileOpen(QString strFile)
 {
     DAnsiStr strFilePath(strFile.toAscii().data());
     DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
@@ -1284,31 +1283,14 @@ void GLWidget::actOpenProject(QString strFile)
             m_dlgFieldEditor->actPopulateList(index, lstCommands);
             m_dlgFieldEditor->setModal(false);
             m_dlgFieldEditor->show();
-            /*
-   for(size_t i=0; i<lstCommands.size(); i++)
-   {
-    QString strLine = lstCommands.at(i);
-    emit sig_addNetLog(QString("Execute:") + strLine);
-
-    actNetRecvCommand(index, strLine);
-
-    emit sig_setProgress(0, lstCommands.size()-1, i);
-   }
-   lstCommands.clear();
-
-   //Update visual cues
-   actMeshPolygonize();
-   emit sig_showLayerManager(getModelLayerManager());
-   emit sig_showBlobTree(getModelBlobTree(0));
-
-   QMessageBox msgBox;
-   msgBox.setText("All commands are executed successfully.");
-   msgBox.exec();
-   */
         }
     }
     else
     {
+        QMessageBox msgBox;
+        msgBox.setText("Invalid file extension.");
+        msgBox.exec();
+
         m_layerManager.removeAllLayers();
         m_layerManager.addLayer(NULL, strFilePath.ptr(), strFileTitle.ptr());
     }
@@ -1317,15 +1299,16 @@ void GLWidget::actOpenProject(QString strFile)
     updateGL();
 }
 
-void GLWidget::actSaveProject()
+void GLWidget::actFileSave()
 {
     DAnsiStr strAppPath = PS::FILESTRINGUTILS::ExtractFilePath(PS::FILESTRINGUTILS::GetExePath());
     QString qstrFileName = QFileDialog::getSaveFileName(this, tr("Save Scene"), strAppPath.ptr(), tr("Blobtree Scene(*.scene)"));
     DAnsiStr strFilePath(qstrFileName.toAscii().data());
+    strFilePath = PS::FILESTRINGUTILS::ChangeFileExt(strFilePath, DAnsiStr(".scene"));
     m_layerManager.saveScript(strFilePath);
 }
 
-void GLWidget::actCloseProject()
+void GLWidget::actFileClose()
 {
     resetTransformState();
     resetUndoLevels();
@@ -1408,33 +1391,25 @@ void GLWidget::actMeshPolygonize(int idxLayer)
 
     if(aLayer->getTracker().isChanged())
     {
-        aLayer->getTracker().reset();
-        //aLayer->setPolySeedPointAuto();
+        aLayer->getTracker().reset();        
         aLayer->setOctreeFromBlobTree();
         aLayer->flattenTransformations();
         aLayer->queryBlobTree(true, false);
 
-        //m_parsip.removeLayerMPUs(idxLayer);
-        //m_parsip.setForceMC(TheAppSettings::Instance().setParsip.bForceMC);
-        //m_parsip.setAdaptiveSubdivision(TheAppSettings::Instance().setParsip.bUseAdaptiveSubDivision);
         if(aLayer->isVisible())
         {
-            //int isOperator = 0;
-            //aLayer->convertToBinaryTree();
-            //SIMDPOLY_Reset();
-            //SIMDPOLY_LinearizeBlobTree(aLayer->getBlob(), -1, isOperator);
-            //SIMDPOLY_Run(aLayer->getCellSize());
-
+            //aLayer->convertToBinaryTree(false);
+            //aLayer->getSimdPoly().linearizeBlobTree(aLayer->getBlob());
+            //aLayer->getSimdPoly().run(aLayer->getCellSize());
 
             aLayer->setupCompactTree(aLayer->getBlob());
-
             aLayer->getPolygonizer()->setup(aLayer->getCompactTree(),
                                             aLayer->getOctree(),
                                             idxLayer,
                                             aLayer->getCellSize());
         }
 
-        //Run Polygonizer
+        //Run Polygonizer        
         aLayer->getPolygonizer()->run();
     }
 
@@ -3372,13 +3347,55 @@ void GLWidget::actTestPerformStd()
     SAFE_DELETE(perftest);
 }
 
-void GLWidget::actOpenMedusa()
+void GLWidget::actFileModelPiza()
 {
-    actCloseProject();
-    //m_layerManager.addLayer(Shapes::CreateGear(10, CMaterial::mtrlBrass(), CMaterial::mtrlBlue()), "GEARBOX");
-    m_layerManager.addLayer(Shapes::createPiza(1), "PIZA");
+    actFileClose();
 
-    /*
+    DlgPizaModelBuilder* lpDlgPiza = new DlgPizaModelBuilder(this);
+    lpDlgPiza->setModal(true);
+    lpDlgPiza->setValues(4, 8, 6.0f, 6.0f);
+    connect(lpDlgPiza, SIGNAL(sig_preview(int,int,float,float)), this, SLOT(actFileModelPiza(int, int, float, float)));
+    if(lpDlgPiza->exec() == QDialog::Accepted)
+    {
+        int levels, pillars;
+        float radius, height;
+        lpDlgPiza->getValues(levels, pillars, radius, height);
+        m_layerManager.addLayer(Shapes::createPiza(levels, pillars, radius, height), "PIZA");
+        m_layerManager.setActiveLayer(0);
+        m_layerManager.bumpRevisions();
+        emit sig_showLayerManager(getModelLayerManager());
+        emit sig_showBlobTree(getModelBlobTree(0));
+
+        //Convert to Binary Tree
+        QMessageBox msg;
+        msg.setText("Convert to binary tree? [In case of unary node it will be padded with NULL primitive]");
+        msg.setInformativeText("Convert to Binary Tree?");
+        msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        if(msg.exec() == QMessageBox::Yes)
+        {
+            m_layerManager.getActiveLayer()->selRemoveItem();
+            m_layerManager.getActiveLayer()->convertToBinaryTree(true);
+            emit sig_showLayerManager(getModelLayerManager());
+            emit sig_showBlobTree(getModelBlobTree(0));
+        }
+    }
+
+    SAFE_DELETE(lpDlgPiza);
+}
+
+void GLWidget::actFileModelPiza(int levels, int pillars, float radius, float height)
+{
+    actFileClose();
+    //m_layerManager.addLayer(Shapes::CreateGear(10, CMaterial::mtrlBrass(), CMaterial::mtrlBlue()), "GEARBOX");
+    m_layerManager.addLayer(Shapes::createPiza(levels, pillars, radius, height), "PIZA");
+    m_layerManager.bumpRevisions();
+    emit sig_showLayerManager(getModelLayerManager());
+    actMeshPolygonize();
+}
+
+void GLWidget::actFileModelMedusa()
+{
+    actFileClose();
     //Select the first layer to start drawing right away
     //Galin Medusa Model
     m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Tail(), DAnsiStr("Tail").ptr());
@@ -3392,7 +3409,7 @@ void GLWidget::actOpenMedusa()
     m_layerManager[ctLayers-2]->setVisible(false);
     m_layerManager[ctLayers-1]->setVisible(false);
     selectLayer(0);
-    */
+
     m_layerManager.bumpRevisions();
     emit sig_showLayerManager(getModelLayerManager());
     actMeshPolygonize();
@@ -3799,14 +3816,14 @@ void GLWidget::actEditConvertToBinaryTree()
         return;
 
     m_layerManager.getActiveLayer()->selRemoveItem();
-    if(m_layerManager.getActiveLayer()->convertToBinaryTree() > 0)
+    if(m_layerManager.getActiveLayer()->convertToBinaryTree(true) > 0)
     {
         QMessageBox msgBox;
         msgBox.setText("Conversion completed successfully.");
         msgBox.exec();
     }
 
-    //Re-polygonize
+    //Re-polygonize    
     m_layerManager.getActiveLayer()->getTracker().bump();
     actMeshPolygonize(m_layerManager.getActiveLayerIndex());
     emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
@@ -3821,6 +3838,24 @@ void GLWidget::actEditProbe(bool bEnable)
     actEditTranslate();
     updateProbe();
     updateGL();
+}
+
+void GLWidget::actEditBlobTreeStats()
+{
+    CLayer* active = m_layerManager.getActiveLayer();
+    if(active && active->getBlob())
+    {
+        int ctPrims = active->getBlob()->recursive_CountPrimitives();
+        int ctOps = active->getBlob()->recursive_CountOperators();
+        int depth = active->getBlob()->recursive_Depth();
+
+        DAnsiStr strMsg = printToAStr("Prims# %d, Ops# %d, and depth = %d exist in layer %s.",
+                                      ctPrims, ctOps, depth, active->getGroupName().cptr());
+
+        QMessageBox msgBox;
+        msgBox.setText(strMsg.cptr());
+        msgBox.exec();
+    }
 }
 
 void GLWidget::updateProbe()

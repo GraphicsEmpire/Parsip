@@ -42,60 +42,63 @@ public:
         return dif;
     }
 
-    static CBlobNode* createPiza(int maxLevel, int ctPillars = 30)
+    static CBlobNode* createPiza(int maxLevel, int ctPillars, float radius, float levelHeight)
     {
         CUnion * root = new CUnion();
+
+        //Build Tower
         for(int i=0; i < maxLevel; i++)
         {
-            root->addChild(createPizaLevel(i*2, ctPillars, 30.0f, CMaterial::mtrlCopper()));
-            root->addChild(createPizaLevel(i*2+1, ctPillars, 30.0f, CMaterial::mtrlObsidian()));
+            CMaterial mtrl = CMaterial::getMaterialFromList(i);
+            CBlobNode* pLevel = createPizaLevel(ctPillars, radius, levelHeight, mtrl);
+            pLevel->getTransform().addTranslate(vec3f(0.0f, i * 1.1f * levelHeight, 0.0f));
+            root->addChild(pLevel);
         }
 
-        root->getTransform().setScale(vec3f(0.2f, 0.2f, 0.2f));
+        //root->getTransform().setScale(vec3f(0.2f, 0.2f, 0.2f));
         return root;
     }
 
-    static CBlobNode* createPizaLevel(int level, int nPillars, float radius, CMaterial mtrlLevel)
+    static CBlobNode* createPizaLevel(int nPillars, float radius, float height, const CMaterial& mtrlLevel)
     {
-        float x, z;
-
-        vec3f c(0.0f, 2.0f + 11.0f * level, 0.0f);
         CUnion * root = new CUnion();
         for(int i=0; i < nPillars; i++)
         {
-            x = c.x + radius * cosf(static_cast<float>(i * TwoPi)/nPillars);
-            z = c.z + radius * sinf(static_cast<float>(i * TwoPi)/nPillars);
+            float x = radius * cosf(static_cast<float>(i * TwoPi)/nPillars);
+            float z = radius * sinf(static_cast<float>(i * TwoPi)/nPillars);
 
-            CBlobNode* pillar = createPizaPillar(mtrlLevel);
-            pillar->getTransform().setTranslate(vec3f(x, c.y, z));
+            CBlobNode* pillar = createPizaPillar(height, mtrlLevel);
+            pillar->getTransform().setTranslate(vec3f(x, 0.0f, z));
             root->addChild(pillar);
         }
 
-        CSkeletonDisc * disc = new CSkeletonDisc(c + vec3f(0.0f, 2.5f, 0.0f), vec3f(0.0f, 1.0f, 0.0f), 1.5f);
+        //Create Ceiling
+        CSkeletonDisc * disc = new CSkeletonDisc(vec3f(0.0f, height, 0.0f), vec3f(0.0f, 1.0f, 0.0f), radius * 1.2f);
         CSkeletonPrimitive * primDisc = new CSkeletonPrimitive(disc);
         primDisc->setMaterial(CMaterial::mtrlSilver());
-        primDisc->getTransform().setScale(vec3f(radius, 1.0f, radius));
+        //primDisc->getTransform().setScale(vec3f(radius, 1.0f, radius));
         root->addChild(primDisc);
         return root;
     }
 
-    static CBlobNode* createPizaPillar(CMaterial mtrl)
+    static CBlobNode* createPizaPillar(float height, const CMaterial& mtrl)
     {
-        CSkeletonPrimitive * sphere = new CSkeletonPrimitive(new CSkeletonPoint(vec3f(0.0f, 0.0f, 0.0f)), fftWyvill);
-        sphere->getTransform().setScale(vec3f(6.0f, 6.0f, 6.0f));
-        sphere->setMaterial(mtrl);
-
-        CSkeletonCylinder* pillar = new CSkeletonCylinder(vec3f(0.0, -8.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 0.25f, 6.0f);
-        CSkeletonPrimitive* pillarPrim = new CSkeletonPrimitive(pillar);
-        pillarPrim->setMaterial(mtrl);
-
-        CRicciBlend* blendUpper = new CRicciBlend(sphere, pillarPrim, 32.0f);
-
-        CSkeletonDisc * ground = new CSkeletonDisc(vec3f(0.0, -8.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 2.0f);
+        CSkeletonDisc * ground = new CSkeletonDisc(vec3f(0.0, 0.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 1.0f);
         CSkeletonPrimitive * groundPrim = new CSkeletonPrimitive(ground, fftWyvill);
         groundPrim->setMaterial(mtrl);
 
-        CBlend* blend = new CBlend(blendUpper, groundPrim);
+        CSkeletonCylinder* pillar = new CSkeletonCylinder(vec3f(0.0, 0.0, 0.0), vec3f(0.0f, 1.0f, 0.0f), 0.25f, 0.7f * height);
+        CSkeletonPrimitive* pillarPrim = new CSkeletonPrimitive(pillar);
+        pillarPrim->setMaterial(mtrl);
+
+        //
+        //Spherical Scale
+        float s = 0.5f * height;
+        CSkeletonPrimitive * cap = new CSkeletonPrimitive(new CSkeletonPoint(vec3f(0.0f, 0.25f * height, 0.0f)), fftWyvill);
+        cap->getTransform().setScale(vec3f(s, s, s));
+        cap->setMaterial(mtrl);
+
+        CUnion* blend = new CUnion(new CUnion(groundPrim, pillarPrim), cap);
         return blend;
     }
 

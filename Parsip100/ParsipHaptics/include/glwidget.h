@@ -77,12 +77,14 @@ public slots:
     void selectBlobNode(int iLayer, CBlobNode* aNode);
     void selectBlobNode(QModelIndex idx);
 
-    void actOpenMedusa();
-    void actOpenProject(QString strFile);
-    void actOpenProject();
+    void actFileModelPiza();
+    void actFileModelPiza(int levels, int pillars, float radius, float height);
+    void actFileModelMedusa();
+    void actFileOpen(QString strFile);
+    void actFileOpen();
     void actFileExportMesh();
-    void actSaveProject();
-    void actCloseProject();
+    void actFileSave();
+    void actFileClose();
 
     //Mesh methods
     void actMeshSubDivide();
@@ -153,6 +155,7 @@ public slots:
     void actEditFieldEditor();
     void actEditConvertToBinaryTree();
     void actEditProbe(bool bEnable);
+    void actEditBlobTreeStats();
 
     void actTestStart();
     void actTestSetRuns(int value);

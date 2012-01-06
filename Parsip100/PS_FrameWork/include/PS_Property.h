@@ -1,5 +1,7 @@
 #ifndef PS_PROPERTY_H
 #define PS_PROPERTY_H
+
+#include <stdio.h>
 #include <vector>
 #include "PS_String.h"
 #include "PS_Vector.h"

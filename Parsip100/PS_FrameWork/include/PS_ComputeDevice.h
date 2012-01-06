@@ -1,7 +1,7 @@
 #ifndef PS_COMPUTEDEVICE_H
 #define PS_COMPUTEDEVICE_H
 #include <vector>
-#include <string.h>
+#include <string>
 
 #include <CL/cl.h>
 
@@ -16,7 +16,7 @@ namespace HPC{
 class ComputeKernel
 {
 public:
-    ComputeKernel(cl_kernel kernel, const std::string& strTitle)
+    ComputeKernel(cl_kernel kernel, const string& strTitle)
     {
         m_clKernel = kernel;
         m_strTitle = strTitle;
