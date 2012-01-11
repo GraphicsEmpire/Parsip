@@ -1352,21 +1352,31 @@ bool CLayerManager::saveScript(int idxLayer, CSketchConfig* lpSketchConfig )
     if(lpSketchConfig == NULL) return false;
     if(!isLayerIndex(idxLayer)) return false;
 
-    CLayer* aLayer = getLayer(idxLayer);
+    //Save Stats from Version 4
+    int ctPrims = 0;
+    int ctOps = 0;
+    int depth = 0;
 
+    CLayer* aLayer = getLayer(idxLayer);
     vector<int> layersRoot;
     if(aLayer->hasBlob())
     {
         layersRoot.push_back(aLayer->getBlob()->getID());
         aLayer->getBlob()->saveScript(lpSketchConfig);
+        ctOps   = aLayer->getBlob()->recursive_CountOperators();
+        ctPrims = aLayer->getBlob()->recursive_CountPrimitives();
+        depth   = aLayer->getBlob()->recursive_Depth();
     }
     else
         layersRoot.push_back(-1);
 
-
+    //Save Global Info for the BlobTree
     lpSketchConfig->writeInt("Global", "FileVersion", SCENE_FILE_VERSION);
     lpSketchConfig->writeInt("Global", "NumLayers", m_lstLayers.size());
     lpSketchConfig->writeInt("Global", "CurrentLayer", idxLayer + 1);
+    lpSketchConfig->writeInt("Global", "CountPrimitives", ctPrims);
+    lpSketchConfig->writeInt("Global", "CountOperators", ctOps);
+    lpSketchConfig->writeInt("Global", "Depth", depth);
     lpSketchConfig->writeIntArray("Global", "RootIDs", layersRoot);
     return true;
 }

@@ -3374,6 +3374,7 @@ void GLWidget::actFileModelPiza()
         if(msg.exec() == QMessageBox::Yes)
         {
             m_layerManager.getActiveLayer()->selRemoveItem();
+            m_layerManager.getActiveLayer()->flattenTransformations();
             m_layerManager.getActiveLayer()->convertToBinaryTree(true);
             emit sig_showLayerManager(getModelLayerManager());
             emit sig_showBlobTree(getModelBlobTree(0));
