@@ -171,10 +171,11 @@ bool CSIMDMPURunBody::doMarchingCubes(CSIMDMPU* aMPU) const
     vec4f side4(sides.x, sides.y, sides.z);
     vec4f hi = org4 + side4;
     bool bIntersectsPrimOctree = false;
-    for(int i=0; i < m_cptBlob->ctPrims; i++)
+    int ctPrims = m_cptBlob->countPrimitives();
+    for(int i=0; i < ctPrims; i++)
     {
-        if(intersects(m_cptBlob->prims[i].octLo,
-                      m_cptBlob->prims[i].octHi,
+        if(intersects(m_cptBlob->getPrimitive(i).octLo,
+                      m_cptBlob->getPrimitive(i).octHi,
                       org4,
                       hi))
         {
@@ -285,8 +286,8 @@ bool CSIMDMPURunBody::doMarchingCubes(CSIMDMPU* aMPU) const
                         idxMeshVertex[icase] = getEdge(cellCornerIDX[idxEdgeStart], cellCornerIDX[idxEdgeEnd]);
                         if(idxMeshVertex[icase] == -1)
                         {
-                            float* lpStoreFVPrims = new float[m_cptBlob->ctPrims];
-                            float* lpStoreFVOps   = new float[m_cptBlob->ctOps];
+                            float* lpStoreFVPrims = new float[m_cptBlob->countPrimitives()];
+                            float* lpStoreFVOps   = new float[m_cptBlob->countOperators()];
                             ctFieldEvals += ComputeRootNewtonRaphsonVEC4(m_cptBlob,
                                                                          lpStoreFVOps,
                                                                          lpStoreFVPrims,

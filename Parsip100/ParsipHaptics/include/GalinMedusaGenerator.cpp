@@ -191,7 +191,8 @@ whereas the tail itself consists in three cubic splines.
 
 CBlend * GalinMedusaGenerator::Medusa_Tail()
 {
-    SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    //SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    SplineGenerator g( SplineGenerator::OneSumBlend );
 
     // Hips
     g.addSpline(

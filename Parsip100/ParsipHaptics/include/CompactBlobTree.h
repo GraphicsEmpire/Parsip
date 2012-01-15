@@ -10,7 +10,7 @@ using namespace PS::BLOBTREE;
 using namespace PS::MATH;
 
 //#define MAX_BLOB_ENTRIES PS_SIMD_LINES*3
-#define MAX_BLOB_ENTRIES 512
+#define MIN_BLOB_NODES 512
 #define MAX_COMPACT_KIDS_COUNT 8
 #define MAX_TREENODE_FVCACHE   4
 #define TREENODE_CACHE_STORETHRESHOLD   0.4f
@@ -66,36 +66,50 @@ struct PCMCONTEXT
 };
 
 //Compact BlobTree
+//template<int szNodes>
 class COMPACTBLOBTREE
 {
-public:
-    int ctPrims;
-    BlobPrimitive prims[MAX_BLOB_ENTRIES];
+private:
+    int m_ctPrims;
+    int m_szAllocatedPrims;
+    BlobPrimitive* m_lpPrims;
 
-    int ctOps;
-    BlobOperator ops[MAX_BLOB_ENTRIES];
+    int m_ctOps;
+    int m_szAllocatedOps;
+    BlobOperator* m_lpOps;
 
-    int ctPCMNodes;
-    PCMCONTEXT pcmCONTEXT;
+    int m_ctPCMNodes;
+    PCMCONTEXT m_pcmCONTEXT;
 public:
 
     COMPACTBLOBTREE()
     {
-        reset();
+        init();
     }
 
     COMPACTBLOBTREE(const COMPACTBLOBTREE& rhs)
     {
-        reset();
+        init();
         copyFrom(rhs);
     }
 
     COMPACTBLOBTREE(CBlobNode* root)
     {
-        reset();
+        init();
         convert(root);
     }
 
+    ~COMPACTBLOBTREE()
+    {
+        SAFE_DELETE(m_lpPrims);
+        SAFE_DELETE(m_lpOps);
+    }
+
+    //Count
+    inline int countPrimitives() const {return m_ctPrims;}
+    inline int countOperators() const {return m_ctOps;}
+    inline BlobPrimitive& getPrimitive(int i) {return m_lpPrims[i];}
+    inline BlobOperator& getOperator(int i) {return m_lpOps[i];}
 
     //FieldValue
     float fieldvalue(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
@@ -130,16 +144,11 @@ public:
     //Outputs gradient in [x, y, z] and fieldvalue in w part
     vec4f fieldValueAndGradient(const vec4f& p, float delta);
 
-    void reset()
-    {
-        ctPrims = 0;
-        ctOps = 0;
-        ctPCMNodes = 0;
-    }
-
     int convert(CBlobNode* root);
     void copyFrom(const COMPACTBLOBTREE& rhs);
 private:
+    void init();
+
     int convert(CBlobNode* root, int parentID /*, const CMatrix& mtxBranch*/);
     vec4f warpBend( const vec4f& pin, float bendRate, float bendCenter, const CInterval& bendRegion);
     vec4f warpTwist(const vec4f& pin, float factor, MajorAxices axis);

@@ -3431,15 +3431,15 @@ void GLWidget::actFileModelMedusa()
     //Select the first layer to start drawing right away
     //Galin Medusa Model
     m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Tail(), DAnsiStr("Tail").ptr());
-    m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Body(), DAnsiStr("Body").ptr());
-    m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Breast(), DAnsiStr("Chest").ptr());
-    m_layerManager.addLayer(GalinMedusaGenerator::Medusa_LeftHand(), DAnsiStr("LeftHand").ptr());
-    m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Neck(), DAnsiStr("Neck").ptr());
-    m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Hair(), DAnsiStr("Hair").ptr());
-    m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Tete(), DAnsiStr("Head").ptr());
-    size_t ctLayers = m_layerManager.countLayers();
-    m_layerManager[ctLayers-2]->setVisible(false);
-    m_layerManager[ctLayers-1]->setVisible(false);
+    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Body(), DAnsiStr("Body").ptr());
+    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Breast(), DAnsiStr("Chest").ptr());
+    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_LeftHand(), DAnsiStr("LeftHand").ptr());
+    ///m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Neck(), DAnsiStr("Neck").ptr());
+    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Hair(), DAnsiStr("Hair").ptr());
+    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Tete(), DAnsiStr("Head").ptr());
+    //size_t ctLayers = m_layerManager.countLayers();
+    //m_layerManager[ctLayers-2]->setVisible(false);
+    //m_layerManager[ctLayers-1]->setVisible(false);
     selectLayer(0);
 
     m_layerManager.bumpRevisions();

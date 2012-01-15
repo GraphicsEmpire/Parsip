@@ -127,8 +127,7 @@ public:
 
 
     void setupCompactTree(CBlobNode* root)
-    {
-        m_cptBlobTree.reset();
+    {        
         m_cptBlobTree.convert(root);
     }
 

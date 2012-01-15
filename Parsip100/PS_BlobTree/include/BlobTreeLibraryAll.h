@@ -13,6 +13,9 @@
 #include "CSkeletonCube.h"
 #include "CSkeletonTriangle.h"
 
+//Other Primitives
+#include "CQuadricPoint.h"
+
 
 //BlobTree Nodes
 #include "CSkeletonPrimitive.h"
