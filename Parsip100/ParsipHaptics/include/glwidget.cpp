@@ -84,6 +84,7 @@ GLWidget::GLWidget(QWidget *parent)
     m_sketchType                = bntPrimPoint;
     m_bEnablePan		= false;
     m_bEnableMultiSelect        = false;
+    m_bEnableCamLeftKey         = false;
 
     m_mouseButton		= CArcBallCamera::mbNone;
     m_modelBlobTree		= NULL;
@@ -465,9 +466,11 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         ray.set(posTransNear, dir);
     }
 
-
+    //Use LeftButton
     if(event->buttons() & Qt::LeftButton)
     {
+        if(m_bEnableCamLeftKey)
+            m_uiMode = uimSelect;
         m_mouseButton = PS::CArcBallCamera::mbLeft;
         if(m_uiMode == uimTransform)
             TheUITransform::Instance().mouseDown = posTransNear;
@@ -701,19 +704,21 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     }//Transform
 
     //Control Camera in Select Mode
-    if(m_mouseButton == PS::CArcBallCamera::mbMiddle)
+    //Or Left Button on laptop
+    if((m_mouseButton == PS::CArcBallCamera::mbMiddle)||
+       (m_bEnableCamLeftKey && (m_mouseButton == PS::CArcBallCamera::mbLeft)))
     {
         if(m_bEnablePan)
         {
             //m_camera.setCenter(m_camera.getCenter() + vec3f(0.03f * dx, 0.03f * dy, 0.0f));
-            m_globalPan.x += 0.03*dx;
-            m_globalPan.y += 0.03*dy;
+            m_globalPan.x += MOUSE_MOVE_COEFF * dx;
+            m_globalPan.y += MOUSE_MOVE_COEFF * dy;
             m_globalPan.z = 0.0f;
         }
         else
         {
-            m_camera.setHorizontalAngle(m_camera.getHorizontalAngle() + (0.03 * dx));
-            m_camera.setVerticalAngle(m_camera.getVerticalAngle() + (0.03 * dy));
+            m_camera.setHorizontalAngle(m_camera.getHorizontalAngle() + (MOUSE_MOVE_COEFF * dx));
+            m_camera.setVerticalAngle(m_camera.getVerticalAngle() + (MOUSE_MOVE_COEFF * dy));
         }
         updateGL();
     }
@@ -756,6 +761,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event )
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
     m_camera.setZoom(m_camera.getCurrentZoom() - MOUSE_WHEEL_COEFF * event->delta());
+    emit sig_viewZoomChanged(m_camera.getCurrentZoom());
     updateGL();
 }
 
@@ -2396,6 +2402,31 @@ void GLWidget::actAddRicciBlend()
 void GLWidget::actAddCacheNode()
 {
     addBlobOperator(bntOpCache);
+}
+
+void GLWidget::actViewCamLeftKey(bool bEnable)
+{
+    m_bEnableCamLeftKey = bEnable;
+}
+
+void GLWidget::actViewZoomIn()
+{
+    m_camera.setZoom(m_camera.getCurrentZoom() + 1);
+    emit sig_viewZoomChanged(m_camera.getCurrentZoom());
+    updateGL();
+}
+
+void GLWidget::actViewZoomOut()
+{
+    m_camera.setZoom(m_camera.getCurrentZoom() - 1);
+    emit sig_viewZoomChanged(m_camera.getCurrentZoom());
+    updateGL();
+}
+
+void GLWidget::actViewSetZoom(int value)
+{
+    m_camera.setZoom((float)value);
+    updateGL();
 }
 
 void GLWidget::actEditSelect()

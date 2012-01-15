@@ -136,6 +136,12 @@ public slots:
     void actAnimStop();
     void actAnimRemoveAll();
 
+    //Viewing
+    void actViewCamLeftKey(bool bEnable);
+    void actViewZoomIn();
+    void actViewZoomOut();
+    void actViewSetZoom(int value);
+
     //Editing Operations
     void actEditSelect();
     void actEditMultiSelect(bool bEnable);
@@ -185,6 +191,7 @@ public slots:
     void edit_tblColorRibbon();
 
 signals:
+    void sig_viewZoomChanged(int);
     void sig_addNetLog(const QString& strMsg);
     void sig_setProgress(int min, int max, int val);
     void sig_setParsipThreadsCount(int value);
@@ -261,6 +268,7 @@ private:
     CUIWidget*          m_lpUIWidget;
     UIMODE		m_uiMode;
     vec3f		m_globalPan;
+    bool                m_bEnableCamLeftKey;
     bool		m_bEnablePan;
     bool		m_bEnableMultiSelect;
     bool		m_bTransformSkeleton;

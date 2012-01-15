@@ -173,8 +173,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_glWidget, SIGNAL(sig_enableUndo(bool)), ui->actEditUndo, SLOT(setEnabled(bool)));
     connect(m_glWidget, SIGNAL(sig_enableRedo(bool)), ui->actEditRedo, SLOT(setEnabled(bool)));
 
-
+    //VIEW
     connect(ui->actViewPanCamera, SIGNAL(triggered(bool)), m_glWidget, SLOT(actViewEnablePan(bool)));
+    connect(ui->actViewCamLeftKey, SIGNAL(triggered(bool)), m_glWidget, SLOT(actViewCamLeftKey(bool)));
+    connect(ui->actViewZoomIn, SIGNAL(triggered()), m_glWidget, SLOT(actViewZoomIn()));
+    connect(ui->actViewZoomOut, SIGNAL(triggered()), m_glWidget, SLOT(actViewZoomOut()));
 
     connect(ui->sliderMouseDragScale, SIGNAL(valueChanged(int)), m_glWidget, SLOT(setMouseDragScale(int)));
 
@@ -227,7 +230,15 @@ MainWindow::MainWindow(QWidget *parent) :
 */
 
     m_dlgFieldEditor = new DlgFieldFunctionEditor(this);
-    //
+
+    //Status Bar Objects
+    m_lpSlider = new QSlider(Qt::Horizontal);
+    m_lpSlider->setRange(zoomMin, zoomMax);
+    m_lpSlider->setToolTip("Set Zoom");
+    connect(m_lpSlider, SIGNAL(valueChanged(int)), m_glWidget, SLOT(actViewSetZoom(int)));
+    connect(m_glWidget, SIGNAL(sig_viewZoomChanged(int)), m_lpSlider, SLOT(setValue(int)));
+    statusBar()->addPermanentWidget(m_lpSlider);
+
     m_statusBarMsg = new QLabel();
     m_statusBarMsg->setMinimumWidth(m_statusBarMsg->fontMetrics().width("CACHE: L1=0000, L2=0000 KB, RAM= 00000 MB"));
     statusBar()->addPermanentWidget(m_statusBarMsg);
@@ -266,6 +277,7 @@ MainWindow::~MainWindow()
     delete m_statusBarMsg;
     delete m_prgBar;
     delete m_actgroupPrims;
+    delete m_lpSlider;
 }
 
 void MainWindow::actEditFieldEditor()

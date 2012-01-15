@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include <QLabel>
 #include <QProgressBar>
+#include <QSlider>
 #include <QString>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -101,7 +102,9 @@ private:
         QLabel		*m_statusBarMsg;
         QLabel		*m_statusBarFPS;
         QLabel		*m_statusBarTime;
-        QProgressBar *m_prgBar;
+        QProgressBar    *m_prgBar;
+        QSlider         *m_lpSlider;
+
 
         QActionGroup *m_actgroupPrims;
         //QActionGroup *m_actgroupOps;

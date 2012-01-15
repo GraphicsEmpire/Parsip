@@ -38,7 +38,7 @@
          <x>0</x>
          <y>0</y>
          <width>688</width>
-         <height>694</height>
+         <height>712</height>
         </rect>
        </property>
       </widget>
@@ -1171,7 +1171,7 @@
      <x>0</x>
      <y>0</y>
      <width>994</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1225,6 +1225,9 @@
     <addaction name="actViewResetCamera"/>
     <addaction name="actViewPanCamera"/>
     <addaction name="actViewFullScreen"/>
+    <addaction name="actViewCamLeftKey"/>
+    <addaction name="actViewZoomIn"/>
+    <addaction name="actViewZoomOut"/>
    </widget>
    <widget class="QMenu" name="menuMesh">
     <property name="title">
@@ -1928,6 +1931,30 @@
   <action name="actEditBlobTreeStats">
    <property name="text">
     <string>BlobTree Stats...</string>
+   </property>
+  </action>
+  <action name="actViewCamLeftKey">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Camera On Left Key</string>
+   </property>
+  </action>
+  <action name="actViewZoomIn">
+   <property name="text">
+    <string>Zoom In +</string>
+   </property>
+   <property name="shortcut">
+    <string>+</string>
+   </property>
+  </action>
+  <action name="actViewZoomOut">
+   <property name="text">
+    <string>Zoom Out -</string>
+   </property>
+   <property name="shortcut">
+    <string>-</string>
    </property>
   </action>
  </widget>
