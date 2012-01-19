@@ -20,7 +20,7 @@ bool CBlobTreeToActions::convert( const char* chrOutFileName /*= NULL*/ )
 
     m_lstActions.clear();
 
-    m_Layer->convertToBinaryTree(true);
+    m_Layer->convertToBinaryTree(true, false);
     CBlobNode* root = m_Layer->getBlob();
 
     //Fixed BlobTree now create the actions list

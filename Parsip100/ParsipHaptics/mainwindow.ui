@@ -38,7 +38,7 @@
          <x>0</x>
          <y>0</y>
          <width>688</width>
-         <height>712</height>
+         <height>694</height>
         </rect>
        </property>
       </widget>
@@ -1171,7 +1171,7 @@
      <x>0</x>
      <y>0</y>
      <width>994</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1287,6 +1287,7 @@
     <addaction name="separator"/>
     <addaction name="actEditField"/>
     <addaction name="actEditConvert"/>
+    <addaction name="actEditAssignIDs"/>
     <addaction name="separator"/>
     <addaction name="actEditFieldProbe"/>
     <addaction name="actEditBlobTreeStats"/>
@@ -1955,6 +1956,11 @@
    </property>
    <property name="shortcut">
     <string>-</string>
+   </property>
+  </action>
+  <action name="actEditAssignIDs">
+   <property name="text">
+    <string>Re-Assign IDs</string>
    </property>
   </action>
  </widget>

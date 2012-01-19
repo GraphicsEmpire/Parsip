@@ -34,17 +34,24 @@ using namespace PS::BLOBTREE;
 
 namespace PS {
 
+enum MEDUSABLENDTYPE {
+    NestedSumBlendsOfQuadricPoints,
+    OneSumBlend,
+    SumBlendOfFastQuadricPointSets,
+    OneFastQuadricPointSet
+};
+
 class GalinMedusaGenerator {
 public:
-        static CBlend * Medusa_Neck();
-        static CBlend * Medusa_Tail();
-        static CBlend * Medusa_Body();
-        static CBlend * Medusa_LeftHand();
-        static CBlend * Medusa_Breast();
-        static CBlend * Medusa_Hair();
+        static CBlend * Medusa_Neck(MEDUSABLENDTYPE blend = OneSumBlend );
+        static CBlend * Medusa_Tail(MEDUSABLENDTYPE blend = OneSumBlend);
+        static CBlend * Medusa_Body(MEDUSABLENDTYPE blend = OneSumBlend);
+        static CBlend * Medusa_LeftHand(MEDUSABLENDTYPE blend = OneSumBlend);
+        static CBlend * Medusa_Breast(MEDUSABLENDTYPE blend = OneSumBlend);
+        static CBlend * Medusa_Hair(MEDUSABLENDTYPE blend = OneSumBlend);
 
 	// [RMS NOTE: this was not ported exactly. see code..]
-        static CBlend * Medusa_Tete();
+        static CBlend * Medusa_Head(MEDUSABLENDTYPE blend = OneSumBlend);
 };
 
 

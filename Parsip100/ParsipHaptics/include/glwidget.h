@@ -78,7 +78,7 @@ public slots:
     void selectBlobNode(QModelIndex idx);
 
     void actFileModelPiza();
-    void actFileModelPiza(int levels, int pillars, float radius, float height);
+
     void actFileModelMedusa();
     void actFileOpen(QString strFile);
     void actFileOpen();
@@ -162,6 +162,7 @@ public slots:
     void actEditConvertToBinaryTree();
     void actEditProbe(bool bEnable);
     void actEditBlobTreeStats();
+    void actEditAssignIDs();
 
     void actTestStart();
     void actTestSetRuns(int value);

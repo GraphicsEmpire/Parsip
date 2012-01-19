@@ -1,4 +1,5 @@
 #include "PS_SketchConfig.h"
+#include "PS_ErrorManager.h"
 
 namespace PS{
 CSketchConfig::CSketchConfig()
@@ -62,6 +63,13 @@ int CSketchConfig::writeIntArray(DAnsiStr section, DAnsiStr variable, const std:
             else
                 strTemp = printToAStr("%d, ", arrayInt[i]);
             strValue += strTemp;
+
+            if(strValue.length() > MAX_LINE_LENGTH)
+            {
+                ReportError("Buffer overflow detected when writing IntArray.");
+                FlushAllErrors();
+                return -1;
+            }
         }
         writeValue(section, variable, strValue);
     }

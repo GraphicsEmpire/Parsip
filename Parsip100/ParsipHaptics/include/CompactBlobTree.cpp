@@ -4,6 +4,13 @@
 #include "PS_BlobTree/include/CSkeletonTriangle.h"
 #include "_GlobalFunctions.h"
 
+#define PS_SUCCESS            1
+#define ERR_OPS_OVERFLOW     -1
+#define ERR_PRIMS_OVERFLOW   -2
+#define ERR_KIDS_OVERFLOW    -3
+#define ERR_PARAM_ERROR      -4
+#define ERR_NODE_NOT_RECOGNIZED -5
+
 //Initialize all structures
 void COMPACTBLOBTREE::init()
 {
@@ -22,7 +29,7 @@ int COMPACTBLOBTREE::convert( CBlobNode* root)
     {
         ReportError("Invalid input tree.");
         FlushAllErrors();
-        return -1;
+        return ERR_PARAM_ERROR;
     }
 
     //Check if we need to allocate new memory
@@ -30,6 +37,7 @@ int COMPACTBLOBTREE::convert( CBlobNode* root)
     int ctNeededPrims = MATHMAX(root->recursive_CountPrimitives(), MIN_BLOB_NODES);
 
     //Upgrade Ops
+    m_ctOps = 0;
     if((m_szAllocatedOps < ctNeededOps)||(m_lpOps == NULL))
     {
         SAFE_DELETE(m_lpOps);
@@ -38,6 +46,7 @@ int COMPACTBLOBTREE::convert( CBlobNode* root)
     }
 
     //Update Prims
+    m_ctPrims = 0;
     if((m_szAllocatedPrims < ctNeededPrims)||(m_lpPrims == NULL))
     {
         SAFE_DELETE(m_lpPrims);
@@ -88,10 +97,12 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
     {
         if(m_ctOps >= m_szAllocatedOps)
         {
-            ReportErrorExt("Not enough memory for operators. Allocated=%d, Needed > %d",
-                           m_szAllocatedOps,
-                           m_ctOps);
+            DAnsiStr strError = printToAStr("Not enough memory for operators. Allocated=%d, Needed > %d",
+                                            m_szAllocatedOps,
+                                            m_ctOps);
+            ReportError(strError.cptr());
             FlushAllErrors();
+            return ERR_OPS_OVERFLOW;
         }
 
         curID = m_ctOps;
@@ -105,19 +116,40 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
         m_lpOps[curID].octHi = vec4f(root->getOctree().upper, 0.0f);
 
 
+
+        if(root->countChildren() > MAX_COMPACT_KIDS_COUNT)
+        {
+            DAnsiStr strError = printToAStr("MAX Number of kids reached. Allowed=%d, Had > %d",
+                                            MAX_COMPACT_KIDS_COUNT,
+                                            root->countChildren());
+            ReportError(strError.cptr());
+            FlushAllErrors();
+            return ERR_KIDS_OVERFLOW;
+        }
+
         int kidID;
         m_lpOps[curID].ctKids = root->countChildren();
-        m_lpOps[curID].kidIds.resize(root->countChildren());
+        //m_lpOps[curID].kidIds.resize(root->countChildren());
+        //m_lpOps[curID].kidIsOp.resize(root->countChildren());
         for(size_t i=0;i<root->countChildren(); i++)
         {
             kidID = convert(root->getChild(i), curID );
-            if(root->getChild(i)->isOperator())
-                kidID += MAX_BLOB_ENTRIES;
+            if(kidID < 0)
+                return kidID;
+
             m_lpOps[curID].kidIds[i] = kidID;
+            m_lpOps[curID].kidIsOp[i] = root->getChild(i)->isOperator();
         }
 
+        //Convert operator
         switch(root->getNodeType())
         {
+        case(bntOpUnion): case(bntOpBlend): case(bntOpDif): case(bntOpSmoothDif):
+        case(bntOpIntersect):
+        {
+
+        }
+        break;
         case(bntOpPCM):
         {
             vec4f param;
@@ -185,12 +217,10 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
             break;
         default:
         {
-
-            //char chrName[MAX_NAME_LEN];
-            //root->getName(chrName);
-            //DAnsiStr strMsg = printToAStr("Operator %s has not been implemented in compact mode yet!", chrName);
-            //ReportError(strMsg.ptr());
-            //FlushAllErrors();
+            DAnsiStr strMsg = printToAStr("Operator %s has not been implemented in compact mode yet!", root->getName().c_str());
+            ReportError(strMsg.ptr());
+            FlushAllErrors();
+            return ERR_NODE_NOT_RECOGNIZED;
         }
         }
 
@@ -200,10 +230,12 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
     {
         if(m_ctPrims >= m_szAllocatedPrims)
         {
-            ReportError("Not enough memory for primitives. Allocated=%d, Needed > %d",
-                        m_szAllocatedPrims,
-                        m_ctPrims);
+            DAnsiStr strError = printToAStr("Not enough memory for primitives. Allocated=%d, Needed > %d",
+                                            m_szAllocatedPrims,
+                                            m_ctPrims);
+            ReportError(strError.cptr());
             FlushAllErrors();
+            return ERR_PRIMS_OVERFLOW;
         }
 
         curID = m_ctPrims;
@@ -331,6 +363,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
             DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", root->getName().c_str());
             ReportError(strMsg.ptr());
             FlushAllErrors();
+            return ERR_NODE_NOT_RECOGNIZED;
         }
         }
 
@@ -403,12 +436,11 @@ float COMPACTBLOBTREE::computePCM(const vec4f& p,
                                   const vec4f& oct2Hi,
                                   int idSelf,
                                   int idChild1, int idChild2,
+                                  U8 isOpChild1, U8 isOpChild2,
                                   float fp1, float fp2)
 {
     assert(m_ctPCMNodes > 0);
 
-    bool isChild1Op = idChild1 >= MAX_BLOB_ENTRIES;
-    bool isChild2Op = idChild2 >= MAX_BLOB_ENTRIES;
     bool bCrossed = intersects(oct1Lo, oct1Hi, oct2Lo, oct2Hi);
     //Boxes have intersection: Find interpenetration and propagation regions
     if(bCrossed)
@@ -433,15 +465,15 @@ float COMPACTBLOBTREE::computePCM(const vec4f& p,
         else if(fp1 >= ISO_VALUE && fp2 > FIELD_VALUE_EPSILON)
         {
             //Compute P0: closest point to fp2
-            vec3f grad = gradientAtNode(isChild2Op, idChild2, p, fp2, NORMAL_DELTA).xyz();
+            vec3f grad = gradientAtNode(isOpChild2, idChild2, p, fp2, NORMAL_DELTA).xyz();
             vec3f pp = p.xyz();
 
-            vec3f p0 = marchTowardNode(isChild2Op, idChild2, pp, grad, fp2);
+            vec3f p0 = marchTowardNode(isOpChild2, idChild2, pp, grad, fp2);
 
             float k;
             {
                 vec4f p00 = vec4f(p0, 0.0f);
-                vec3f gradP0 = gradientAtNode(isChild2Op, idChild2, p00, fp2, NORMAL_DELTA).xyz();
+                vec3f gradP0 = gradientAtNode(isOpChild2, idChild2, p00, fp2, NORMAL_DELTA).xyz();
                 k = gradP0.length();
             }
 
@@ -455,14 +487,14 @@ float COMPACTBLOBTREE::computePCM(const vec4f& p,
         else if(fp2 >= ISO_VALUE && fp1 > FIELD_VALUE_EPSILON)
         {
             //Compute P0: closest point to fp2
-            vec3f grad = gradientAtNode(isChild1Op, idChild1, p, fp1, NORMAL_DELTA).xyz();
+            vec3f grad = gradientAtNode(isOpChild1, idChild1, p, fp1, NORMAL_DELTA).xyz();
             vec3f pp = p.xyz();
-            vec3f p0 = marchTowardNode(isChild1Op, idChild1, pp, grad, fp1);
+            vec3f p0 = marchTowardNode(isOpChild1, idChild1, pp, grad, fp1);
 
             float k;
             {
                 vec4f p00 = vec4f(p0, 0.0f);
-                vec3f gradP0 = gradientAtNode(isChild1Op, idChild1, p00, fp1, NORMAL_DELTA).xyz();
+                vec3f gradP0 = gradientAtNode(isOpChild1, idChild1, p00, fp1, NORMAL_DELTA).xyz();
                 k = gradP0.length();
             }
 
@@ -643,8 +675,8 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
     for(int i=0; i<ctKids; i++)
     {
         kidID = m_lpOps[id].kidIds[i];
-        if(kidID >= MAX_BLOB_ENTRIES)
-            lpKidsFV[i] = fieldvalueOp(pWarped, kidID - MAX_BLOB_ENTRIES, lpStoreFVOp, lpStoreFVPrim);
+        if(m_lpOps[id].kidIsOp[i])
+            lpKidsFV[i] = fieldvalueOp(pWarped, kidID, lpStoreFVOp, lpStoreFVPrim);
         else
             lpKidsFV[i] = fieldvaluePrim(pWarped, kidID, lpStoreFVPrim);
     }
@@ -660,8 +692,11 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
         {
             int kidID1 = m_lpOps[id].kidIds[0];
             int kidID2 = m_lpOps[id].kidIds[1];
+            U8 isOpKid1 = m_lpOps[id].kidIsOp[0];
+            U8 isOpKid2 = m_lpOps[id].kidIsOp[1];
+
             vec4f oct1Lo, oct1Hi, oct2Lo, oct2Hi;
-            if(kidID1 >= MAX_BLOB_ENTRIES)
+            if(isOpKid1)
             {
                 oct1Lo = m_lpOps[kidID1].octLo;
                 oct1Hi = m_lpOps[kidID1].octHi;
@@ -672,7 +707,7 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
                 oct1Hi = m_lpPrims[kidID1].octHi;
             }
 
-            if(kidID2 >= MAX_BLOB_ENTRIES)
+            if(isOpKid2)
             {
                 oct2Lo = m_lpOps[kidID2].octLo;
                 oct2Hi = m_lpOps[kidID2].octHi;
@@ -688,6 +723,7 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
                              oct2Lo, oct2Hi,
                              id,
                              kidID1, kidID2,
+                             isOpKid1, isOpKid2,
                              lpKidsFV[0], lpKidsFV[1]);
         }
         else
@@ -817,13 +853,12 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
     pn.y = m_lpPrims[id].mtxBackwardR1.dot(pp);
     pn.z = m_lpPrims[id].mtxBackwardR2.dot(pp);
 
-    //switch(prims)
-    float dd;
+    float fvRes;
     switch(m_lpPrims[id].type)
     {
     case bntPrimPoint:
     {
-        dd = pn.dist2(m_lpPrims[id].pos.xyz());
+        fvRes = ComputeWyvillFieldValueSquare(pn.dist2(m_lpPrims[id].pos.xyz()));
     }
         break;
     case bntPrimCylinder:
@@ -839,7 +874,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         if(y > 0.0f)
             y = maxf(0.0f, y - m_lpPrims[id].res2.x);
 
-        dd = x*x + y*y;
+        fvRes = ComputeWyvillFieldValueSquare(x*x + y*y);
     }
         break;
     case bntPrimTriangle:
@@ -849,7 +884,8 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         vertices[1] = m_lpPrims[id].res1.xyz();
         vertices[2] = m_lpPrims[id].res2.xyz();
         vec3f outClosest, outBaryCoords;
-        dd = ComputeTriangleSquareDist(vertices, pn, outClosest, outBaryCoords);
+        float dd = ComputeTriangleSquareDist(vertices, pn, outClosest, outBaryCoords);
+        fvRes = ComputeWyvillFieldValueSquare(dd);
     }
         break;
 
@@ -903,7 +939,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
             dist2 += delta*delta;
         }
 
-        dd = dist2;
+        fvRes = ComputeWyvillFieldValueSquare(dist2);
     }
         break;
     case bntPrimDisc:
@@ -913,6 +949,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         float r = m_lpPrims[id].res1[0];
         vec3f dir = pn - c - (n.dot(pn - c))*n;
 
+        float dd;
         //Check if Q lies on center or p is just above center
         if(dir.length() <= r)
         {
@@ -924,6 +961,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
             vec3f x = c + r * dir;
             dd = (x - pn).length2();
         }
+        fvRes = ComputeWyvillFieldValueSquare(dd);
     }
         break;
 
@@ -934,6 +972,7 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         float r = m_lpPrims[id].res1[0];
         vec3f dir = pn - c - (n.dot(pn - c))*n;
 
+        float dd;
         //Check if Q lies on center or p is just above center
         if(dir.isZero())
         {
@@ -946,39 +985,48 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
             vec3f x = c + r * dir;
             dd = (x - pn).length2();
         }
+        fvRes = ComputeWyvillFieldValueSquare(dd);
     }
         break;
     case bntPrimLine:
     {
         vec3f s = m_lpPrims[id].res1.xyz();
         vec3f e = m_lpPrims[id].res2.xyz();
-        vec3f nearestPoint = NearestPointInLineSegment(pn, s, e);
-        dd = nearestPoint.dist2(pn);
+        vec3f nearestPoint = NearestPointInLineSegment(pn, s, e);        
+        fvRes = ComputeWyvillFieldValueSquare(nearestPoint.dist2(pn));
+    }
+    break;
+
+    case(bntPrimQuadricPoint):
+    {
+        vec3f c = m_lpPrims[id].pos.xyz();
+        float fDist2 = (pn - c).length2();
+        float fRadius = m_lpPrims[id].res1.x;
+
+        float fValue = (1.0f - (fDist2 / (fRadius * fRadius)));
+        if(fValue <= 0.0f)
+            fvRes = 0.0f;
+        else
+            //Scale * Field * Field
+            fvRes = m_lpPrims[id].res2.x * fValue * fValue;
+
     }
         break;
     case bntPrimNull:
-        dd = 2.0f;
+        fvRes = 0;
         break;
     default:
-        ReportError("That skeleton is not been implemented yet!");
+    {
+        ReportError("I don't know how to compute fieldvalue for this primitive!");
         FlushAllErrors();
     }
+    }
 
-    float res = ComputeWyvillFieldValueSquare(dd);
 
-    //Save fieldvalue here for reference
-    /*
- if(res > TREENODE_CACHE_STORETHRESHOLD)
- {
-  int pos = (prims[id].fvCache.ctFilled % MAX_TREENODE_FVCACHE);
-  prims[id].fvCache.xyzf[pos]		 = vec4f(p.x, p.y, p.z, res);
-  prims[id].fvCache.hashVal[pos]   = p.x + p.y + p.z;
-  prims[id].fvCache.ctFilled++;
- }
- */
+
     if(lpStoreFVPrim)
-        lpStoreFVPrim[id] = res;
-    return res;
+        lpStoreFVPrim[id] = fvRes;
+    return fvRes;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -997,8 +1045,8 @@ PS::MATH::vec4f COMPACTBLOBTREE::baseColor( const vec4f& p, float* lpStoreFVOp, 
 
 vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, float* lpStoreFVPrim )
 {
-    float arrFV[MAX_BLOB_ENTRIES];
-    vec4f arrCL[MAX_BLOB_ENTRIES];
+    float arrFV[MAX_COMPACT_KIDS_COUNT];
+    vec4f arrCL[MAX_COMPACT_KIDS_COUNT];
 
     float resFV = 0.0f;
     vec4f resCL;
@@ -1013,10 +1061,10 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
         for(int i=0; i<ctKids; i++)
         {
             kidID = m_lpOps[id].kidIds[i];
-            if(kidID >= MAX_BLOB_ENTRIES)
+            if(m_lpOps[id].kidIsOp[i])
             {
-                arrCL[i] = baseColorOp(p, kidID - MAX_BLOB_ENTRIES, lpStoreFVOp, lpStoreFVPrim);
-                arrFV[i] = lpStoreFVOp[kidID - MAX_BLOB_ENTRIES];
+                arrCL[i] = baseColorOp(p, kidID, lpStoreFVOp, lpStoreFVPrim);
+                arrFV[i] = lpStoreFVOp[kidID];
             }
             else
             {
@@ -1030,10 +1078,10 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
         for(int i=0; i<ctKids; i++)
         {
             kidID = m_lpOps[id].kidIds[i];
-            if(kidID >= MAX_BLOB_ENTRIES)
+            if(m_lpOps[id].kidIsOp[i])
             {
-                arrCL[i] = baseColorOp(p, kidID - MAX_BLOB_ENTRIES, lpStoreFVOp, lpStoreFVPrim);
-                arrFV[i] = fieldvalueOp(p, kidID - MAX_BLOB_ENTRIES, lpStoreFVOp, lpStoreFVPrim);
+                arrCL[i] = baseColorOp(p, kidID, lpStoreFVOp, lpStoreFVPrim);
+                arrFV[i] = fieldvalueOp(p, kidID, lpStoreFVOp, lpStoreFVPrim);
             }
             else
             {
@@ -1044,7 +1092,6 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
     }
 
     float temp = 0.0f;
-    vec4f stemp;
 
     switch(m_lpOps[id].type)
     {
@@ -1191,17 +1238,24 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
 
 void COMPACTBLOBTREE::copyFrom( const COMPACTBLOBTREE& rhs )
 {
+    //Ops
     this->m_ctOps = rhs.m_ctOps;
-    this->m_ctPrims = rhs.m_ctPrims;
-    this->m_ctPCMNodes = rhs.m_ctPCMNodes;
+    this->m_szAllocatedOps = rhs.m_szAllocatedOps;
+    m_lpOps = new BlobOperator[rhs.m_ctOps];
+    memcpy(m_lpOps, rhs.m_lpOps, sizeof(BlobOperator) * rhs.m_ctOps);
 
+    //Prims
+    this->m_ctPrims = rhs.m_ctPrims;
+    this->m_szAllocatedPrims = rhs.m_szAllocatedPrims;
+    m_lpPrims = new BlobPrimitive[rhs.m_ctPrims];
+    memcpy(m_lpPrims, rhs.m_lpPrims, sizeof(BlobPrimitive) * rhs.m_ctPrims);
+
+    //PCM
+    this->m_ctPCMNodes = rhs.m_ctPCMNodes;
     memcpy(&this->m_pcmCONTEXT, &rhs.m_pcmCONTEXT, sizeof(m_pcmCONTEXT));
 
-    //Get Memory
-    m_lpPrims = new BlobPrimitive[rhs.m_ctPrims];
-    m_lpOps = new BlobOperator[rhs.m_ctOps];
-
     //Copy Ops
+    /*
     for(int i=0;i<rhs.m_ctOps;i++)
     {
         this->m_lpOps[i].type  = rhs.m_lpOps[i].type;
@@ -1213,9 +1267,13 @@ void COMPACTBLOBTREE::copyFrom( const COMPACTBLOBTREE& rhs )
         this->m_lpOps[i].ctKids = rhs.m_lpOps[i].ctKids;
         this->m_lpOps[i].kidIds.assign(rhs.m_lpOps[i].kidIds.begin(),
                                    rhs.m_lpOps[i].kidIds.end());
+        this->m_lpOps[i].kidIsOp.assign(rhs.m_lpOps[i].kidIsOp.begin(),
+                                   rhs.m_lpOps[i].kidIsOp.end());
     }
+    */
 
     //Copy Prims
+    /*
     for(int i=0;i<rhs.m_ctPrims;i++)
     {
         this->m_lpPrims[i].type = rhs.m_lpPrims[i].type;
@@ -1233,6 +1291,7 @@ void COMPACTBLOBTREE::copyFrom( const COMPACTBLOBTREE& rhs )
         this->m_lpPrims[i].mtxBackwardR2 = rhs.m_lpPrims[i].mtxBackwardR2;
         this->m_lpPrims[i].mtxBackwardR3 = rhs.m_lpPrims[i].mtxBackwardR3;
     }
+    */
 
 }
 

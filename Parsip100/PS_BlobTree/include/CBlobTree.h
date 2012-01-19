@@ -78,6 +78,8 @@ public:
         }
     }
 
+    bool isAllChildrenPrims();
+
     //Remove all Children
     void removeAllChildren()
     {
@@ -97,7 +99,7 @@ public:
         }
     }
 
-    int getChildIndex(CBlobNode* kid)
+    int getChildIndex(CBlobNode* kid) const
     {
         size_t ctChildren = m_children.size();
         for(size_t i=0; i < ctChildren; i++)
@@ -117,7 +119,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     int recursive_CountPrimitives()
     {
-        int count = (isOperator() == false)?1:0;
+        int count = (this->isOperator() == false)?1:0;
         for(size_t i =0; i < this->m_children.size(); i++)
         {
             count += m_children[i]->recursive_CountPrimitives();
@@ -127,7 +129,7 @@ public:
 
     int recursive_CountOperators()
     {
-        int count = (isOperator())?0:1;
+        int count = (this->isOperator() == true)?1:0;
         for(size_t i =0; i < this->m_children.size(); i++)
         {
             count += m_children[i]->recursive_CountOperators();
@@ -398,6 +400,7 @@ protected:
     CEditLock m_lock;
     CAffineTransformation m_transform;
 
+    bool isIDRange(const vector<int>& ids) const;
     bool saveGenericInfoScript(CSketchConfig* lpSketchConfig);
     bool loadGenericInfoScript(CSketchConfig* lpSketchConfig, int id);
 };

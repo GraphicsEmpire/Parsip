@@ -26,28 +26,28 @@ using namespace PS::FILESTRINGUTILS;
 
 CLayer::CLayer()
 {
-    m_lpMesh	 = NULL;
-    m_lpBlobTree = NULL;
-    m_bVisible   = true;
+    init(NULL);
 }
 
-CLayer::CLayer(CBlobNode * node)
+CLayer::CLayer(CBlobNode * root)
 {
-    m_lpMesh     = NULL;
-    m_lpBlobTree = node;
-    m_bVisible   = true;    
-}
-
-CLayer::CLayer(const CMeshVV& mesh)
-{
-    setMesh(mesh);
-    m_lpBlobTree = NULL;
-    m_bVisible = true;        
+    init(root);
 }
 
 CLayer::~CLayer()
 {	
     cleanup();
+}
+
+void CLayer::init(CBlobNode* root)
+{
+    //BlobTree
+    m_lpBlobTree = root;
+    m_lpCompactBlobTree = new COMPACTBLOBTREE();
+
+    //Properties
+    m_bVisible   = true;
+    m_lpMesh	 = NULL;
 }
 
 void CLayer::cleanup()
@@ -59,6 +59,7 @@ void CLayer::cleanup()
 
     m_polygonizer.removeAllMPUs();
     SAFE_DELETE(m_lpBlobTree);
+    SAFE_DELETE(m_lpCompactBlobTree);
     SAFE_DELETE(m_lpMesh);
 }
 
@@ -481,7 +482,20 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
         {
             vector<int> arrayInt;
             int ctKids = cfg->readInt(strNodeName, "ChildrenCount", 0);
-            cfg->readIntArray(strNodeName, "ChildrenIDs", ctKids, arrayInt);
+            bool bIsRange = cfg->readBool(strNodeName, "ChildrenIDsUseRange");
+            if(bIsRange)
+            {
+                std::vector<int> vRange;
+                cfg->readIntArray(strNodeName, "ChildrenIDsRange", 2, vRange);
+                if(vRange.size() == 2)
+                {
+                    for(int i=vRange[0]; i<=vRange[1]; i++)
+                        arrayInt.push_back(i);
+                }
+            }
+
+            if(arrayInt.size() == 0)
+                cfg->readIntArray(strNodeName, "ChildrenIDs", ctKids, arrayInt);
 
             //Find all the children for this operator
             for(U32 i=0; i<arrayInt.size(); i++)
@@ -810,12 +824,18 @@ void CLayer::flattenTransformations()
     recursive_FlattenTransformations(m_lpBlobTree, transformBranch);
 }
 
+/*!
+  * @brief Finds a BlobNode with its id
+  * @return pointer to the BlobNode
+  */
 CBlobNode* CLayer::findNodeByID( int id )
 {
     return recursive_FindNodeByID(id, m_lpBlobTree);
 }
 
-int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned, bool bPadWithNullPrimitive)
+int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned,
+                                           bool bPadWithNull,
+                                           bool bAlwaysSplit)
 {
     if ((node == NULL)||(clonned == NULL))
     {
@@ -834,50 +854,74 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned, 
     if(node->isOperator())
     {
         int res = 0;
+        bool bSplit = true;
+        if((!bAlwaysSplit)&&(node->isAllChildrenPrims()))
+        {
+            bSplit = false;
+        }
 
-        //Replace nodes with more than 2 kids
+        //Replace nodes with more than 2 non-primitive kids
         CBlobNode* clonnedChild = NULL;
         if(node->countChildren() > 2)
         {
-            CBlobNode* cur = NULL;
-            CBlobNode* prev = NULL;
-
-
-            for(size_t i=0; i<node->countChildren() -1; i++)
+            if(bSplit)
             {
-                if(i == 0)
-                    cur = clonned;
-                else
+                CBlobNode* cur = NULL;
+                CBlobNode* prev = NULL;
+
+
+                for(size_t i=0; i<node->countChildren() -1; i++)
                 {
-                    cur = TheBlobNodeCloneFactory::Instance().CreateObject(clonned);
-                    cur->setID(this->getIDDispenser().bump());
+                    if(i == 0)
+                        cur = clonned;
+                    else
+                    {
+                        cur = TheBlobNodeCloneFactory::Instance().CreateObject(clonned);
+                        cur->setID(this->getIDDispenser().bump());
+                    }
+
+                    //Clone child
+                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
+                    clonnedChild->setID(this->getIDDispenser().bump());
+
+                    //Add clonned child to parent
+                    cur->addChild(clonnedChild);
+
+                    if(prev)
+                        prev->addChild(cur);
+                    prev = cur;
+
+                    //Recurse to child
+                    res += recursive_convertToBinaryTree(node->getChild(i),
+                                                         clonnedChild,
+                                                         bPadWithNull,
+                                                         bAlwaysSplit);
                 }
 
-                //Clone child
-                clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
-                clonnedChild->setID(this->getIDDispenser().bump());
-
-                //Add clonned child to parent
-                cur->addChild(clonnedChild);
-
                 if(prev)
-                    prev->addChild(cur);
-                prev = cur;
+                {
+                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getLastChild());
+                    clonnedChild->setID(this->getIDDispenser().bump());
 
-                //Recurse to child
-                res += recursive_convertToBinaryTree(node->getChild(i), clonnedChild);
+                    //Last node has 2 children
+                    prev->addChild(clonnedChild);
+
+                    //Recurse to child
+                    res += recursive_convertToBinaryTree(node->getLastChild(),
+                                                         clonnedChild,
+                                                         bPadWithNull,
+                                                         bAlwaysSplit);
+                }
             }
-
-            if(prev)
+            else //NO SPLIT
             {
-                clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getLastChild());
-                clonnedChild->setID(this->getIDDispenser().bump());
-
-                //Last node has 2 children
-                prev->addChild(clonnedChild);
-
-                //Recurse to child
-                res += recursive_convertToBinaryTree(node->getLastChild(), clonnedChild);
+                for(size_t i=0; i<node->countChildren(); i++)
+                {
+                    //Clone child
+                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
+                    clonnedChild->setID(this->getIDDispenser().bump());
+                    clonned->addChild(clonnedChild);
+                }
             }
         }
         else if(node->countChildren() <= 2)
@@ -894,11 +938,14 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned, 
                     clonned->addChild(clonnedChild);
 
                     //Recurse to child
-                    res += recursive_convertToBinaryTree(node->getChild(i), clonnedChild);
+                    res += recursive_convertToBinaryTree(node->getChild(i),
+                                                         clonnedChild,
+                                                         bPadWithNull,
+                                                         bAlwaysSplit);
                 }
                 else
                 {
-                    if(bPadWithNullPrimitive)
+                    if(bPadWithNull)
                     {
                         clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("NULL");
                         clonnedChild->setID(this->getIDDispenser().bump());
@@ -921,17 +968,25 @@ int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned, 
         return 1;
 }
 
-int CLayer::recursive_countBinaryTreeErrors( CBlobNode* node )
+int CLayer::recursive_CountBinaryTreeErrors( CBlobNode* node , bool bAlwaysSplit)
 {
     if(node == NULL) return 0;
     if(node->isOperator())
     {
         int res = 0;
         for (size_t i=0; i<node->countChildren(); i++)
-            res += recursive_countBinaryTreeErrors(node->getChild(i));
+            res += recursive_CountBinaryTreeErrors(node->getChild(i), bAlwaysSplit);
 
         if(node->countChildren() > 2)
-            res++;
+        {
+            if(bAlwaysSplit)
+                res++;
+            else
+            {
+                if(!node->isAllChildrenPrims())
+                    res++;
+            }
+        }
         else if(node->countChildren() == 1)
         {
             res++;
@@ -947,11 +1002,39 @@ int CLayer::recursive_countBinaryTreeErrors( CBlobNode* node )
 
 }
 
+int CLayer::recursive_ReassignIDs(CBlobNode* root)
+{
+    if(root == NULL)
+        return 0;
 
-int CLayer::convertToBinaryTree(bool bPadWithNULLPrimitive)
+    int ctProcessed = 1;
+    root->setID(this->getIDDispenser().get());
+    this->getIDDispenser().bump();
+
+    if(root->isOperator())
+    {
+        for(int i=0; i<root->countChildren(); i++)
+            ctProcessed += recursive_ReassignIDs(root->getChild(i));
+    }
+
+    return ctProcessed;
+}
+
+/*!
+  * @brief Assigns node IDs
+  *
+  */
+bool CLayer::reassignBlobNodeIDs()
+{
+    this->getIDDispenser().reset();
+    int ctProcessed = recursive_ReassignIDs(this->getBlob());
+    return (ctProcessed > 0);
+}
+
+int CLayer::convertToBinaryTree(bool bPadWithNull, bool bAlwaysSplit)
 {
     CBlobNode* root = this->getBlob();
-    int ctErrors = recursive_countBinaryTreeErrors(root);
+    int ctErrors = recursive_CountBinaryTreeErrors(root, bAlwaysSplit);
     if(ctErrors > 0)
     {
         this->getIDDispenser().reset();
@@ -959,7 +1042,9 @@ int CLayer::convertToBinaryTree(bool bPadWithNULLPrimitive)
         //Create a clone of the node
         CBlobNode* replacement = TheBlobNodeCloneFactory::Instance().CreateObject(root);
         replacement->setID(this->getIDDispenser().bump());
-        if(recursive_convertToBinaryTree(root, replacement, bPadWithNULLPrimitive) > 0)
+        if(recursive_convertToBinaryTree(root, replacement,
+                                         bPadWithNull,
+                                         bAlwaysSplit) > 0)
         {
             SAFE_DELETE(root);
             this->setBlob(replacement);
@@ -1400,6 +1485,7 @@ bool CLayerManager::loadScript( CSketchConfig* lpSketchConfig )
         return false;
 
     int fileVersion = lpSketchConfig->readInt("Global", "FileVersion");
+    cout << "Scene File Version = " << fileVersion << endl;
 
     vector<int> layersRoot;
     lpSketchConfig->readIntArray("Global", "RootIDs", ctLayers, layersRoot);

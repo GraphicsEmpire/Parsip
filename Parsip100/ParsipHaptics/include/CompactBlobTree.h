@@ -10,8 +10,8 @@ using namespace PS::BLOBTREE;
 using namespace PS::MATH;
 
 //#define MAX_BLOB_ENTRIES PS_SIMD_LINES*3
-#define MIN_BLOB_NODES 512
-#define MAX_COMPACT_KIDS_COUNT 8
+#define MIN_BLOB_NODES 32
+#define MAX_COMPACT_KIDS_COUNT 1024
 #define MAX_TREENODE_FVCACHE   4
 #define TREENODE_CACHE_STORETHRESHOLD   0.4f
 
@@ -48,7 +48,8 @@ struct BlobOperator
     int orgID;
     int ctKids;
     //int kidIds[MAX_COMPACT_KIDS_COUNT];
-    vector<int> kidIds;
+    U16 kidIds[MAX_COMPACT_KIDS_COUNT];
+    U8  kidIsOp[MAX_COMPACT_KIDS_COUNT];
     vec4f params;
     vec4f octLo;
     vec4f octHi;
@@ -128,6 +129,7 @@ public:
                      const vec4f& oct2Hi,
                      int idSelf,
                      int idChild1, int idChild2,
+                     U8 isOpChild1, U8 isOpChild2,
                      float fp1, float fp2);
 
     vec3f marchTowardNode(bool isOp, int id, const vec3f& p, const vec3f& grad, float& fp);

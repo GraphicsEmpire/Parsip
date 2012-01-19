@@ -8,6 +8,7 @@
 #include "PS_String.h"
 #include "PS_Vector.h"
 
+#define MAX_LINE_LENGTH 2048
 
 using namespace std;
 using namespace PS::MATH;

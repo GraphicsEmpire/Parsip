@@ -221,7 +221,8 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
     Parsip100/ParsipHaptics/include/PS_HighPerformanceRender.cpp \
     Parsip100/PS_FrameWork/include/PS_ComputeDevice.cpp \
     Parsip100/PS_SimdPoly/include/PS_Polygonizer.cpp \
-    Parsip100/ParsipHaptics/include/DlgPizaModel.cpp
+    Parsip100/ParsipHaptics/include/DlgPizaModel.cpp \
+    Parsip100/PS_BlobTree/include/CQuadricPoint.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -291,6 +292,7 @@ OTHER_FILES += \
     Parsip100/Distrib/Resources/Shaders/TPhongVS.glsl \
     Parsip100/Distrib/Resources/Shaders/TPhongFS.glsl \
     Parsip100/Distrib/Resources/Shaders/Polygonizer.cl
+
 
 
 

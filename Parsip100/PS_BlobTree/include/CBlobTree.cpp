@@ -2,9 +2,36 @@
 #include "PS_FrameWork/include/PS_String.h"
 #include "CSkeletonPrimitive.h"
 #include "BlobTreeBuilder.h"
+#include "PS_ErrorManager.h"
 
 namespace PS{
 namespace BLOBTREE {
+
+bool CBlobNode::isIDRange(const vector<int>& ids) const
+{
+    if(ids.size()  < 2)
+        return false;
+
+    int prev = ids[0];
+    for(int i=1; i<ids.size(); i++)
+    {
+        if(ids[i] != prev+1)
+            return false;
+        prev = ids[i];
+    }
+    return true;
+}
+
+bool CBlobNode::isAllChildrenPrims()
+{
+    U32 ctPrims = 0;
+    for(U32 i=0; i<this->countChildren(); i++)
+    {
+        if(!this->getChild(i)->isOperator())
+            ctPrims++;
+    }
+    return (ctPrims == this->countChildren());
+}
 
 bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig)
 {
@@ -27,13 +54,51 @@ bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig)
 
         //First write all the children
         vector<int> arrayInt;
+        U32 ctPrimChildren = 0;
         for(U32 i=0; i<this->countChildren(); i++)
         {
             arrayInt.push_back(this->getChild(i)->getID());
             this->getChild(i)->saveScript(lpSketchConfig);
+
+            if(!this->getChild(i)->isOperator())
+                ctPrimChildren++;
         }
 
-        lpSketchConfig->writeIntArray(strNodeName, "ChildrenIDs", arrayInt);
+        //If children IDs are really large then compress them
+        lpSketchConfig->writeBool(strNodeName, "ChildrenIDsUseRange", false);
+
+        //If all children are primitives and their IDs are in range
+        bool bInRange = isIDRange(arrayInt);
+        if(arrayInt.size() > 2)
+        {
+            if(!bInRange)
+            {
+                ReportError("SAVESCRIPT: Consider reassigning IDs to have them in order!");
+                FlushAllErrors();
+            }
+
+            if(ctPrimChildren != this->countChildren())
+            {
+                ReportError("SAVESCRIPT: All children have to be primitives to make a range!");
+                FlushAllErrors();
+            }
+        }
+
+        //Perform Range
+        if((arrayInt.size() > 2)&&(bInRange)&&(ctPrimChildren == this->countChildren()))
+        {
+            printf("SAVESCRIPT: Making a range from:%d to:%d\n", arrayInt[0], arrayInt[arrayInt.size() -1]);
+
+            lpSketchConfig->writeBool(strNodeName, "ChildrenIDsUseRange", true);
+            std::vector<int> vRange;
+            vRange.push_back(arrayInt[0]);
+            vRange.push_back(arrayInt[arrayInt.size() - 1]);
+            lpSketchConfig->writeIntArray(strNodeName, "ChildrenIDsRange", vRange);
+
+            vRange.resize(0);
+        }
+        else
+            lpSketchConfig->writeIntArray(strNodeName, "ChildrenIDs", arrayInt);
         arrayInt.resize(0);
     }
     else

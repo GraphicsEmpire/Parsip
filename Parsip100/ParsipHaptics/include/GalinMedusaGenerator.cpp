@@ -25,6 +25,7 @@
 #include "GalinMedusaGenerator.h"
 #include "FastQuadricPointSet.h"
 #include "PS_FrameWork/include/_parsDebug.h"
+#include "BlobTreeBuilder.h"
 
 using namespace PS;
 
@@ -72,15 +73,7 @@ public:
 class SplineGenerator
 {
 public:
-    enum Type {
-        NestedSumBlendsOfQuadricPoints,
-        OneSumBlend,
-        SumBlendOfFastQuadricPointSets,
-        OneFastQuadricPointSet
-    };
-
-
-    SplineGenerator( Type eType )
+    SplineGenerator( MEDUSABLENDTYPE eType )
     {
         m_eType = eType;
 
@@ -117,8 +110,15 @@ public:
         for (int i = 0; i < n; ++i)
         {
             double t = (double)i / (double)(n-1);
+            vec3f pos = vec3f(px(t), py(t), pz(t));
 
-            CQuadricPoint * pPoint = new CQuadricPoint(vec3f( (float)px(t), (float)py(t), (float)pz(t)), (float)r(t), (float)dFieldScale );
+            //CQuadricPoint * pPoint = new CQuadricPoint(vec3f( (float)px(t), (float)py(t), (float)pz(t)), (float)r(t), (float)dFieldScale );
+            CBlobNode* pPoint = TheBlobNodeFactoryIndex::Instance().CreateObject(bntPrimPoint);
+            pPoint->setMaterial(CMaterial::mtrlGreen());
+
+            pPoint->getTransform().setTranslate(pos);
+            pPoint->getTransform().setScale(vec3f(dFieldScale, dFieldScale, dFieldScale));
+
             ++m_nPointPrimitives;
 
             if (m_eType == NestedSumBlendsOfQuadricPoints)
@@ -132,12 +132,12 @@ public:
             }
             else if (m_eType == SumBlendOfFastQuadricPointSets)
             {
-                pPointSet->addPoint( *pPoint, vec3f(1.0f, 0.0f, 0.0f));
+                //pPointSet->addPoint( *pPoint, vec3f(1.0f, 0.0f, 0.0f));
                 SAFE_DELETE(pPoint);
             }
             else if (m_eType == OneFastQuadricPointSet)
             {
-                m_pTopLevelPointSet->addPoint( *pPoint, vec3f(1.0f, 0.0f, 0.0f) );
+                //m_pTopLevelPointSet->addPoint( *pPoint, vec3f(1.0f, 0.0f, 0.0f) );
                 SAFE_DELETE(pPoint);
             }
             else
@@ -155,7 +155,7 @@ public:
     unsigned int getNumPointPrimitives() { return m_nPointPrimitives; }
 
 protected:
-    Type m_eType;
+    MEDUSABLENDTYPE m_eType;
 
     CBlend * m_pTopLevelBlend;
     FastQuadricPointSet * m_pTopLevelPointSet;
@@ -168,10 +168,10 @@ protected:
 /*!
 \brief Creates the neck and shoulders.
 */
-CBlend * GalinMedusaGenerator::Medusa_Neck()
+CBlend * GalinMedusaGenerator::Medusa_Neck(MEDUSABLENDTYPE blend)
 {
-    SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
-    //SplineGenerator g( SplineGenerator::OneSumBlend );
+    SplineGenerator g( blend );
+
 
     g.addSpline(vec3d(0,0.0,2.9), vec3d(0,0,1),   0.3, -0.20,
                 vec3d(0,-0.05,3.7), vec3d(0,0.1,1), 0.24, 0.0,
@@ -189,10 +189,9 @@ CBlend * GalinMedusaGenerator::Medusa_Neck()
 whereas the tail itself consists in three cubic splines.
 */
 
-CBlend * GalinMedusaGenerator::Medusa_Tail()
-{
-    //SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
-    SplineGenerator g( SplineGenerator::OneSumBlend );
+CBlend * GalinMedusaGenerator::Medusa_Tail(MEDUSABLENDTYPE blend)
+{    
+    SplineGenerator g( blend );
 
     // Hips
     g.addSpline(
@@ -258,9 +257,9 @@ CBlend * GalinMedusaGenerator::Medusa_Tail()
 \brief Create the left Hand.
 */
 
-CBlend * GalinMedusaGenerator::Medusa_LeftHand()
+CBlend * GalinMedusaGenerator::Medusa_LeftHand(MEDUSABLENDTYPE blend)
 {
-    SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    SplineGenerator g( blend );
 
     // dessus
 
@@ -364,9 +363,10 @@ CBlend * GalinMedusaGenerator::Medusa_LeftHand()
 by two vertical splines that create the overall shape effect.
 Another spline screates a small round belly.
 */
-CBlend * GalinMedusaGenerator::Medusa_Body()
+CBlend * GalinMedusaGenerator::Medusa_Body(MEDUSABLENDTYPE blend)
 {
-    SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    //SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    SplineGenerator g( blend );
 
 
     // Torso
@@ -495,9 +495,9 @@ CBlend * GalinMedusaGenerator::Medusa_Body()
 hyper-blend them so as to avoid over-blending. Added nipples
 for special effects !
 */
-CBlend * GalinMedusaGenerator::Medusa_Breast()
+CBlend * GalinMedusaGenerator::Medusa_Breast(MEDUSABLENDTYPE blend)
 {
-    SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    SplineGenerator g( blend );
 
     g.addSpline(vec3d(-0.21,/*-0.16*/-0.14,2.66),vec3d(0,-0.24,-0.4),0.36,0.0,
                 vec3d(-0.23,/*-0.52*/-0.5,2.661),vec3d(0,0,0),0.05,0.0,
@@ -516,9 +516,9 @@ CBlend * GalinMedusaGenerator::Medusa_Breast()
 
 
 
-CBlend * GalinMedusaGenerator::Medusa_Hair()
+CBlend * GalinMedusaGenerator::Medusa_Hair(MEDUSABLENDTYPE blend)
 {
-    SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    SplineGenerator g( blend );
 
     //meche avant
     g.addSpline(vec3d(-0.07,-0.535,4.25 +0.35),vec3d(-0.1,-0.1,0.0),0.04,0.05,
@@ -1026,9 +1026,9 @@ CBlend * GalinMedusaGenerator::Medusa_Hair()
 
 
 
-CBlend * GalinMedusaGenerator::Medusa_Tete()
+CBlend * GalinMedusaGenerator::Medusa_Head(MEDUSABLENDTYPE blend)
 {
-    SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
+    SplineGenerator g( blend );
 
     // Crane
 

@@ -1100,7 +1100,7 @@ void GLWidget::drawLayerManager()
             m_glShaderNormalMesh->bind();
             glEnable(GL_LIGHTING);
 
-            alayer->getSimdPoly().draw(false);
+           // alayer->getSimdPoly().draw(false);
 
             //Draw mesh in WireFrame Mode
             if(TheAppSettings::Instance().setDisplay.showMesh == smWireFrame)
@@ -1409,7 +1409,7 @@ void GLWidget::actMeshPolygonize(int idxLayer)
             //aLayer->getSimdPoly().run(aLayer->getCellSize());
 
             aLayer->setupCompactTree(aLayer->getBlob());
-            aLayer->getPolygonizer()->setup(aLayer->getCompactTree(),
+            aLayer->getPolygonizer()->setup(aLayer->getCompactBlobTree(),
                                             aLayer->getOctree(),
                                             idxLayer,
                                             aLayer->getCellSize());
@@ -2655,8 +2655,10 @@ CBlobNode* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
         op->addChild(aLayer->selGetItem(0));
     else
     {
-        op->addChild(aLayer->selGetItem(0));
-        op->addChild(aLayer->selGetItem(1));
+        for(size_t i=0; i<aLayer->selCountItems(); i++)
+        {
+            op->addChild(aLayer->selGetItem(i));
+        }
     }
 
 
@@ -3393,6 +3395,7 @@ void GLWidget::actFileModelPiza()
         lpDlgPiza->getValues(levels, pillars, radius, height);
         m_layerManager.addLayer(Shapes::createPiza(levels, pillars, radius, height), "PIZA");
         m_layerManager.setActiveLayer(0);
+        m_layerManager.getLayer(0)->reassignBlobNodeIDs();
         m_layerManager.bumpRevisions();
         emit sig_showLayerManager(getModelLayerManager());
         emit sig_showBlobTree(getModelBlobTree(0));
@@ -3400,13 +3403,13 @@ void GLWidget::actFileModelPiza()
         //Convert to Binary Tree
         QMessageBox msg;
         msg.setText("Convert to binary tree? [In case of unary node it will be padded with NULL primitive]");
-        msg.setInformativeText("Convert to Binary Tree?");
+        msg.setInformativeText("Convert to Binary Tree? [PADWITHNULL, NO SPLIT WHEN ALL CHILDREN ARE PRIMS]");
         msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         if(msg.exec() == QMessageBox::Yes)
         {
             m_layerManager.getActiveLayer()->selRemoveItem();
             m_layerManager.getActiveLayer()->flattenTransformations();
-            m_layerManager.getActiveLayer()->convertToBinaryTree(true);
+            m_layerManager.getActiveLayer()->convertToBinaryTree(true, false);
             emit sig_showLayerManager(getModelLayerManager());
             emit sig_showBlobTree(getModelBlobTree(0));
         }
@@ -3415,36 +3418,41 @@ void GLWidget::actFileModelPiza()
     SAFE_DELETE(lpDlgPiza);
 }
 
-void GLWidget::actFileModelPiza(int levels, int pillars, float radius, float height)
-{
-    actFileClose();
-    //m_layerManager.addLayer(Shapes::CreateGear(10, CMaterial::mtrlBrass(), CMaterial::mtrlBlue()), "GEARBOX");
-    m_layerManager.addLayer(Shapes::createPiza(levels, pillars, radius, height), "PIZA");
-    m_layerManager.bumpRevisions();
-    emit sig_showLayerManager(getModelLayerManager());
-    actMeshPolygonize();
-}
-
 void GLWidget::actFileModelMedusa()
 {
     actFileClose();
     //Select the first layer to start drawing right away
     //Galin Medusa Model
-    m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Tail(), DAnsiStr("Tail").ptr());
-    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Body(), DAnsiStr("Body").ptr());
-    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Breast(), DAnsiStr("Chest").ptr());
-    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_LeftHand(), DAnsiStr("LeftHand").ptr());
-    ///m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Neck(), DAnsiStr("Neck").ptr());
-    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Hair(), DAnsiStr("Hair").ptr());
-    //m_layerManager.addLayer(GalinMedusaGenerator::Medusa_Tete(), DAnsiStr("Head").ptr());
-    //size_t ctLayers = m_layerManager.countLayers();
-    //m_layerManager[ctLayers-2]->setVisible(false);
-    //m_layerManager[ctLayers-1]->setVisible(false);
-    selectLayer(0);
+    CBlend* lpMedusa = new CBlend();
+    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Tail());    
+    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Body());
+    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Breast());
+    lpMedusa->addChild(GalinMedusaGenerator::Medusa_LeftHand());
+    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Neck());
+    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Tail());
+    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Head());
 
+    //Medusa
+    m_layerManager.addLayer(lpMedusa, "Medusa");
+    m_layerManager.setActiveLayer(0);
+    m_layerManager.getLayer(0)->reassignBlobNodeIDs();
     m_layerManager.bumpRevisions();
     emit sig_showLayerManager(getModelLayerManager());
-    actMeshPolygonize();
+    emit sig_showBlobTree(getModelBlobTree(0));
+
+    //Convert to Binary Tree
+    QMessageBox msg;
+    msg.setText("Convert to binary tree? [PADWITHNULL, NO SPLIT WHEN ALL CHILDREN ARE PRIMS]");
+    msg.setInformativeText("Convert to Binary Tree?");
+    msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    if(msg.exec() == QMessageBox::Yes)
+    {
+        m_layerManager.getActiveLayer()->selRemoveItem();
+        m_layerManager.getActiveLayer()->flattenTransformations();
+        m_layerManager.getActiveLayer()->convertToBinaryTree(true, false);
+        emit sig_showLayerManager(getModelLayerManager());
+        emit sig_showBlobTree(getModelBlobTree(0));
+    }
 }
 
 void GLWidget::switchToOrtho()
@@ -3848,16 +3856,15 @@ void GLWidget::actEditConvertToBinaryTree()
         return;
 
     m_layerManager.getActiveLayer()->selRemoveItem();
-    if(m_layerManager.getActiveLayer()->convertToBinaryTree(true) > 0)
+    if(m_layerManager.getActiveLayer()->convertToBinaryTree(true, true) > 0)
     {
         QMessageBox msgBox;
-        msgBox.setText("Conversion completed successfully.");
+        msgBox.setText("Conversion completed successfully. [PADWITHNULL, ALWAYSSPLIT]");
         msgBox.exec();
     }
 
     //Re-polygonize    
-    m_layerManager.getActiveLayer()->getTracker().bump();
-    actMeshPolygonize(m_layerManager.getActiveLayerIndex());
+    m_layerManager.getActiveLayer()->getTracker().bump();    
     emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
 }
 
@@ -3890,23 +3897,37 @@ void GLWidget::actEditBlobTreeStats()
     }
 }
 
+void GLWidget::actEditAssignIDs()
+{
+    CLayer* active = m_layerManager.getActiveLayer();
+    if(active && active->getBlob())
+    {
+        active->reassignBlobNodeIDs();
+
+        //Re-polygonize
+        active->getTracker().bump();
+        emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
+    }
+}
+
 void GLWidget::updateProbe()
 {
     CLayer* active = m_layerManager.getActiveLayer();
     if(active == NULL) return;
 
     CBlobNode* root = active->selGetItem();
-    if(root == NULL)
+    if((root == NULL)||(active->getCompactBlobTree() == NULL))
         return;
 
+
     bool bIsOp = root->isOperator();
-    int id = active->getCompactTree()->getID(bIsOp, root->getID());
-    m_probeValue = active->getCompactTree()->fieldAtNode(bIsOp, id, vec4f(m_probePoint, 0.0f));
+    int id = active->getCompactBlobTree()->getID(bIsOp, root->getID());
+    m_probeValue = active->getCompactBlobTree()->fieldAtNode(bIsOp, id, vec4f(m_probePoint, 0.0f));
 
     //Compute P0: closest point to fp2
     if(m_probeValue > FIELD_VALUE_EPSILON)
     {
-        vec3f grad = active->getCompactTree()->gradientAtNode(bIsOp, id, vec4f(m_probePoint, 0.0f), m_probeValue, NORMAL_DELTA).xyz();
+        vec3f grad = active->getCompactBlobTree()->gradientAtNode(bIsOp, id, vec4f(m_probePoint, 0.0f), m_probeValue, NORMAL_DELTA).xyz();
 
         int dir = (m_probeValue < ISO_VALUE)?1:-1;
         float step = ISO_DISTANCE;
@@ -3921,7 +3942,7 @@ void GLWidget::updateProbe()
         while(!FLOAT_EQ(f, ISO_VALUE, FIELD_VALUE_EPSILON))
         {
             m_probeProjected += step * dir * grad;
-            f = active->getCompactTree()->fieldAtNode(bIsOp, id , vec4f(m_probeProjected, 0.0f));
+            f = active->getCompactBlobTree()->fieldAtNode(bIsOp, id , vec4f(m_probeProjected, 0.0f));
             int dir2 = (f < ISO_VALUE)?1:-1;
             if(dir != dir2)
                 step *= 0.5f;

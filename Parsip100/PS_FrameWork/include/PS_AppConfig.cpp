@@ -64,11 +64,11 @@ bool CAppConfig::readFile()
 
 
     DAnsiStr strLine;
-    char buffer[2048];
+    char buffer[MAX_LINE_LENGTH];
 
     while( !ifs.eof())
     {
-        ifs.getline(buffer, 2048);
+        ifs.getline(buffer, MAX_LINE_LENGTH);
         //ifs >> strLine;
         strLine.copyFromT(buffer);
         strLine.trim();
@@ -383,6 +383,13 @@ int CAppConfig::writeIntArray(DAnsiStr section, DAnsiStr variable, const std::ve
             else
                 strTemp = printToAStr("%d, ", arrayInt[i]);
             strValue += strTemp;
+
+            if(strValue.length() > MAX_LINE_LENGTH)
+            {
+                ReportError("Buffer overflow detected when writing IntArray.");
+                FlushAllErrors();
+                return -1;
+            }
         }
         writeValue(section, variable, strValue);
     }

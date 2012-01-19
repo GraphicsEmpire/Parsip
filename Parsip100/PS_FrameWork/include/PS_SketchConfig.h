@@ -20,7 +20,7 @@ public:
     CSketchConfig(DAnsiStr strFileName, FileMode mode)
     {
         set(strFileName, mode);
-    };
+    }
 
     ~CSketchConfig()
     {

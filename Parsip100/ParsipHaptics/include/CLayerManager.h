@@ -61,7 +61,7 @@ private:
     CBlobNode* m_lpBlobTree;
 
     //Compact Blobtree
-    COMPACTBLOBTREE m_cptBlobTree;
+    COMPACTBLOBTREE* m_lpCompactBlobTree;
 
     //Layer Polygonizer
     CParsipOptimized m_polygonizer;
@@ -111,27 +111,27 @@ private:
 
     int recursive_GetBlobTreeSeedPoints(CBlobNode* node, stack<CBlobNode*> &stkOperators);
     int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);    
-    int recursive_countBinaryTreeErrors( CBlobNode* node );
+    int recursive_CountBinaryTreeErrors( CBlobNode* node, bool bAlwaysSplit);
+    int recursive_ReassignIDs(CBlobNode* node);
 
+    void init(CBlobNode* root);
 public:
     CLayer();
-    CLayer(CBlobNode * node);
-    CLayer(const CMeshVV& mesh);
-
+    CLayer(CBlobNode * root);
     ~CLayer();
 
 
     //Get Polygonizer
     //CParsipOptimized& getPolygonizer() { return m_optParsip;}
-    int convertToBinaryTree(bool bPadWithNullPrimitive);
+    int convertToBinaryTree(bool bPadWithNull, bool bAlwaysSplit);
 
 
     void setupCompactTree(CBlobNode* root)
-    {        
-        m_cptBlobTree.convert(root);
+    {
+        m_lpCompactBlobTree->convert(root);
     }
 
-    COMPACTBLOBTREE* getCompactTree() {return &m_cptBlobTree;}
+    COMPACTBLOBTREE* getCompactBlobTree() {return m_lpCompactBlobTree;}
     CParsipOptimized* getPolygonizer() {return &m_polygonizer;}
     SimdPoly& getSimdPoly() {return m_simdPoly;}
 
@@ -139,7 +139,9 @@ public:
 
     CBlobNode* findNodeByID(int id);    
     CBlobNode* recursive_FindNodeByID(int id, CBlobNode* root);
-    int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned, bool bPadWithNullPrimitive = true);
+    int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned,
+                                      bool bPadWithNull = true,
+                                      bool bAlwaysSplit = true);
     int recursive_MaxNodeID(int maxID, CBlobNode* root);
     bool recursive_ExecuteCmdBlobtreeNode(CBlobNode* root, CBlobNode* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
 
@@ -162,10 +164,12 @@ public:
     void setVisible(bool bVisible) { m_bVisible = bVisible;}
     bool isVisible() const { return m_bVisible;}
 
-
     DAnsiStr getMeshInfo() const;
     DAnsiStr getGroupName() const 	{return m_strGroupName;}
     void setGroupName(const DAnsiStr& strGroupName) { m_strGroupName = strGroupName;}
+
+    //BOOL
+    bool reassignBlobNodeIDs();
 
     //Octree for whole model
     bool	hasOctree() const {return m_octree.isValid();}
