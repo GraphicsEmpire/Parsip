@@ -12,8 +12,6 @@
 #include <stddef.h>
 #include <list>
 #include <utility>
-
-
 #include "glwidget.h"
 #include "PS_FrameWork/include/PS_FileDirectory.h"
 #include "PS_FrameWork/include/PS_AppConfig.h"
@@ -81,9 +79,7 @@ GLWidget::GLWidget(QWidget *parent)
     m_animSpeed			= 1.0f;
     m_glChessBoard		= 0;
     m_uiMode			= uimSketch;
-    m_sketchType                = bntPrimPoint;
-    m_bEnablePan		= false;
-    m_bEnableMultiSelect        = false;
+    m_sketchType                = bntPrimPoint;     
     m_bEnableCamLeftKey         = false;
 
     m_mouseButton		= CArcBallCamera::mbNone;
@@ -512,11 +508,17 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         m_mouseButton = PS::CArcBallCamera::mbRight;
         if(m_layerManager.queryHitOctree(ray, Z_NEAR, Z_FAR, idxLayer, idxPrimitive))
         {
+            bool bMultiSelect = false;
+            if(QApplication::keyboardModifiers() == Qt::ControlModifier)
+                bMultiSelect = true;
+
             //Select the layer that we hit one of its primitives
             selectLayer(idxLayer);
 
             //Select the primitive and show its properties
-            selectBlobNode(idxLayer, m_layerManager[idxLayer]->queryGetItem(idxPrimitive));
+            selectBlobNode(idxLayer,
+                           m_layerManager[idxLayer]->queryGetItem(idxPrimitive),
+                           bMultiSelect);
         }
         else
         {
@@ -708,7 +710,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     if((m_mouseButton == PS::CArcBallCamera::mbMiddle)||
        (m_bEnableCamLeftKey && (m_mouseButton == PS::CArcBallCamera::mbLeft)))
     {
-        if(m_bEnablePan)
+        if(QApplication::keyboardModifiers() == Qt::ControlModifier)
         {
             //m_camera.setCenter(m_camera.getCenter() + vec3f(0.03f * dx, 0.03f * dy, 0.0f));
             m_globalPan.x += MOUSE_MOVE_COEFF * dx;
@@ -1438,11 +1440,6 @@ void GLWidget::actViewResetCamera()
     updateGL();
 }
 
-void GLWidget::actViewEnablePan(bool bEnable)
-{
-    m_bEnablePan = bEnable;
-}
-
 void GLWidget::setPrimitiveColorFromColorDlg()
 {
     CLayer* active = m_layerManager.getActiveLayer();
@@ -1676,9 +1673,6 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
     //Check active layer
     if(!m_layerManager.hasActiveLayer()) return;
 
-    //Check if we have an associated primitive
-    //CLayer* actLayer = m_layerManager.getActiveLayer();
-
     //Check which column sent edit signal
     int row = topLeft.row();
     int col = topLeft.column();
@@ -1688,7 +1682,10 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
     //Val, Name
     lstProps.add(DAnsiStr(m_modelBlobNodeProperty->item(row, 1)->text().toAscii()),
                  m_modelBlobNodeProperty->item(row, 0)->text().toAscii());
-    m_layerManager.getActiveLayer()->selGetItem(0)->setProperties(lstProps);
+    if(m_layerManager.getActiveLayer()->selCountItems() > 0)
+    {
+        m_layerManager.getActiveLayer()->selGetItem(0)->setProperties(lstProps);
+    }
 
     //Set Affine things
     /*
@@ -2196,12 +2193,12 @@ void GLWidget::select_tblColorRibbon(const QModelIndex& topLeft)
     }
 }
 
-void GLWidget::selectBlobNode(int iLayer, CBlobNode* aNode)
+void GLWidget::selectBlobNode(int iLayer, CBlobNode* aNode, bool bMultiSelect)
 {
     if((aNode == NULL)||(!m_layerManager.isLayerIndex(iLayer))) return;
 
     //if MultiSelection is disabled then clear all selection lists
-    if(!m_bEnableMultiSelect)
+    if(!bMultiSelect)
         m_layerManager.selRemoveItems();
     m_layerManager[iLayer]->selAddItem(aNode);
 
@@ -2432,12 +2429,6 @@ void GLWidget::actViewSetZoom(int value)
 void GLWidget::actEditSelect()
 {
     m_uiMode = uimSelect;
-}
-
-void GLWidget::actEditMultiSelect(bool bEnable)
-{
-    m_uiMode = uimSelect;
-    m_bEnableMultiSelect = bEnable;
 }
 
 void GLWidget::actEditTranslate()
@@ -3393,7 +3384,21 @@ void GLWidget::actFileModelPiza()
         int levels, pillars;
         float radius, height;
         lpDlgPiza->getValues(levels, pillars, radius, height);
-        m_layerManager.addLayer(Shapes::createPiza(levels, pillars, radius, height), "PIZA");
+
+        CBlend* root = new CBlend();
+        const int nTowers = 5;
+        for(int i=0; i < nTowers; i++)
+        {
+            float x = 3 * radius * cosf(static_cast<float>(i * TwoPi)/nTowers);
+            float z = 3 * radius * sinf(static_cast<float>(i * TwoPi)/nTowers);
+
+            CBlobNode* tower = Shapes::createPiza(levels, pillars, radius, height);
+            tower->getTransform().setTranslate(vec3f(x, -height, z));
+            root->addChild(tower);
+        }
+
+
+        m_layerManager.addLayer(root, "PIZA");
         m_layerManager.setActiveLayer(0);
         m_layerManager.getLayer(0)->reassignBlobNodeIDs();
         m_layerManager.bumpRevisions();
@@ -3423,14 +3428,41 @@ void GLWidget::actFileModelMedusa()
     actFileClose();
     //Select the first layer to start drawing right away
     //Galin Medusa Model
-    CBlend* lpMedusa = new CBlend();
-    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Tail());    
-    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Body());
-    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Breast());
-    lpMedusa->addChild(GalinMedusaGenerator::Medusa_LeftHand());
-    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Neck());
-    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Tail());
-    lpMedusa->addChild(GalinMedusaGenerator::Medusa_Head());
+    MEDUSABLENDTYPE method = mbtOneFastQuadricPointSet;
+
+    CBlend* lpMedusa = new CBlend();    
+    /*
+    static CBlobNode* Medusa_Hair(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+    static CBlobNode* Medusa_Head(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+    static CBlobNode* Medusa_Neck(MEDUSABLENDTYPE blend = mbtOneSumBlend );
+    static CBlobNode* Medusa_Body(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+    static CBlobNode* Medusa_Breast(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+    static CBlobNode* Medusa_Tail(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+    static CBlobNode* Medusa_LeftHand(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+    */
+    QMessageBox msg1;
+    msg1.setText("Do you want medusa with hair [complete] or without hair? [hair:6510, head:640, neck:20, body:840, chest:40, tail:810, lefthand:570]");
+    msg1.setInformativeText("Medusa with hair?");
+    msg1.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    if(msg1.exec() == QMessageBox::Yes)
+    {
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Hair(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Head(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Neck(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Body(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Breast(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Tail(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_LeftHand(method));
+    }
+    else
+    {
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Head(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Neck(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Body(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Breast(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_Tail(method));
+        lpMedusa->addChild(GalinMedusaGenerator::Medusa_LeftHand(method));
+    }
 
     //Medusa
     m_layerManager.addLayer(lpMedusa, "Medusa");
@@ -3441,11 +3473,11 @@ void GLWidget::actFileModelMedusa()
     emit sig_showBlobTree(getModelBlobTree(0));
 
     //Convert to Binary Tree
-    QMessageBox msg;
-    msg.setText("Convert to binary tree? [PADWITHNULL, NO SPLIT WHEN ALL CHILDREN ARE PRIMS]");
-    msg.setInformativeText("Convert to Binary Tree?");
-    msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    if(msg.exec() == QMessageBox::Yes)
+    QMessageBox msg2;
+    msg2.setText("Convert to binary tree? [PADWITHNULL, NO SPLIT WHEN ALL CHILDREN ARE PRIMS]");
+    msg2.setInformativeText("Convert to Binary Tree?");
+    msg2.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    if(msg2.exec() == QMessageBox::Yes)
     {
         m_layerManager.getActiveLayer()->selRemoveItem();
         m_layerManager.getActiveLayer()->flattenTransformations();

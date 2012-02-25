@@ -13,8 +13,9 @@ namespace {
 
     CBlobNode* CloneQuadricPoint(const CBlobNode* b)
     {
-        const CQuadricPoint* rhs = reinterpret_cast<const CQuadricPoint*>(b);
+        const CQuadricPoint* rhs = reinterpret_cast<const CQuadricPoint*>(b);        
         CQuadricPoint* clonned = new CQuadricPoint(rhs->getPosition(), rhs->getFieldRadius(), rhs->getFieldScale());
+        clonned->copyGenericInfo(rhs);
         return clonned;
     }
 

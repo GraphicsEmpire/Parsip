@@ -74,7 +74,7 @@ public slots:
     void selectLayer(int iLayer);
     void selectLayer(QModelIndex idx);
 
-    void selectBlobNode(int iLayer, CBlobNode* aNode);
+    void selectBlobNode(int iLayer, CBlobNode* aNode, bool bMultiSelect = false);
     void selectBlobNode(QModelIndex idx);
 
     void actFileModelPiza();
@@ -93,7 +93,6 @@ public slots:
     void actMeshInsert();
 
     void actViewResetCamera();
-    void actViewEnablePan(bool bEnable);
 
     //Layers
     void actLayerAdd();
@@ -143,8 +142,7 @@ public slots:
     void actViewSetZoom(int value);
 
     //Editing Operations
-    void actEditSelect();
-    void actEditMultiSelect(bool bEnable);
+    void actEditSelect();    
     void actEditTranslate();
     void actEditRotate();
     void actEditScale();
@@ -269,9 +267,7 @@ private:
     CUIWidget*          m_lpUIWidget;
     UIMODE		m_uiMode;
     vec3f		m_globalPan;
-    bool                m_bEnableCamLeftKey;
-    bool		m_bEnablePan;
-    bool		m_bEnableMultiSelect;
+    bool                m_bEnableCamLeftKey;    
     bool		m_bTransformSkeleton;
 
     //Variables for field Probing

@@ -1,29 +1,5 @@
-// Ryan Schmidt   rms@unknownroad.com
-// Copyright (c) 2007. All Rights Reserved
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
-// OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
-// This source code is provided for non-commercial,
-// academic use only. It may not be disclosed or distributed,
-// in part or in whole, without the express written consent
-// of the Copyright Holder (Ryan Schmidt). This copyright notice must
-// not be removed from any original or modified source files, and 
-// must be included in any source files which contain portions of
-// the original source code.
-
-
-#ifndef _RMSIMPLICIT_FAST_QUADRIC_POINT_SET_H_
-#define _RMSIMPLICIT_FAST_QUADRIC_POINT_SET_H_
+#ifndef CFAST_QUADRIC_POINT_SET_H_
+#define CFAST_QUADRIC_POINT_SET_H_
 
 #include "PS_BlobTree/include/CSkeletonPrimitive.h"
 #include "PS_BlobTree/include/CQuadricPoint.h"
@@ -31,17 +7,12 @@
 
 using namespace std;
 
-//#include <WmlVector3.h>
-//#include <WmlMatrix3.h>
-//#include <Frame.h>
-
-
 #define FQPS_USE_DOUBLES 0
 
 namespace PS {
 namespace BLOBTREE{
 
-class FastQuadricPointSet : public CSkeletonPrimitive
+class CFastQuadricPointSet : public CBlobNode
 {
 public:
     struct IPoint {
@@ -70,7 +41,8 @@ public:
         float fCoeff3;
 
         IPoint( const vec3f & vPos, float fieldScale, float radius )
-        { ptPosition = vPos; fFieldScale = fieldScale; fRadius = radius;
+        {
+            ptPosition = vPos; fFieldScale = fieldScale; fRadius = radius;
             fRadiusSqr = radius*radius;
             fCoeff1 = fieldScale / (radius*radius*radius*radius);
             fCoeff2 = (-2.0f * fieldScale) / (radius*radius);
@@ -79,7 +51,18 @@ public:
 #endif
     };
 
-    FastQuadricPointSet( bool bUsePerPointColors = false )
+    CFastQuadricPointSet()
+    {
+        m_bUsePerPointColors = false;
+        m_bValidOctree = false;
+    }
+
+    CFastQuadricPointSet(CBlobNode* child)
+    {
+        this->addChild(child);
+    }
+
+    CFastQuadricPointSet( bool bUsePerPointColors)
         : m_bUsePerPointColors(bUsePerPointColors)
     {
         if (!m_bUsePerPointColors)
@@ -89,11 +72,44 @@ public:
         m_bValidOctree = false;
     }
 
-    ~FastQuadricPointSet()
+    ~CFastQuadricPointSet()
     {
-        m_vPoints.clear();
-        m_vColors.clear();
+        cleanup();
     }
+
+    void cleanup(){
+        m_vPoints.resize(0);
+        m_vColors.resize(0);
+    }
+
+    //Prepares internal data structures for fast computation
+    void prepare();
+
+    //Compute FieldValue
+    float fieldValue(vec3f p);
+
+    //Compute Field and Gradient
+    int fieldValueAndGradient(vec3f p, float delta, vec3f &outGradient, float &outField);
+
+    //Octree
+    COctree computeOctree();
+
+    //NodeType
+    BlobNodeType getNodeType() {return bntOpFastQuadricPointSet;}
+
+    std::string getName()
+    {
+        return "FASTQUADRATICPOINTSET";
+    }
+
+    bool isOperator()
+    {
+        return true;
+    }
+
+    bool isPerPointColors() const {return m_bUsePerPointColors;}
+private:
+    bool getPointFieldBox(U32 idxPoint, COctree& dest );
 
     unsigned int getPointCount() const
     {
@@ -159,46 +175,7 @@ public:
         }
     }
 
-    //void ApplyFrame( const Wml::Frame & frame );
-    //void ApplyFrameInverse( const Wml::Frame & frame );
 
-    // must be relative!
-    void translate( const vec3f & bTranslate );
-
-    void getPointFieldBox( unsigned int nPoint, COctree& dest );
-
-    virtual void getSeedPoints( std::vector<vec3f> & seedPoints );
-
-    /*
- * ScalarField interface
- */
-    float fieldValue(vec3f p);
-
-    int fieldValueAndGradient(vec3f p, float delta, vec3f &outGradient, float &outField);
-
-    COctree computeOctree();
-
-    BlobNodeType getNodeType() {return bntPrimFastQuadraticPointSet;}
-
-    string getName()
-    {
-        return "FASTQUADRATICPOINTSET";
-    }
-
-    bool isOperator()
-    {
-        return false;
-    }
-
-    vec3f getPolySeedPoint()
-    {
-        vec3f c;
-        if(m_vPoints.size() > 0)
-            c = m_vPoints[0].ptPosition;
-        c = m_transform.applyForwardTransform(c);
-        return c;
-
-    }
 
 protected:
     vector<IPoint> m_vPoints;

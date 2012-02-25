@@ -149,8 +149,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actAddGradientBlend, SIGNAL(triggered()), m_glWidget, SLOT(actAddGradientBlend()));
 
 
-    connect(ui->actEditSelect, SIGNAL(triggered()), m_glWidget, SLOT(actEditSelect()));
-    connect(ui->actEditMultiSelect, SIGNAL(triggered(bool)), m_glWidget, SLOT(actEditMultiSelect(bool)));
+    connect(ui->actEditSelect, SIGNAL(triggered()), m_glWidget, SLOT(actEditSelect()));    
     connect(ui->actEditTranslate, SIGNAL(triggered()), m_glWidget, SLOT(actEditTranslate()));
     connect(ui->actEditRotate, SIGNAL(triggered()), m_glWidget, SLOT(actEditRotate()));
     connect(ui->actEditScale, SIGNAL(triggered()), m_glWidget, SLOT(actEditScale()));
@@ -174,8 +173,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_glWidget, SIGNAL(sig_enableUndo(bool)), ui->actEditUndo, SLOT(setEnabled(bool)));
     connect(m_glWidget, SIGNAL(sig_enableRedo(bool)), ui->actEditRedo, SLOT(setEnabled(bool)));
 
-    //VIEW
-    connect(ui->actViewPanCamera, SIGNAL(triggered(bool)), m_glWidget, SLOT(actViewEnablePan(bool)));
+    //VIEW    
     connect(ui->actViewCamLeftKey, SIGNAL(triggered(bool)), m_glWidget, SLOT(actViewCamLeftKey(bool)));
     connect(ui->actViewZoomIn, SIGNAL(triggered()), m_glWidget, SLOT(actViewZoomIn()));
     connect(ui->actViewZoomOut, SIGNAL(triggered()), m_glWidget, SLOT(actViewZoomOut()));

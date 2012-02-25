@@ -22,17 +22,17 @@ class QTime;
 using namespace PS;
 
 namespace Ui {
-    class MainWindow;
+class MainWindow;
 }
 
 class GLWidget;
 
 struct PARTICIPANT{
-        QTcpSocket* socket;
-        QString strAddress;
-        QTime lastActiveTime;
-        qint64 ctSent;
-        qint64 ctRecv;
+    QTcpSocket* socket;
+    QString strAddress;
+    QTime lastActiveTime;
+    qint64 ctSent;
+    qint64 ctRecv;
 };
 
 class MainWindow : public QMainWindow
@@ -44,45 +44,45 @@ public:
     ~MainWindow();
 
 public slots:
-        void setParsipCellSize(int sliderValue);
-        void setParsipCellSize(double value);
+    void setParsipCellSize(int sliderValue);
+    void setParsipCellSize(double value);
 
-        void setParsipNormalsAngle(int sliderValue);
-        void setParsipNormalsAngle(double value);
+    void setParsipNormalsAngle(int sliderValue);
+    void setParsipNormalsAngle(double value);
 
-        void updateMsgBar(QString strMsg);
-        void updatePrgBar(int min, int max, int val);
-        void updateStatusBar(double time, int fps);
-        void resetStatusBar();
-        void readApplySetting();
-        void readApplySettingNet();
+    void updateMsgBar(QString strMsg);
+    void updatePrgBar(int min, int max, int val);
+    void updateStatusBar(double time, int fps);
+    void resetStatusBar();
+    void readApplySetting();
+    void readApplySettingNet();
 
-        void setCommandLineParam(QString strFile);
-
-
-        void showColorRibbon(QStandardItemModel* mdlColorRibbon);
-        void showBlobTree(QStandardItemModel* mdlBlobTree);
-        void showLayerManager(QStandardItemModel* mdlLayerManager);
-        void showPrimitiveProperty(QStandardItemModel* mdlPrimProperty);
-        void showStats(QStandardItemModel* mdlStats);
-        void setPrimitiveColor(QColor cl);
-        void actViewFullScreen();
-        void actHelpAbout();
+    void setCommandLineParam(QString strFile);
 
 
-        void actNetStart();
-        void actNetStop();
-        void actNetSendText();
-        void actNetSendText(int idxParticipant);
-        void actNetNewMessage(int idx, QString strMsg);
-        void actNetAddParticipant();
-        void actNetDelParticipant();
-        void actNetShowMembers(QStringList names);
-        //void actNetLoadSettings();
-        void actNetSaveSettings();
+    void showColorRibbon(QStandardItemModel* mdlColorRibbon);
+    void showBlobTree(QStandardItemModel* mdlBlobTree);
+    void showLayerManager(QStandardItemModel* mdlLayerManager);
+    void showPrimitiveProperty(QStandardItemModel* mdlPrimProperty);
+    void showStats(QStandardItemModel* mdlStats);
+    void setPrimitiveColor(QColor cl);
+    void actViewFullScreen();
+    void actHelpAbout();
 
-        void actEditFieldEditor();
-        /*
+
+    void actNetStart();
+    void actNetStop();
+    void actNetSendText();
+    void actNetSendText(int idxParticipant);
+    void actNetNewMessage(int idx, QString strMsg);
+    void actNetAddParticipant();
+    void actNetDelParticipant();
+    void actNetShowMembers(QStringList names);
+    //void actNetLoadSettings();
+    void actNetSaveSettings();
+
+    void actEditFieldEditor();
+    /*
         void actNetAcceptConnection();
         void actNetClientConnected();
         void actNetAddParticipant(QString address, quint16 port, bool bNeedsAck = false);
@@ -90,24 +90,24 @@ public slots:
         void actNetRecvData();
         */
 signals:
-        void sig_userInterfaceReady();
-        void sig_loadProject(QString strFile);
+    void sig_userInterfaceReady();
+    void sig_loadProject(QString strFile);
 
 private:
-        DlgFieldFunctionEditor* m_dlgFieldEditor;
-        CDesignNet*  m_pDesignNet;
-        SettingsNetwork m_setSketchNet;
+    DlgFieldFunctionEditor* m_dlgFieldEditor;
+    CDesignNet*  m_pDesignNet;
+    SettingsNetwork m_setSketchNet;
     Ui::MainWindow *ui;
     GLWidget    *m_glWidget;
-        QLabel		*m_statusBarMsg;
-        QLabel		*m_statusBarFPS;
-        QLabel		*m_statusBarTime;
-        QProgressBar    *m_prgBar;
-        QSlider         *m_lpSlider;
+    QLabel		*m_statusBarMsg;
+    QLabel		*m_statusBarFPS;
+    QLabel		*m_statusBarTime;
+    QProgressBar    *m_prgBar;
+    QSlider         *m_lpSlider;
 
 
-        QActionGroup *m_actgroupPrims;
-        //QActionGroup *m_actgroupOps;
+    QActionGroup *m_actgroupPrims;
+    //QActionGroup *m_actgroupOps;
 
 };
 

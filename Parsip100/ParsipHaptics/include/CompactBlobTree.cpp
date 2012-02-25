@@ -251,7 +251,13 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
         m_lpPrims[curID].octHi = vec4f(root->getOctree().upper, 0.0f);
 
         //Transformation Matrix
+        /*
+        CMatrix mtxForward = root->getTransform().getForwardMatrix();
+        mtxForward.getRow(row, 0);
+        */
+
         float row[4];
+
         CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
         mtxBackward.getRow(row, 0);
         m_lpPrims[curID].mtxBackwardR0.set(row[0], row[1], row[2], row[3]);

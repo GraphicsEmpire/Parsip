@@ -42,7 +42,6 @@ HEADERS += \
            Parsip100/ParsipHaptics/include/CPolyParsipServer.h \
            Parsip100/ParsipHaptics/include/CUIWidgets.h \
            Parsip100/ParsipHaptics/include/DlgFieldFunctionEditor.h \
-           Parsip100/ParsipHaptics/include/FastQuadricPointSet.h \
            Parsip100/ParsipHaptics/include/GalinMedusaGenerator.h \
            Parsip100/ParsipHaptics/include/glwidget.h \
            Parsip100/ParsipHaptics/include/mainwindow.h \
@@ -141,7 +140,8 @@ HEADERS += \
     Parsip100/PS_SimdPoly/include/PS_MathBase.h \
     Parsip100/PS_SimdPoly/include/_CellConfigTable.h \
     Parsip100/ParsipHaptics/DlgPizaModel.h \
-    Parsip100/ParsipHaptics/include/DlgPizaModel.h
+    Parsip100/ParsipHaptics/include/DlgPizaModel.h \
+    Parsip100/PS_BlobTree/include/CFastQuadricPointSet.h
 
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
@@ -161,8 +161,7 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
            Parsip100/ParsipHaptics/include/CPolyContinuation.cpp \
            Parsip100/ParsipHaptics/include/CPolyParsipOptimized.cpp \
            Parsip100/ParsipHaptics/include/CPolyParsipServer.cpp \
-           Parsip100/ParsipHaptics/include/DlgFieldFunctionEditor.cpp \
-           Parsip100/ParsipHaptics/include/FastQuadricPointSet.cpp \
+           Parsip100/ParsipHaptics/include/DlgFieldFunctionEditor.cpp \           
            Parsip100/ParsipHaptics/include/GalinMedusaGenerator.cpp \
            Parsip100/ParsipHaptics/include/glwidget.cpp \
            Parsip100/ParsipHaptics/include/main.cpp \
@@ -222,7 +221,8 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
     Parsip100/PS_FrameWork/include/PS_ComputeDevice.cpp \
     Parsip100/PS_SimdPoly/include/PS_Polygonizer.cpp \
     Parsip100/ParsipHaptics/include/DlgPizaModel.cpp \
-    Parsip100/PS_BlobTree/include/CQuadricPoint.cpp
+    Parsip100/PS_BlobTree/include/CQuadricPoint.cpp \
+    Parsip100/PS_BlobTree/include/CFastQuadricPointSet.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -292,6 +292,9 @@ OTHER_FILES += \
     Parsip100/Distrib/Resources/Shaders/TPhongVS.glsl \
     Parsip100/Distrib/Resources/Shaders/TPhongFS.glsl \
     Parsip100/Distrib/Resources/Shaders/Polygonizer.cl
+
+
+
 
 
 

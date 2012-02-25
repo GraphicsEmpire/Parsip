@@ -149,6 +149,31 @@ public:
     bool isOperator() { return true;}
     BlobNodeType getNodeType() {return bntOpRicciBlend;}
 
+    int getProperties(PropertyList &outProperties)
+    {
+        outProperties.resize(0);
+        outProperties.add(this->getN(), "power");
+        return 1;
+    }
+
+    int setProperties(const PropertyList& inProperties)
+    {
+        int idx = PropertyList::FindProperty(inProperties, "power");
+        if(idx >= 0)
+            setN(inProperties[idx].asFloat());
+        return (idx >= 0);
+    }
+
+    bool loadScript(CSketchConfig* lpSketchScript, int id)
+    {
+        bool bres = loadGenericInfoScript(lpSketchScript, id);
+
+        //Write parameters for RicciBlend
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        this->setN(lpSketchScript->readFloat(strNodeName, "power"));
+        return bres;
+    }
+
     bool saveScript(CSketchConfig* lpSketchScript)
     {
         bool bres = saveGenericInfoScript(lpSketchScript);

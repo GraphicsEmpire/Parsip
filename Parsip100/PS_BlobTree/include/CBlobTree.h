@@ -338,6 +338,8 @@ public:
 
     //New Functions
     virtual std::string getName() = 0;
+
+    //Scripting
     virtual bool saveScript(CSketchConfig* lpSketchScript)
     {
         return saveGenericInfoScript(lpSketchScript);
@@ -348,45 +350,15 @@ public:
         return loadGenericInfoScript(lpSketchScript, id);
     }
 
+    //Propery list
     virtual int getProperties(PropertyList& outProperties)
     {
-        if(!isOperator())
-        {
-            outProperties.resize(0);
-            outProperties.add(m_transform.getScale(), "scale");
-            outProperties.add(m_transform.getTranslate(), "translate");
-
-            vec3f axis;
-            float angleDeg;
-            m_transform.getRotation().getAxisAngle(axis, angleDeg);
-            outProperties.add(vec4f(axis, angleDeg), "rotate");
-            return 3;
-        }
-        else
-            return 0;
+        return getGenericProperties(outProperties);
     }
 
     virtual int setProperties(const PropertyList& inProperties)
     {
-        if(inProperties.size() == 0)
-            return 0;
-
-        int idxProp = PropertyList::FindProperty(inProperties, "scale");
-        if(idxProp >= 0)
-            this->getTransform().setScale(inProperties[idxProp].asVec3());
-
-        idxProp = PropertyList::FindProperty(inProperties, "translate");
-        if(idxProp >= 0)
-            this->getTransform().setTranslate(inProperties[idxProp].asVec3());
-
-
-        idxProp = PropertyList::FindProperty(inProperties, "rotate");
-        if(idxProp >= 0)
-        {
-            vec4f rot = inProperties[idxProp].asVec4();
-            this->getTransform().setRotation(rot.w, rot.xyz());
-        }
-        return 3;
+        return setGenericProperties(inProperties);
     }
 
     void copyGenericInfo(const CBlobNode* rhs);
@@ -403,6 +375,9 @@ protected:
     bool isIDRange(const vector<int>& ids) const;
     bool saveGenericInfoScript(CSketchConfig* lpSketchConfig);
     bool loadGenericInfoScript(CSketchConfig* lpSketchConfig, int id);
+
+    int getGenericProperties(PropertyList& outProperties);
+    int setGenericProperties(const PropertyList& inProperties);
 };
 
 

@@ -23,7 +23,7 @@
 
 
 #include "GalinMedusaGenerator.h"
-#include "FastQuadricPointSet.h"
+#include "PS_BlobTree/include/CFastQuadricPointSet.h"
 #include "PS_FrameWork/include/_parsDebug.h"
 #include "BlobTreeBuilder.h"
 
@@ -76,24 +76,19 @@ public:
     SplineGenerator( MEDUSABLENDTYPE eType )
     {
         m_eType = eType;
+        m_lpTopLevelBlend = NULL;
+        m_lpTopLevelPointSet = NULL;
 
-        m_pTopLevelPointSet = NULL;
-        m_pTopLevelBlend = new CBlend();
-
-        if (m_eType == OneFastQuadricPointSet)
-        {
-            m_pTopLevelPointSet = new FastQuadricPointSet();
-            m_pTopLevelBlend->addChild(m_pTopLevelPointSet);
-        }
-
-        m_nPointPrimitives = 0;
+        if(eType == mbtOneFastQuadricPointSet)
+            m_lpTopLevelPointSet = new CFastQuadricPointSet();
+        else
+            m_lpTopLevelBlend = new CBlend();
+        m_ctPrimitives = 0;
     }
 
     ~SplineGenerator()
     {
-        //SAFE_DELETE(m_pTopLevelBlend);
-        //SAFE_DELETE(m_pTopLevelPointSet);
-    };
+    }
 
     void addSpline( vec3d a, vec3d na, double ra, double fa,
                     vec3d b, vec3d nb, double rb, double fb,
@@ -104,63 +99,72 @@ public:
         Polynomial pz = Polynomial::Hermite(a[2],b[2],na[2],nb[2]);
         Polynomial r = Polynomial::Hermite(ra,rb,fa,fb);
 
-        CBlend * pNestedBlend = (m_eType == NestedSumBlendsOfQuadricPoints) ? new CBlend() : NULL;
-        FastQuadricPointSet * pPointSet = (m_eType == SumBlendOfFastQuadricPointSets) ? new FastQuadricPointSet() : NULL;
+
+        CFastQuadricPointSet * lpFastPointSet = NULL;
+        if(m_eType == mbtSumBlendOfFastQuadricPointSets)
+        {
+            lpFastPointSet = new CFastQuadricPointSet();
+            lpFastPointSet->setMaterial(CMaterial::mtrlGreen());
+            m_lpTopLevelBlend->addChild(lpFastPointSet);
+        }
+
 
         for (int i = 0; i < n; ++i)
         {
             double t = (double)i / (double)(n-1);
-            vec3f pos = vec3f(px(t), py(t), pz(t));
+            vec3f pos = vec3f(px(t), py(t), pz(t));            
+            m_ctPrimitives++;
 
-            //CQuadricPoint * pPoint = new CQuadricPoint(vec3f( (float)px(t), (float)py(t), (float)pz(t)), (float)r(t), (float)dFieldScale );
-            CBlobNode* pPoint = TheBlobNodeFactoryIndex::Instance().CreateObject(bntPrimPoint);
-            pPoint->setMaterial(CMaterial::mtrlGreen());
-
-            pPoint->getTransform().setTranslate(pos);
-            pPoint->getTransform().setScale(vec3f(dFieldScale, dFieldScale, dFieldScale));
-
-            ++m_nPointPrimitives;
-
-            if (m_eType == NestedSumBlendsOfQuadricPoints)
+            if ( m_eType == mbtOneSumBlend )
             {
-                pNestedBlend->addChild(pPoint);
+                CBlobNode* pPoint = TheBlobNodeFactoryIndex::Instance().CreateObject(bntPrimPoint);
+                pPoint->setMaterial(CMaterial::mtrlGreen());
+                pPoint->getTransform().setTranslate(pos);
+                pPoint->getTransform().setScale(vec3f(r(t), r(t), r(t)));
+                m_lpTopLevelBlend->addChild(pPoint);
+            }            
+            else if (m_eType == mbtSumBlendOfFastQuadricPointSets)
+            {
+                CQuadricPoint * pPoint = reinterpret_cast<CQuadricPoint*>(TheBlobNodeFactoryIndex::Instance().CreateObject(bntPrimQuadricPoint));
+                pPoint->setPosition(vec3f((float)px(t), (float)py(t), (float)pz(t)));
+                pPoint->setFieldRadius((float)r(t));
+                pPoint->setFieldScale((float)dFieldScale);
+                pPoint->setMaterial(CMaterial::mtrlGreen());
+                pPoint->getTransform().init();
+
+                lpFastPointSet->addChild(pPoint);
             }
-            else if ( m_eType == OneSumBlend )
+            else if (m_eType == mbtOneFastQuadricPointSet)
             {
-                m_pTopLevelBlend->addChild(pPoint);
+                CQuadricPoint * pPoint = reinterpret_cast<CQuadricPoint*>(TheBlobNodeFactoryIndex::Instance().CreateObject(bntPrimQuadricPoint));
+                pPoint->setPosition(vec3f((float)px(t), (float)py(t), (float)pz(t)));
+                pPoint->setFieldRadius((float)r(t));
+                pPoint->setFieldScale((float)dFieldScale);
+                pPoint->setMaterial(CMaterial::mtrlGreen());
+                pPoint->getTransform().init();
 
-            }
-            else if (m_eType == SumBlendOfFastQuadricPointSets)
-            {
-                //pPointSet->addPoint( *pPoint, vec3f(1.0f, 0.0f, 0.0f));
-                SAFE_DELETE(pPoint);
-            }
-            else if (m_eType == OneFastQuadricPointSet)
-            {
-                //m_pTopLevelPointSet->addPoint( *pPoint, vec3f(1.0f, 0.0f, 0.0f) );
-                SAFE_DELETE(pPoint);
+                m_lpTopLevelPointSet->addChild(pPoint);
             }
             else
                 abort();
         }
-
-        if ( m_eType == NestedSumBlendsOfQuadricPoints)
-            m_pTopLevelBlend->addChild( pNestedBlend );
-        else if (m_eType == SumBlendOfFastQuadricPointSets)
-            m_pTopLevelBlend->addChild( pPointSet );
     }
 
-    CBlend * getField() { return m_pTopLevelBlend; }
+    CBlobNode* getField()
+    {
+        if(m_eType == mbtOneFastQuadricPointSet)
+            return m_lpTopLevelPointSet;
+        else
+            return m_lpTopLevelBlend;
+    }
 
-    unsigned int getNumPointPrimitives() { return m_nPointPrimitives; }
+    U32 countPointPrims() { return m_ctPrimitives; }
 
 protected:
+    CFastQuadricPointSet* m_lpTopLevelPointSet;
+    CBlend* m_lpTopLevelBlend;
     MEDUSABLENDTYPE m_eType;
-
-    CBlend * m_pTopLevelBlend;
-    FastQuadricPointSet * m_pTopLevelPointSet;
-    unsigned int m_nPointPrimitives;
-
+    U32 m_ctPrimitives;
 };
 
 
@@ -168,7 +172,7 @@ protected:
 /*!
 \brief Creates the neck and shoulders.
 */
-CBlend * GalinMedusaGenerator::Medusa_Neck(MEDUSABLENDTYPE blend)
+CBlobNode* GalinMedusaGenerator::Medusa_Neck(MEDUSABLENDTYPE blend)
 {
     SplineGenerator g( blend );
 
@@ -177,7 +181,7 @@ CBlend * GalinMedusaGenerator::Medusa_Neck(MEDUSABLENDTYPE blend)
                 vec3d(0,-0.05,3.7), vec3d(0,0.1,1), 0.24, 0.0,
                 0.75, 20 );
 
-    parsDebugInfo("Mudusa Neck: %d primitives\n", g.getNumPointPrimitives() );
+    parsDebugInfo("Mudusa Neck: %d primitives\n", g.countPointPrims() );
 
     return g.getField();
 }
@@ -189,65 +193,68 @@ CBlend * GalinMedusaGenerator::Medusa_Neck(MEDUSABLENDTYPE blend)
 whereas the tail itself consists in three cubic splines.
 */
 
-CBlend * GalinMedusaGenerator::Medusa_Tail(MEDUSABLENDTYPE blend)
+CBlobNode* GalinMedusaGenerator::Medusa_Tail(MEDUSABLENDTYPE blend)
 {    
-    SplineGenerator g( blend );
+    SplineGenerator* lpSg = new SplineGenerator( blend );
 
     // Hips
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(-0.17,0,1.1),vec3d(-1,0,1),0.5,0.0,
                 vec3d(-0.13,0,1.95),vec3d(0,0,1.5),0.35,0.0,
                 0.75,30);
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(0.17,0,1.1),vec3d(1,0,1),0.5,0.0,
                 vec3d(0.13,0,1.95),vec3d(0,0,1.5),0.35,0.0,
                 0.75,30);
 
     // fesses
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(-0.23,-0.1,1.19),vec3d(0,1,0.5),0.55,0.0,
                 vec3d(-0.22,0.0,1.38),vec3d(0,-0.5,1.0),0.35,0.0,
                 0.75,10);
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(0.23,-0.1,1.19),vec3d(0,1,0.5),0.55,0.0,
                 vec3d(0.22,0.0,1.38),vec3d(0,-0.5,1.0),0.35,0.0,
                 0.75,10);
 
     // Lower belly
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(-0.28,0.0,1.15),vec3d(0,0,0),0.5,0.075,
                 vec3d(-0.15,-0.4,0.25),vec3d(0,0,0),0.4,0.05,
                 0.75,20);
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(0.28,0.0,1.15),vec3d(0,0,0),0.5,0.075,
                 vec3d(0.15,-0.4,0.25),vec3d(0,0,0),0.4,0.05,
                 0.75,20);
 
     // Tail
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(0.0,-0.4,0.1),vec3d(0,0,0),0.45,0.075,
                 vec3d(0.0,0.4,0.15),vec3d(1,1,0),0.5,0.05,
                 0.75,200);
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(0.0,0.4,0.15),vec3d(1,1,0),0.55,0.075,
                 vec3d(1.5,0.0,0.3),vec3d(1,-3,2.0),0.5,0.05,
                 0.75,20);
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(1.5,0.0,0.3),vec3d(1,-3.0,2.0),0.5,0.075,
                 vec3d(-1.5,0.0,1.5),vec3d(0,4.0,-0.5),0.4,0.075,
                 0.75,30);
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(-1.5,0.01,1.5),vec3d(0,4.0,-0.5),0.36,0.075,
                 vec3d(0.7,0.8,2.5),vec3d(2,-1.7,1.0),0.237,0.075,
                 0.75,400);
-    g.addSpline(
+    lpSg->addSpline(
                 vec3d(0.7,0.8,2.5),vec3d(2,-1.7,1.0),0.223,0.075,
                 vec3d(0.4,-0.7,2.3),vec3d(-2,0,-1.0),0.1,0.075,
                 0.75,40);
 
-    parsDebugInfo("Mudusa Tail: %d primitives\n", g.getNumPointPrimitives() );
+    parsDebugInfo("Mudusa Tail: %d primitives\n", lpSg->countPointPrims() );
 
-    return g.getField();
+    CBlobNode* lpNode = lpSg->getField();
+    SAFE_DELETE(lpSg);
+
+    return lpNode;
 }
 
 
@@ -257,7 +264,7 @@ CBlend * GalinMedusaGenerator::Medusa_Tail(MEDUSABLENDTYPE blend)
 \brief Create the left Hand.
 */
 
-CBlend * GalinMedusaGenerator::Medusa_LeftHand(MEDUSABLENDTYPE blend)
+CBlobNode* GalinMedusaGenerator::Medusa_LeftHand(MEDUSABLENDTYPE blend)
 {
     SplineGenerator g( blend );
 
@@ -348,7 +355,7 @@ CBlend * GalinMedusaGenerator::Medusa_LeftHand(MEDUSABLENDTYPE blend)
                 0.75,30);
 
 
-    parsDebugInfo("Mudusa Left Hand: %d primitives\n", g.getNumPointPrimitives() );
+    parsDebugInfo("Mudusa Left Hand: %d primitives\n", g.countPointPrims() );
 
     return g.getField();
 }
@@ -363,7 +370,7 @@ CBlend * GalinMedusaGenerator::Medusa_LeftHand(MEDUSABLENDTYPE blend)
 by two vertical splines that create the overall shape effect.
 Another spline screates a small round belly.
 */
-CBlend * GalinMedusaGenerator::Medusa_Body(MEDUSABLENDTYPE blend)
+CBlobNode* GalinMedusaGenerator::Medusa_Body(MEDUSABLENDTYPE blend)
 {
     //SplineGenerator g( SplineGenerator::SumBlendOfFastQuadricPointSets );
     SplineGenerator g( blend );
@@ -481,7 +488,7 @@ CBlend * GalinMedusaGenerator::Medusa_Body(MEDUSABLENDTYPE blend)
                 vec3d(0,0.0,1.75),vec3d(0,0,1.0),0.44,0.0,
                 0.75,30);
 
-    parsDebugInfo("Mudusa Body: %d primitives\n", g.getNumPointPrimitives() );
+    parsDebugInfo("Mudusa Body: %d primitives\n", g.countPointPrims() );
 
     return g.getField();
 }
@@ -495,7 +502,7 @@ CBlend * GalinMedusaGenerator::Medusa_Body(MEDUSABLENDTYPE blend)
 hyper-blend them so as to avoid over-blending. Added nipples
 for special effects !
 */
-CBlend * GalinMedusaGenerator::Medusa_Breast(MEDUSABLENDTYPE blend)
+CBlobNode* GalinMedusaGenerator::Medusa_Breast(MEDUSABLENDTYPE blend)
 {
     SplineGenerator g( blend );
 
@@ -506,7 +513,7 @@ CBlend * GalinMedusaGenerator::Medusa_Breast(MEDUSABLENDTYPE blend)
                 vec3d(0.23,/*-0.52*/-0.5,2.661),vec3d(0,0,0),0.05,0.0,
                 0.75,20);
 
-    parsDebugInfo("Mudusa Chest: %d primitives\n", g.getNumPointPrimitives() );
+    parsDebugInfo("Mudusa Chest: %d primitives\n", g.countPointPrims() );
 
     return g.getField();
 }
@@ -516,7 +523,7 @@ CBlend * GalinMedusaGenerator::Medusa_Breast(MEDUSABLENDTYPE blend)
 
 
 
-CBlend * GalinMedusaGenerator::Medusa_Hair(MEDUSABLENDTYPE blend)
+CBlobNode* GalinMedusaGenerator::Medusa_Hair(MEDUSABLENDTYPE blend)
 {
     SplineGenerator g( blend );
 
@@ -1019,14 +1026,14 @@ CBlend * GalinMedusaGenerator::Medusa_Hair(MEDUSABLENDTYPE blend)
                 vec3d(-0.0,0.27,4.21 +0.35),vec3d(0.0,-0.3,0.0),0.02,0.05,
                 0.75,40);
 
-    parsDebugInfo("Mudusa Hair: %d primitives\n", g.getNumPointPrimitives() );
+    parsDebugInfo("Mudusa Hair: %d primitives\n", g.countPointPrims() );
 
     return g.getField();
 }
 
 
 
-CBlend * GalinMedusaGenerator::Medusa_Head(MEDUSABLENDTYPE blend)
+CBlobNode* GalinMedusaGenerator::Medusa_Head(MEDUSABLENDTYPE blend)
 {
     SplineGenerator g( blend );
 
@@ -1150,83 +1157,9 @@ CBlend * GalinMedusaGenerator::Medusa_Head(MEDUSABLENDTYPE blend)
     /* vec3d(0.37,0.0,3.71 +0.35),vec3d(0,-0.2,-0.1),0.04,0.05, */
     /* 0.75,20); */
 
-    parsDebugInfo("Mudusa Head: %d primitives\n", g.getNumPointPrimitives() );
+    parsDebugInfo("Mudusa Head: %d primitives\n", g.countPointPrims() );
 
     return g.getField();
 }
 
-
-
-
-
-#if 0
-
-BlobTree* Medusa_Create()
-
-{
-
-    TreeNode *cheveux=Medusa_Cheveux();
-
-    TreeNode *tete=Medusa_Tete();
-
-    TreeNode *tail=Medusa_Tail();
-
-    TreeNode *body=Medusa_Body();
-
-    TreeNode *breast=Medusa_Breast();
-
-    TreeNode *neck=Medusa_Neck();
-
-
-
-    cheveux=new TreeScale(new TreeRotate(cheveux,Matrix::Rotation(Vector(0,0,0.3))),Vector(0.9));
-
-    tete=new TreeTranslate(
-
-                new TreeScale(
-
-                    new TreeRotate(tete,Matrix::Rotation(Vector(0,0,0.3))),
-
-                    Vector(0.9)),
-
-                Vector(0,-0.15,0));
-
-    /*
-
-cheveux=cheveux->Rotate(Matrix::Rotation(Vector(0,0,0.3)));
-
-cheveux=cheveux->Scale(Vector(0.9));
-
-tete=tete->Rotate(Matrix::Rotation(Vector(0,0,0.3)));
-
-tete=tete->Scale(Vector(0.9));
-
-tete=tete->Translate(Vector(0,-0.15,0));
-
-*/
-
-    TreeNode* medusa=cheveux;
-
-    medusa=new TreeBlend(medusa, tete);
-
-    medusa=new TreeBlend(medusa, neck);
-
-    medusa=new TreeBlend(medusa, body);
-
-    medusa=new TreeBlend(medusa, breast);
-
-    medusa=new TreeBlend(medusa, tail);
-
-    return new BlobTree(medusa,0.45);
-
-}
-
-BlobTree* BlobTreeSphere()
-
-{
-
-    return new BlobTree(new TreeSphere(Vector(0.0),1.0,new BlendCubic(1.0,1.0)),0.5);
-
-}
-#endif
 

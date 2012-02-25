@@ -34,24 +34,23 @@ using namespace PS::BLOBTREE;
 
 namespace PS {
 
-enum MEDUSABLENDTYPE {
-    NestedSumBlendsOfQuadricPoints,
-    OneSumBlend,
-    SumBlendOfFastQuadricPointSets,
-    OneFastQuadricPointSet
+enum MEDUSABLENDTYPE {    
+    mbtOneSumBlend,
+    mbtSumBlendOfFastQuadricPointSets,
+    mbtOneFastQuadricPointSet
 };
 
 class GalinMedusaGenerator {
 public:
-        static CBlend * Medusa_Neck(MEDUSABLENDTYPE blend = OneSumBlend );
-        static CBlend * Medusa_Tail(MEDUSABLENDTYPE blend = OneSumBlend);
-        static CBlend * Medusa_Body(MEDUSABLENDTYPE blend = OneSumBlend);
-        static CBlend * Medusa_LeftHand(MEDUSABLENDTYPE blend = OneSumBlend);
-        static CBlend * Medusa_Breast(MEDUSABLENDTYPE blend = OneSumBlend);
-        static CBlend * Medusa_Hair(MEDUSABLENDTYPE blend = OneSumBlend);
+        static CBlobNode* Medusa_Neck(MEDUSABLENDTYPE blend = mbtOneSumBlend );
+        static CBlobNode* Medusa_Tail(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+        static CBlobNode* Medusa_Body(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+        static CBlobNode* Medusa_LeftHand(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+        static CBlobNode* Medusa_Breast(MEDUSABLENDTYPE blend = mbtOneSumBlend);
+        static CBlobNode* Medusa_Hair(MEDUSABLENDTYPE blend = mbtOneSumBlend);
 
 	// [RMS NOTE: this was not ported exactly. see code..]
-        static CBlend * Medusa_Head(MEDUSABLENDTYPE blend = OneSumBlend);
+        static CBlobNode* Medusa_Head(MEDUSABLENDTYPE blend = mbtOneSumBlend);
 };
 
 

@@ -158,29 +158,38 @@ void CBlobNode::copyGenericInfo(const CBlobNode* rhs)
     this->m_transform = rhs->m_transform;
 }
 
-/*
-int CBlobNode::getProperties(PropertyList& outProperties)
-{
-    outProperties.resize(0);
-    outProperties.add(m_transform.getScale(), "scale");
-    outProperties.add(m_transform.getTranslate(), "translate");
 
-    vec3f axis;
-    float angleDeg;
-    m_transform.getRotation().getAxisAngle(axis, angleDeg);
-    outProperties.add(vec4f(axis, angleDeg), "rotate");
-    return 3;
+int CBlobNode::getGenericProperties(PropertyList& outProperties)
+{
+    if(!isOperator())
+    {
+        outProperties.resize(0);
+        outProperties.add(m_transform.getScale(), "scale");
+        outProperties.add(m_transform.getTranslate(), "translate");
+
+        vec3f axis;
+        float angleDeg;
+        m_transform.getRotation().getAxisAngle(axis, angleDeg);
+        outProperties.add(vec4f(axis, angleDeg), "rotate");
+        return 3;
+    }
+    else
+        return 0;
 }
 
-int CBlobNode::setProperties(const PropertyList& inProperties)
+int CBlobNode::setGenericProperties(const PropertyList& inProperties)
 {
-    int idxProp = PropertyList::FindProperty(inProperties, "translate");
+    if(inProperties.size() == 0)
+        return 0;
+
+    int idxProp = PropertyList::FindProperty(inProperties, "scale");
+    if(idxProp >= 0)
+        this->getTransform().setScale(inProperties[idxProp].asVec3());
+
+    idxProp = PropertyList::FindProperty(inProperties, "translate");
     if(idxProp >= 0)
         this->getTransform().setTranslate(inProperties[idxProp].asVec3());
 
-    idxProp = PropertyList::FindProperty(inProperties, "scale");
-    if(idxProp >= 0)
-        this->getTransform().setScale(inProperties[idxProp].asVec3());
 
     idxProp = PropertyList::FindProperty(inProperties, "rotate");
     if(idxProp >= 0)
@@ -191,7 +200,6 @@ int CBlobNode::setProperties(const PropertyList& inProperties)
     return 3;
 }
 
-*/
 }
 }
 

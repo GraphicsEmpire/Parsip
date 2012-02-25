@@ -27,7 +27,7 @@ public:
         m_position = pos;
         m_fRadius = fieldRadius;
         m_fScale = fieldScale;
-    }
+    }      
 
     //Accessor Functions
     vec3f getPosition() const {return m_position;}
@@ -51,7 +51,7 @@ public:
         return m_fScale  * fValue * fValue;
     }
 
-    string getName()
+    std::string getName()
     {
         return "QUADRICPOINT";
     }
@@ -66,14 +66,14 @@ public:
     bool isOperator() { return false;}
     BlobNodeType getNodeType() {return bntPrimQuadricPoint;}
 
-    bool saveScript(CSketchConfig* lpSketchScript, int id)
-    {
+    bool saveScript(CSketchConfig* lpSketchScript)
+    {      
         //Write parameters for RicciBlend
-        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
         lpSketchScript->writeVec3f(strNodeName, "position", this->getPosition());
-        lpSketchScript->writeFloat(strNodeName, "fieldscale", this->getFieldScale());
-        lpSketchScript->writeFloat(strNodeName, "fieldradius", this->getFieldRadius());
-        return true;
+        lpSketchScript->writeFloat(strNodeName, "scale", this->getFieldScale());
+        lpSketchScript->writeFloat(strNodeName, "radius", this->getFieldRadius());
+        return this->saveGenericInfoScript(lpSketchScript);
     }
 
     bool loadScript(CSketchConfig* lpSketchScript, int id)
@@ -81,9 +81,9 @@ public:
         //Write parameters for RicciBlend
         DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
         m_position = lpSketchScript->readVec3f(strNodeName, "position");
-        m_fScale   = lpSketchScript->readFloat(strNodeName, "fieldscale");
-        m_fRadius  = lpSketchScript->readFloat(strNodeName, "fieldradius");
-        return true;
+        m_fScale   = lpSketchScript->readFloat(strNodeName, "scale");
+        m_fRadius  = lpSketchScript->readFloat(strNodeName, "radius");
+        return this->loadGenericInfoScript(lpSketchScript, id);
     }
 
 };
