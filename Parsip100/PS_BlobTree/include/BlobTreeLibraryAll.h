@@ -34,6 +34,7 @@
 #include "CWarpTwist.h"
 #include "CCache.h"
 #include "CPcm.h"
+#include "CInstance.h"
 //#include "CVolumeBox.h"
 //#include "CLayerManager.h"
 

@@ -141,7 +141,8 @@ HEADERS += \
     Parsip100/PS_SimdPoly/include/_CellConfigTable.h \
     Parsip100/ParsipHaptics/DlgPizaModel.h \
     Parsip100/ParsipHaptics/include/DlgPizaModel.h \
-    Parsip100/PS_BlobTree/include/CFastQuadricPointSet.h
+    Parsip100/PS_BlobTree/include/CFastQuadricPointSet.h \
+    Parsip100/PS_BlobTree/include/CInstance.h
 
 FORMS += Parsip100/ParsipHaptics/DlgFieldFunction.ui \
          Parsip100/ParsipHaptics/DlgMtrlEditor.ui \
@@ -222,7 +223,8 @@ SOURCES += Parsip100/ParsipHaptics/include/AppSettings.cpp \
     Parsip100/PS_SimdPoly/include/PS_Polygonizer.cpp \
     Parsip100/ParsipHaptics/include/DlgPizaModel.cpp \
     Parsip100/PS_BlobTree/include/CQuadricPoint.cpp \
-    Parsip100/PS_BlobTree/include/CFastQuadricPointSet.cpp
+    Parsip100/PS_BlobTree/include/CFastQuadricPointSet.cpp \
+    Parsip100/PS_BlobTree/include/CInstance.cpp
 RESOURCES += Parsip100/ParsipHaptics/ParsipIcons.qrc
 
 # Setting Output Directory
@@ -292,6 +294,12 @@ OTHER_FILES += \
     Parsip100/Distrib/Resources/Shaders/TPhongVS.glsl \
     Parsip100/Distrib/Resources/Shaders/TPhongFS.glsl \
     Parsip100/Distrib/Resources/Shaders/Polygonizer.cl
+
+
+
+
+
+
 
 
 

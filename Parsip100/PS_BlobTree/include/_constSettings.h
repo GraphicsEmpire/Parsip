@@ -23,19 +23,13 @@
 const float NORMAL_DELTA = 0.001f;
 
 #define BLOBTREE_DEFINITIONS
-//typedef enum SkeletonType {sktCylinder, sktDisc, sktLine, sktPoint, sktRing, sktPolygon, sktCube, sktTriangle, sktCatmullRomCurve};
-//typedef enum OperatorType {opUnion, opIntersect, opDif, opSmoothDif, opBlend, opRicciBlend, opGradientBlend,
-  //                         opAffine, opWarpTwist, opWarpTaper, opWarpBend, opWarpShear, bnt};
-
 typedef enum BlobNodeType{bntPrimCylinder, bntPrimDisc, bntPrimLine, bntPrimPoint, bntPrimRing, bntPrimPolygon,
                           bntPrimCube, bntPrimTriangle, bntPrimCatmullRomCurve, bntPrimSkeleton, bntPrimQuadricPoint,
                           bntPrimHalfPlane, bntPrimNull,
                           bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend, bntOpGradientBlend,
-                          bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM,
-                          bntOpFastQuadricPointSet};
+                          bntOpFastQuadricPointSet, bntOpPCM,
 
-
-//typedef enum BlobNodeType{bntPrimitive, bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend,
-//	bntOpAffine, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpCache, bntOpTexture, bntOpPCM};
+                          //Unary Nodes
+                          bntOpInstance, bntOpCache, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpTexture};
 
 #endif

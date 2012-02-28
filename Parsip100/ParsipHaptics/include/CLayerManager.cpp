@@ -24,6 +24,241 @@ namespace BLOBTREE{
 using namespace PS::DATETIMEUTILS;
 using namespace PS::FILESTRINGUTILS;
 
+ConvertToBinaryTree::ConvertToBinaryTree(CLayer* aLayer, bool bPadWithNull, bool bSplitAlways)
+{
+    assert(aLayer != NULL);
+
+    m_bPadWithNULL = bPadWithNull;
+    m_bSplitAlways = bSplitAlways;
+    m_lpLayer = aLayer;
+}
+
+
+void ConvertToBinaryTree::cleanup()
+{
+    m_lstConverted.resize(0);
+}
+
+CBlobNode* ConvertToBinaryTree::cloneNode(CBlobNode* node)
+{
+    CBlobNode* clone = TheBlobNodeCloneFactory::Instance().CreateObject(node);
+    clone->setID(m_lpLayer->getIDDispenser().bump());
+
+    //Add converted item to list
+    ConvertToBinaryTree::CONVERTED cvt(node, clone);
+    m_lstConverted.push_back(cvt);
+
+    return clone;
+}
+
+CBlobNode* ConvertToBinaryTree::findConverted(CBlobNode* lpFrom)
+{
+    for(U32 i=0; i<m_lstConverted.size(); i++)
+    {
+        if(m_lstConverted[i].lpFrom == lpFrom)
+            return m_lstConverted[i].lpTo;
+    }
+    return NULL;
+}
+
+int ConvertToBinaryTree::run()
+{
+    int ctErrors = CountErrors(m_lpLayer->getBlob(), m_bSplitAlways);
+    if(ctErrors > 0)
+    {
+       m_lpLayer->getIDDispenser().reset();
+
+        //Create a clone of the node
+        CBlobNode* root = m_lpLayer->getBlob();
+        CBlobNode* replacement = this->cloneNode(root);
+        if(this->run(root, replacement) > 0)
+        {
+            SAFE_DELETE(root);
+            m_lpLayer->setBlob(replacement);
+        }
+        else
+        {
+            SAFE_DELETE(replacement);
+        }
+
+        //Update data-structures
+        m_lpLayer->setOctreeFromBlobTree();
+        m_lpLayer->flattenTransformations();
+        m_lpLayer->queryBlobTree(true, false);
+    }
+
+}
+
+int ConvertToBinaryTree::run(CBlobNode* node, CBlobNode* clonned)
+{
+    if ((node == NULL)||(clonned == NULL))
+    {
+        ReportError("Node or its clonned is NULL.");
+        FlushAllErrors();
+        return -1;
+    }
+
+    if(node->getNodeType() != clonned->getNodeType())
+    {
+        ReportError("Node and its clone are not identical.");
+        FlushAllErrors();
+        return -2;
+    }
+
+    bool bIsOp = node->isOperator();
+
+    //Process Instance node
+    if(node->getNodeType() == bntOpInstance)
+    {
+        assert(node->countChildren() == 1);
+        CBlobNode* lpFound = findConverted(node->getChild(0));
+        if(lpFound)
+            clonned->addChild(lpFound);
+        else
+        {
+            ReportError("Couldnot find the subTree for this instance object!");
+            FlushAllErrors();
+        }
+        return 1;
+    }
+
+    //If it is not an instance node then process
+    if(bIsOp)
+    {
+        int res = 0;
+        bool bSplit = true;
+        if((!m_bSplitAlways)&&(node->isAllChildrenPrims()))
+        {
+            bSplit = false;
+        }
+
+        //Replace nodes with more than 2 non-primitive kids
+        CBlobNode* clonnedChild = NULL;
+        if(node->countChildren() > 2)
+        {
+            if(bSplit)
+            {
+                CBlobNode* cur = NULL;
+                CBlobNode* prev = NULL;
+
+                for(U32 i=0; i<node->countChildren() -1; i++)
+                {
+                    if(i == 0)
+                        cur = clonned;
+                    else
+                        cur = cloneNode(clonned);
+
+                    //Clone child
+                    clonnedChild = cloneNode(node->getChild(i));
+
+                    //Add clonned child to parent
+                    cur->addChild(clonnedChild);
+
+                    if(prev)
+                        prev->addChild(cur);
+                    prev = cur;
+
+                    //Recurse to child
+                    res += run(node->getChild(i), clonnedChild);
+                }
+
+                if(prev)
+                {
+                    clonnedChild = cloneNode(node->getLastChild());
+
+                    //Last node has 2 children
+                    prev->addChild(clonnedChild);
+
+                    //Recurse to child
+                    res += run(node->getLastChild(), clonnedChild);
+                }
+            }
+            else //NO SPLIT
+            {
+                for(U32 i=0; i<node->countChildren(); i++)
+                {
+                    //Clone child
+                    clonnedChild = cloneNode(node->getChild(i));
+                    clonned->addChild(clonnedChild);
+                }
+            }
+        }
+        //Pad with NULL if it is a non-unary node
+        else if(node->countChildren() <= 2)
+        {
+            for(size_t i=0; i<2; i++)
+            {
+                if(node->getChild(i))
+                {
+                    //Clone child
+                    clonnedChild = this->cloneNode(node->getChild(i));
+
+                    //Add clone child to clonned parent
+                    clonned->addChild(clonnedChild);
+
+                    //Recurse to child
+                    res += run (node->getChild(i), clonnedChild);
+                }
+                else
+                {
+                    //If it's not a unary node then pad it with NULL
+                    if(!node->isUnary() && m_bPadWithNULL)
+                    {
+                        clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("NULL");
+                        clonnedChild->setID(m_lpLayer->getIDDispenser().bump());
+
+                        //Add clone child to clonned parent
+                        clonned->addChild(clonnedChild);
+
+                        ReportError("Found a non-unary operator with 1 child. Added a NULL primitive.");
+                        FlushAllErrors();
+                    }
+
+                    res++;
+                }
+
+            }
+        }
+        return res + 1;
+    }
+    else
+        return 1;
+}
+
+int ConvertToBinaryTree::CountErrors(CBlobNode* lpNode, bool bAlwaysSplit)
+{
+    if(lpNode == NULL) return 0;
+    if(lpNode->isOperator())
+    {
+        int res = 0;
+        for (U32 i=0; i<lpNode->countChildren(); i++)
+            res += CountErrors(lpNode->getChild(i), bAlwaysSplit);
+
+        if(lpNode->countChildren() > 2)
+        {
+            if(bAlwaysSplit)
+                res++;
+            else
+            {
+                if(!lpNode->isAllChildrenPrims())
+                    res++;
+            }
+        }
+        else if((lpNode->countChildren() == 1) && (!lpNode->isUnary()))
+        {
+            res++;
+            DAnsiStr strMsg = printToAStr("Found a non-unary node with 1 child in tree! Name:%s, ID:%d", lpNode->getName().c_str(), lpNode->getID());
+            ReportError(strMsg.ptr());
+            FlushAllErrors();
+        }
+
+        return res;
+    }
+    else
+        return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
 CLayer::CLayer()
 {
     init(NULL);
@@ -364,7 +599,7 @@ bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobNode* root,
 void CLayer::recursive_FlattenTransformations(CBlobNode* node, const CAffineTransformation& transformBranch)
 {
     if(node == NULL) return;
-    if(node->isOperator())
+    if(node->isOperator() && (!node->isUnary()))
     {
         CAffineTransformation t = transformBranch;
         t.add(node->getTransform());
@@ -800,6 +1035,14 @@ void CLayer::getMeshInfo( size_t& ctVertices, size_t& ctFaces )
     }
 }
 
+int CLayer::convertToBinaryTree(bool bPadWithNull, bool bAlwaysSplit)
+{
+    ConvertToBinaryTree* lpConverter = new ConvertToBinaryTree(this, bPadWithNull, bAlwaysSplit);
+    int res = lpConverter->run();
+    SAFE_DELETE(lpConverter);
+    return res;
+}
+
 int CLayer::queryGetAllOctrees( vector<vec3f>& los, vector<vec3f>& his ) const
 {	
     COctree oct;
@@ -833,175 +1076,6 @@ CBlobNode* CLayer::findNodeByID( int id )
     return recursive_FindNodeByID(id, m_lpBlobTree);
 }
 
-int CLayer::recursive_convertToBinaryTree( CBlobNode* node, CBlobNode* clonned,
-                                           bool bPadWithNull,
-                                           bool bAlwaysSplit)
-{
-    if ((node == NULL)||(clonned == NULL))
-    {
-        ReportError("Node or its clonned is NULL.");
-        FlushAllErrors();
-        return -1;
-    }
-
-    if(node->getNodeType() != clonned->getNodeType())
-    {
-        ReportError("Node and its clone are not identical.");
-        FlushAllErrors();
-        return -2;
-    }
-
-    if(node->isOperator())
-    {
-        int res = 0;
-        bool bSplit = true;
-        if((!bAlwaysSplit)&&(node->isAllChildrenPrims()))
-        {
-            bSplit = false;
-        }
-
-        //Replace nodes with more than 2 non-primitive kids
-        CBlobNode* clonnedChild = NULL;
-        if(node->countChildren() > 2)
-        {
-            if(bSplit)
-            {
-                CBlobNode* cur = NULL;
-                CBlobNode* prev = NULL;
-
-
-                for(size_t i=0; i<node->countChildren() -1; i++)
-                {
-                    if(i == 0)
-                        cur = clonned;
-                    else
-                    {
-                        cur = TheBlobNodeCloneFactory::Instance().CreateObject(clonned);
-                        cur->setID(this->getIDDispenser().bump());
-                    }
-
-                    //Clone child
-                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
-                    clonnedChild->setID(this->getIDDispenser().bump());
-
-                    //Add clonned child to parent
-                    cur->addChild(clonnedChild);
-
-                    if(prev)
-                        prev->addChild(cur);
-                    prev = cur;
-
-                    //Recurse to child
-                    res += recursive_convertToBinaryTree(node->getChild(i),
-                                                         clonnedChild,
-                                                         bPadWithNull,
-                                                         bAlwaysSplit);
-                }
-
-                if(prev)
-                {
-                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getLastChild());
-                    clonnedChild->setID(this->getIDDispenser().bump());
-
-                    //Last node has 2 children
-                    prev->addChild(clonnedChild);
-
-                    //Recurse to child
-                    res += recursive_convertToBinaryTree(node->getLastChild(),
-                                                         clonnedChild,
-                                                         bPadWithNull,
-                                                         bAlwaysSplit);
-                }
-            }
-            else //NO SPLIT
-            {
-                for(size_t i=0; i<node->countChildren(); i++)
-                {
-                    //Clone child
-                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
-                    clonnedChild->setID(this->getIDDispenser().bump());
-                    clonned->addChild(clonnedChild);
-                }
-            }
-        }
-        else if(node->countChildren() <= 2)
-        {
-            for(size_t i=0; i<2; i++)
-            {
-                if(node->getChild(i))
-                {
-                    //Clone child
-                    clonnedChild = TheBlobNodeCloneFactory::Instance().CreateObject(node->getChild(i));
-                    clonnedChild->setID(this->getIDDispenser().bump());
-
-                    //Add clone child to clonned parent
-                    clonned->addChild(clonnedChild);
-
-                    //Recurse to child
-                    res += recursive_convertToBinaryTree(node->getChild(i),
-                                                         clonnedChild,
-                                                         bPadWithNull,
-                                                         bAlwaysSplit);
-                }
-                else
-                {
-                    if(bPadWithNull)
-                    {
-                        clonnedChild = TheBlobNodeFactoryName::Instance().CreateObject("NULL");
-                        clonnedChild->setID(this->getIDDispenser().bump());
-
-                        //Add clone child to clonned parent
-                        clonned->addChild(clonnedChild);
-
-                        ReportError("Found a unary operator while processing. Replaced second primitive with a NULL primitive.");
-                        FlushAllErrors();
-                    }
-
-                    res++;
-                }
-
-            }
-        }
-        return res + 1;
-    }
-    else
-        return 1;
-}
-
-int CLayer::recursive_CountBinaryTreeErrors( CBlobNode* node , bool bAlwaysSplit)
-{
-    if(node == NULL) return 0;
-    if(node->isOperator())
-    {
-        int res = 0;
-        for (size_t i=0; i<node->countChildren(); i++)
-            res += recursive_CountBinaryTreeErrors(node->getChild(i), bAlwaysSplit);
-
-        if(node->countChildren() > 2)
-        {
-            if(bAlwaysSplit)
-                res++;
-            else
-            {
-                if(!node->isAllChildrenPrims())
-                    res++;
-            }
-        }
-        else if(node->countChildren() == 1)
-        {
-            res++;
-            DAnsiStr strMsg = printToAStr("Found a unary node in tree! Name:%s, ID:%d", node->getName().c_str(), node->getID());
-            ReportError(strMsg.ptr());
-            FlushAllErrors();
-        }
-
-        return res;
-    }
-    else
-        return 0;
-
-}
-
 int CLayer::recursive_ReassignIDs(CBlobNode* root)
 {
     if(root == NULL)
@@ -1029,40 +1103,6 @@ bool CLayer::reassignBlobNodeIDs()
     this->getIDDispenser().reset();
     int ctProcessed = recursive_ReassignIDs(this->getBlob());
     return (ctProcessed > 0);
-}
-
-int CLayer::convertToBinaryTree(bool bPadWithNull, bool bAlwaysSplit)
-{
-    CBlobNode* root = this->getBlob();
-    int ctErrors = recursive_CountBinaryTreeErrors(root, bAlwaysSplit);
-    if(ctErrors > 0)
-    {
-        this->getIDDispenser().reset();
-
-        //Create a clone of the node
-        CBlobNode* replacement = TheBlobNodeCloneFactory::Instance().CreateObject(root);
-        replacement->setID(this->getIDDispenser().bump());
-        if(recursive_convertToBinaryTree(root, replacement,
-                                         bPadWithNull,
-                                         bAlwaysSplit) > 0)
-        {
-            SAFE_DELETE(root);
-            this->setBlob(replacement);
-            root = replacement;
-        }
-        else
-        {
-            SAFE_DELETE(replacement);
-        }
-
-        //Update data-structures
-        //this->setPolySeedPointAuto();
-        this->setOctreeFromBlobTree();
-        this->flattenTransformations();
-        this->queryBlobTree(true, false);
-    }
-
-    return ctErrors;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -47,6 +47,7 @@ struct CmdBlobTreeParams
 };
 
 
+
 /*!
   * Each layer is a separate BlobTree with its own parameters for rendering.
   *
@@ -110,8 +111,7 @@ private:
     int recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobNode* node);
 
     int recursive_GetBlobTreeSeedPoints(CBlobNode* node, stack<CBlobNode*> &stkOperators);
-    int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);    
-    int recursive_CountBinaryTreeErrors( CBlobNode* node, bool bAlwaysSplit);
+    int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);        
     int recursive_ReassignIDs(CBlobNode* node);
 
     void init(CBlobNode* root);
@@ -139,9 +139,6 @@ public:
 
     CBlobNode* findNodeByID(int id);    
     CBlobNode* recursive_FindNodeByID(int id, CBlobNode* root);
-    int recursive_convertToBinaryTree(CBlobNode* node, CBlobNode* clonned,
-                                      bool bPadWithNull = true,
-                                      bool bAlwaysSplit = true);
     int recursive_MaxNodeID(int maxID, CBlobNode* root);
     bool recursive_ExecuteCmdBlobtreeNode(CBlobNode* root, CBlobNode* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
 
@@ -248,6 +245,48 @@ public:
     bool saveAsVolumeData(U8* buffer, int w, int h, int d);
     bool saveAsVolumeData(const char* chrFileName, int w, int h, int d);
 };
+
+/*!
+  * BlobTree Converter
+  */
+class ConvertToBinaryTree{
+public:
+    ConvertToBinaryTree(CLayer* aLayer, bool bPadWithNull, bool bSplitAlways);
+    virtual ~ConvertToBinaryTree() {cleanup();}
+
+    int run();
+    int run(CBlobNode* node, CBlobNode* clonned);
+
+    static int CountErrors(CBlobNode* lpNode, bool bAlwaysSplit);
+private:
+    void cleanup();
+    CBlobNode* cloneNode(CBlobNode* node);
+    CBlobNode* findConverted(CBlobNode* lpFrom);
+
+private:
+    struct CONVERTED{
+        CONVERTED() {
+            lpFrom = lpTo = NULL;
+        }
+
+        CONVERTED(CBlobNode* from_, CBlobNode* to_)
+        {
+            lpFrom = from_;
+            lpTo = to_;
+        }
+        CBlobNode* lpFrom;
+        CBlobNode* lpTo;
+        //U32 idFrom;
+        //U32 idTo;
+    };
+
+ private:
+    std::vector<CONVERTED> m_lstConverted;
+    bool m_bPadWithNULL;
+    bool m_bSplitAlways;
+    CLayer* m_lpLayer;
+};
+
 
 //LayerManager is the entire Data-Structure for the Scene
 //Holds a set of layers which will constitute a scene

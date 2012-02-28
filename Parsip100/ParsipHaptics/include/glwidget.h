@@ -122,6 +122,7 @@ public slots:
     void actAddWarpTaper();
     void actAddWarpBend();
     void actAddPCM();
+    void actAddInstance();
 
 
     //Animation
@@ -155,7 +156,7 @@ public slots:
     void actEditUndo();
     void actEditRedo();
     void actEditCopy();
-    void actEditPaste();
+
     void actEditFieldEditor();
     void actEditConvertToBinaryTree();
     void actEditProbe(bool bEnable);

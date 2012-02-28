@@ -79,6 +79,7 @@ public:
     }
 
     bool isAllChildrenPrims();
+    bool isUnary() {return (getNodeType() >= bntOpInstance);}
 
     //Remove all Children
     void removeAllChildren()
@@ -160,7 +161,7 @@ public:
             return 0;
     }
     //////////////////////////////////////////////////////////////////////////
-    size_t countChildren() const { return m_children.size();}
+    U32 countChildren() const { return m_children.size();}
     CBlobNode * getFirstChild() const
     {
         if(m_children.size() > 0)

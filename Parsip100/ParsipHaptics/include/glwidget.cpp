@@ -2366,6 +2366,11 @@ void GLWidget::actAddPCM()
     addBlobOperator(bntOpPCM);
 }
 
+void GLWidget::actAddInstance()
+{
+    addBlobOperator(bntOpInstance);
+}
+
 void GLWidget::actAddGradientBlend()
 {
     addBlobOperator(bntOpGradientBlend);
@@ -2587,8 +2592,7 @@ CBlobNode* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
 
     bool bIsUnary = true;
     //If not a unary operator then we need two selected nodes
-    if((operatorType != bntOpWarpTwist)&&(operatorType != bntOpWarpTaper)&&
-            (operatorType != bntOpWarpBend)&&(operatorType != bntOpWarpShear))
+    if(operatorType >= bntOpInstance)
     {
         bIsUnary = false;
         if(aLayer->selCountItems() < 2)
@@ -2872,21 +2876,21 @@ void GLWidget::actEditCopy()
     if(active->getBlob() == NULL) return;
     if(active->selCountItems() == 0) return;
 
+    ConvertToBinaryTree* lpConverter = new ConvertToBinaryTree(active, false, false);
+
     CBlobNode* clonned = TheBlobNodeCloneFactory::Instance().CreateObject(active->selGetItem());
     clonned->setID(active->getIDDispenser().bump());
-    if(active->recursive_convertToBinaryTree(active->selGetItem(), clonned) > 0)
-    {
+    if(lpConverter->run(active->selGetItem(), clonned) > 0)
+    {        
         active->getBlob()->addChild(clonned);
         actMeshPolygonize(m_layerManager.getActiveLayerIndex());
         emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
     }
     else
         SAFE_DELETE(clonned);
-}
 
-void GLWidget::actEditPaste()
-{
-
+    //Cleanup
+    SAFE_DELETE(lpConverter);
 }
 
 void GLWidget::addUndoLevel()
@@ -3385,16 +3389,25 @@ void GLWidget::actFileModelPiza()
         float radius, height;
         lpDlgPiza->getValues(levels, pillars, radius, height);
 
-        CBlend* root = new CBlend();
+        //Global Union
+        CUnion* root = new CUnion();
+
+        //Create a tower
+        CBlobNode* tower = Shapes::createPiza(levels, pillars, radius, height);
+        tower->getTransform().setTranslate(vec3f(0.0f, -height, 0.0f));
+        root->addChild(tower);
+
+        //Instance root multiple times
         const int nTowers = 5;
         for(int i=0; i < nTowers; i++)
         {
             float x = 3 * radius * cosf(static_cast<float>(i * TwoPi)/nTowers);
             float z = 3 * radius * sinf(static_cast<float>(i * TwoPi)/nTowers);
 
-            CBlobNode* tower = Shapes::createPiza(levels, pillars, radius, height);
-            tower->getTransform().setTranslate(vec3f(x, -height, z));
-            root->addChild(tower);
+            //Instance
+            CInstance* inst = new CInstance(tower);
+            inst->getTransform().setTranslate(vec3f(x, -height, z));
+            root->addChild(inst);
         }
 
 

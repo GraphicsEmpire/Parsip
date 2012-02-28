@@ -1211,6 +1211,7 @@
     <addaction name="actAddSmoothDif"/>
     <addaction name="actAddPCM"/>
     <addaction name="separator"/>
+    <addaction name="actAddAffine"/>
     <addaction name="actAddCache"/>
     <addaction name="separator"/>
     <addaction name="actAddTwist"/>
@@ -1599,7 +1600,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Cache Node</string>
+    <string>Cache</string>
+   </property>
+   <property name="toolTip">
+    <string>Cache for instancing and Blobtree visualization without tree traversal</string>
    </property>
   </action>
   <action name="actAnimStart">
@@ -1957,6 +1961,14 @@
   <action name="actEditAssignIDs">
    <property name="text">
     <string>Re-Assign IDs</string>
+   </property>
+  </action>
+  <action name="actAddAffine">
+   <property name="text">
+    <string>Affine</string>
+   </property>
+   <property name="toolTip">
+    <string>Use Affine for Instancing.</string>
    </property>
   </action>
  </widget>
