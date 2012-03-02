@@ -134,6 +134,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actAddPolygonPlane, SIGNAL(triggered()), m_glWidget, SLOT(actAddPolygonPlane()));
     connect(ui->actAddCube, SIGNAL(triggered()), m_glWidget, SLOT(actAddCube()));
     connect(ui->actAddTriangle, SIGNAL(triggered()), m_glWidget, SLOT(actAddTriangle()));
+    connect(ui->actAddInstance, SIGNAL(triggered()), m_glWidget, SLOT(actAddInstance()));
 
     connect(ui->actAddUnion, SIGNAL(triggered()), m_glWidget, SLOT(actAddUnion()));
     connect(ui->actAddIntersection, SIGNAL(triggered()), m_glWidget, SLOT(actAddIntersection()));
@@ -214,6 +215,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_actgroupPrims->addAction(ui->actAddDisc);
     m_actgroupPrims->addAction(ui->actAddCube);
     m_actgroupPrims->addAction(ui->actAddTriangle);
+    m_actgroupPrims->addAction(ui->actAddInstance);
     m_actgroupPrims->setExclusive(true);
     /*
  m_actgroupOps = new QActionGroup(this);

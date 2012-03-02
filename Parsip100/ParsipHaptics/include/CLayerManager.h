@@ -247,7 +247,7 @@ public:
 };
 
 /*!
-  * BlobTree Converter
+  * BlobTree Conversion to Binary Tree
   */
 class ConvertToBinaryTree{
 public:
@@ -256,6 +256,7 @@ public:
 
     int run();
     int run(CBlobNode* node, CBlobNode* clonned);
+    int updateAllInstances();
 
     static int CountErrors(CBlobNode* lpNode, bool bAlwaysSplit);
 private:

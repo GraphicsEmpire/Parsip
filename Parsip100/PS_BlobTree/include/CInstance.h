@@ -12,17 +12,27 @@ class  CInstance : public CBlobNode
 {
 
 public:
-    CInstance() { m_bDeleteChildrenUponCleanup = false;}
-    CInstance(CBlobNode * child)
-    {
-        m_bDeleteChildrenUponCleanup = false;
-        addChild(child);
+    CInstance() { m_lpOrigin = NULL;}
+    CInstance(CBlobNode * lpOrigin)
+    {     
+        this->m_lpOrigin = lpOrigin;
     }
+
+    ~CInstance()
+    {
+        m_lpOrigin = NULL;
+    }
+
+    CBlobNode* getOriginalNode() const {return m_lpOrigin;}
+    void setOriginalNode(CBlobNode* lpOrigin) { this->m_lpOrigin = lpOrigin;}
 
     float fieldValue(vec3f p)
     {
-        vec3f pt = this->getTransform().applyBackwardTransform(p);
-        return m_children[0]->fieldValue(pt);
+        if(m_lpOrigin)
+        {
+            vec3f pt = this->getTransform().applyBackwardTransform(p);
+            return m_lpOrigin->fieldValue(pt);
+        }
     }
 
     std::string getName()
@@ -32,15 +42,42 @@ public:
 
     COctree computeOctree()
     {
-        if(m_children.size() == 0) return m_octree;
-        m_octree = m_children[0]->getOctree();        
+        if(m_lpOrigin == NULL) return m_octree;
+        m_octree = m_lpOrigin->getOctree();
+
+        //Return to local coordinate system
+        m_octree.transform(m_lpOrigin->getTransform().getBackwardMatrix());
+
+        //Transform to instanced space
         m_octree.transform(this->getTransform().getForwardMatrix());
         return m_octree;
     }
 
-    bool isOperator() { return true;}
+    bool isOperator() { return false;}
 
-    BlobNodeType getNodeType() {return bntOpInstance;}
+    BlobNodeType getNodeType() {return bntPrimInstance;}
+
+    bool saveScript(CSketchConfig* lpSketchScript)
+    {
+        //Write parameters for RicciBlend
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
+        lpSketchScript->writeInt(strNodeName, "OriginalNodeIndex", m_lpOrigin->getID());
+        return this->saveGenericInfoScript(lpSketchScript);
+    }
+
+    bool loadScript(CSketchConfig* lpSketchScript, int id)
+    {
+        //Write parameters for RicciBlend
+        DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
+        lpSketchScript->readInt(strNodeName, "OriginalNodeIndex");
+        return this->loadGenericInfoScript(lpSketchScript, id);
+    }
+
+
+private:
+    //Instance is not an operator with children
+    CBlobNode* m_lpOrigin;
+
 };
 
 }

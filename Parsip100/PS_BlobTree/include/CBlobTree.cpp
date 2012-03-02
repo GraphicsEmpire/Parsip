@@ -153,8 +153,7 @@ void CBlobNode::copyGenericInfo(const CBlobNode* rhs)
     */
     this->m_id = rhs->m_id;
     this->m_octree = rhs->m_octree;
-    this->m_material = rhs->m_material;
-    this->m_bDeleteChildrenUponCleanup = rhs->m_bDeleteChildrenUponCleanup;
+    this->m_material = rhs->m_material;    
     this->m_transform = rhs->m_transform;
 }
 

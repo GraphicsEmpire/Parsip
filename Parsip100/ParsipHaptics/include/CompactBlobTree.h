@@ -37,8 +37,12 @@ struct BlobPrimitive
     vec4f mtxBackwardR0;
     vec4f mtxBackwardR1;
     vec4f mtxBackwardR2;
-    vec4f mtxBackwardR3;
-    //	TreeNodeCache fvCache;
+    vec4f mtxBackwardR3;    
+
+    vec4f mtxForwardR0;
+    vec4f mtxForwardR1;
+    vec4f mtxForwardR2;
+    vec4f mtxForwardR3;
 };
 
 //Compact Structure for all operators
@@ -46,14 +50,12 @@ struct BlobOperator
 {
     BlobNodeType type;
     int orgID;
-    int ctKids;
-    //int kidIds[MAX_COMPACT_KIDS_COUNT];
+    int ctKids;    
     U16 kidIds[MAX_COMPACT_KIDS_COUNT];
     U8  kidIsOp[MAX_COMPACT_KIDS_COUNT];
     vec4f params;
     vec4f octLo;
-    vec4f octHi;
-    //	TreeNodeCache fvCache;
+    vec4f octHi;    
 };
 
 struct PCMCONTEXT
@@ -81,6 +83,9 @@ private:
 
     int m_ctPCMNodes;
     PCMCONTEXT m_pcmCONTEXT;
+    U32 m_ctInstances;
+
+    std::vector< pair<int, int> > m_lstConvertedIds;
 public:
 
     COMPACTBLOBTREE()
@@ -102,6 +107,7 @@ public:
 
     ~COMPACTBLOBTREE()
     {
+        m_lstConvertedIds.resize(0);
         SAFE_DELETE(m_lpPrims);
         SAFE_DELETE(m_lpOps);
     }
@@ -151,6 +157,7 @@ public:
 private:
     void init();
 
+    int updateInstanceNodes();
     int convert(CBlobNode* root, int parentID /*, const CMatrix& mtxBranch*/);
     vec4f warpBend( const vec4f& pin, float bendRate, float bendCenter, const CInterval& bendRegion);
     vec4f warpTwist(const vec4f& pin, float factor, MajorAxices axis);

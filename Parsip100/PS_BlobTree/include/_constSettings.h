@@ -25,11 +25,11 @@ const float NORMAL_DELTA = 0.001f;
 #define BLOBTREE_DEFINITIONS
 typedef enum BlobNodeType{bntPrimCylinder, bntPrimDisc, bntPrimLine, bntPrimPoint, bntPrimRing, bntPrimPolygon,
                           bntPrimCube, bntPrimTriangle, bntPrimCatmullRomCurve, bntPrimSkeleton, bntPrimQuadricPoint,
-                          bntPrimHalfPlane, bntPrimNull,
+                          bntPrimHalfPlane, bntPrimNull, bntPrimInstance,
                           bntOpUnion, bntOpIntersect, bntOpDif, bntOpSmoothDif, bntOpBlend, bntOpRicciBlend, bntOpGradientBlend,
                           bntOpFastQuadricPointSet, bntOpPCM,
 
                           //Unary Nodes
-                          bntOpInstance, bntOpCache, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpTexture};
+                          bntOpCache, bntOpWarpTwist, bntOpWarpTaper, bntOpWarpBend, bntOpWarpShear, bntOpTexture};
 
 #endif

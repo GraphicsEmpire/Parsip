@@ -33,6 +33,8 @@ int COMPACTBLOBTREE::convert( CBlobNode* root)
     }
 
     //Check if we need to allocate new memory
+    m_ctInstances = 0;
+    m_lstConvertedIds.resize(0);
     int ctNeededOps = MATHMAX(root->recursive_CountOperators(), MIN_BLOB_NODES);
     int ctNeededPrims = MATHMAX(root->recursive_CountPrimitives(), MIN_BLOB_NODES);
 
@@ -56,6 +58,15 @@ int COMPACTBLOBTREE::convert( CBlobNode* root)
 
     //Convert Recursively
     int res = convert(root, -1);
+    if(m_ctInstances > 0)
+    {
+        int ctFixed = updateInstanceNodes();
+        if(ctFixed != m_ctInstances)
+        {
+            ReportError("Problem occured when fixing instanced node ids\n");
+            FlushAllErrors();
+        }
+    }
 
     //Count PCM Nodes
     m_ctPCMNodes = 0;
@@ -223,8 +234,6 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
             return ERR_NODE_NOT_RECOGNIZED;
         }
         }
-
-        return curID;
     }
     else
     {
@@ -256,7 +265,16 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
         mtxForward.getRow(row, 0);
         */
 
-        float row[4];
+        float row[4];        
+        CMatrix mtxForward = root->getTransform().getForwardMatrix();
+        mtxForward.getRow(row, 0);
+        m_lpPrims[curID].mtxForwardR0.set(row[0], row[1], row[2], row[3]);
+        mtxForward.getRow(row, 1);
+        m_lpPrims[curID].mtxForwardR1.set(row[0], row[1], row[2], row[3]);
+        mtxForward.getRow(row, 2);
+        m_lpPrims[curID].mtxForwardR2.set(row[0], row[1], row[2], row[3]);
+        mtxForward.getRow(row, 3);
+        m_lpPrims[curID].mtxForwardR3.set(row[0], row[1], row[2], row[3]);
 
         CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
         mtxBackward.getRow(row, 0);
@@ -364,6 +382,16 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
             m_lpPrims[curID].pos.set(0, 0 ,0);
         }
         break;
+        case(bntPrimInstance):
+        {
+            CInstance* lpInst = reinterpret_cast<CInstance*>(root);
+            m_lpPrims[curID].res1.x = 0;
+            m_lpPrims[curID].res1.y = static_cast<float>(lpInst->getOriginalNode()->getID());
+            m_lpPrims[curID].res1.z = static_cast<float>(lpInst->getOriginalNode()->isOperator());
+            m_lpPrims[curID].res1.w = static_cast<float>(lpInst->getOriginalNode()->getNodeType());
+            m_ctInstances++;
+        }
+        break;
         default:
         {
             DAnsiStr strMsg = printToAStr("Primitive %s has not been implemented in compact mode yet!", root->getName().c_str());
@@ -372,9 +400,35 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
             return ERR_NODE_NOT_RECOGNIZED;
         }
         }
-
-        return curID;
     }
+
+    //Store
+    m_lstConvertedIds.push_back(std::make_pair(root->getID(), curID));
+
+    //Return Current ID for this NODE
+    return curID;
+}
+
+int COMPACTBLOBTREE::updateInstanceNodes()
+{
+    int ctFixed = 0;
+    for(U32 i=0; i<m_ctPrims; i++)
+    {
+        if(m_lpPrims[i].type == bntPrimInstance)
+        {
+            for(int j=0; j < m_lstConvertedIds.size(); j++)
+            {
+                int idxScript = static_cast<int>(m_lpPrims[i].res1.y);
+                if(idxScript == m_lstConvertedIds[j].first)
+                {
+                    m_lpPrims[i].res1.x = m_lstConvertedIds[j].second;
+                    ctFixed ++;
+                    break;
+                }
+            }
+        }
+    }
+    return ctFixed;
 }
 
 PS::MATH::vec4f COMPACTBLOBTREE::normal( const vec4f& p, float inFieldValue, float delta )
@@ -835,25 +889,8 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
 {	
     vec4f pp = p;
     pp.w = 1.0f;
-
     //////////////////////////////////////////////////////////////////////////
-    //Check if we can satisfy from fieldvalue from internal cache
-    /*
- if(prims[id].fvCache.ctFilled > 0)
- {
-  float hashVal = p.x + p.y + p.z;
-  for(int i=0;i<prims[id].fvCache.ctFilled;i++)
-  {
-   if(prims[id].fvCache.hashVal[i] == hashVal)
-   {
-    if(prims[id].fvCache.xyzf[i].xyz() == p.xyz())
-     return prims[id].fvCache.xyzf[i].w;
-   }
-  }
- }
- */
-    //////////////////////////////////////////////////////////////////////////
-    vec3f pn;
+    vec3f pn;    
     //Apply Affine Matrix transformation
     pn.x = m_lpPrims[id].mtxBackwardR0.dot(pp);
     pn.y = m_lpPrims[id].mtxBackwardR1.dot(pp);
@@ -1020,6 +1057,22 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         break;
     case bntPrimNull:
         fvRes = 0;
+        break;
+    case bntPrimInstance:
+    {
+        bool isOriginOp = static_cast<bool>(m_lpPrims[id].res1.z);
+        int idxOrigin = static_cast<int>(m_lpPrims[id].res1.x);
+        vec4f myp = vec4f(pn, 1.0f);
+        if(isOriginOp)
+            this->fieldvalueOp(myp, idxOrigin);
+        else
+        {
+            myp.x = m_lpPrims[idxOrigin].mtxForwardR0.dot(pp);
+            myp.y = m_lpPrims[idxOrigin].mtxForwardR1.dot(pp);
+            myp.z = m_lpPrims[idxOrigin].mtxForwardR2.dot(pp);
+            this->fieldvaluePrim(myp, idxOrigin);
+        }
+    }
         break;
     default:
     {

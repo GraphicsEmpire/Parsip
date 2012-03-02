@@ -1200,6 +1200,7 @@
     <addaction name="actAddDisc"/>
     <addaction name="actAddCube"/>
     <addaction name="actAddTriangle"/>
+    <addaction name="actAddInstance"/>
     <addaction name="actAddPolygonPlane"/>
     <addaction name="separator"/>
     <addaction name="actAddUnion"/>
@@ -1211,7 +1212,6 @@
     <addaction name="actAddSmoothDif"/>
     <addaction name="actAddPCM"/>
     <addaction name="separator"/>
-    <addaction name="actAddAffine"/>
     <addaction name="actAddCache"/>
     <addaction name="separator"/>
     <addaction name="actAddTwist"/>
@@ -1365,6 +1365,7 @@
    <addaction name="actAddDisc"/>
    <addaction name="actAddCube"/>
    <addaction name="actAddTriangle"/>
+   <addaction name="actAddInstance"/>
    <addaction name="separator"/>
    <addaction name="actAddUnion"/>
    <addaction name="actAddIntersection"/>
@@ -1963,12 +1964,15 @@
     <string>Re-Assign IDs</string>
    </property>
   </action>
-  <action name="actAddAffine">
+  <action name="actAddInstance">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Affine</string>
+    <string>Instance</string>
    </property>
    <property name="toolTip">
-    <string>Use Affine for Instancing.</string>
+    <string>Use it for Instancing </string>
    </property>
   </action>
  </widget>

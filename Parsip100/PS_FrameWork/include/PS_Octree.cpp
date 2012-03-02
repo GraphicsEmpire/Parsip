@@ -448,8 +448,10 @@ void COctree::rotate(quat q)
 
 void COctree::transform(const CMatrix& m)
 {
-    lower = m.transform(lower);
-    upper = m.transform(upper);
+    vec3f loT = m.transform(lower);
+    vec3f hiT = m.transform(upper);
+    this->lower = loT.vectorMin(hiT);
+    this->upper = loT.vectorMax(hiT);
 }
 
 void COctree::csgUnion( const COctree& rhs )

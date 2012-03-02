@@ -36,16 +36,14 @@ public:
         m_octree.lower.zero();
         m_octree.upper.zero();
         m_id = 0;
-        m_bDeleteChildrenUponCleanup = true;
+
     }
 
     ~CBlobNode()
-    {
-        if(m_bDeleteChildrenUponCleanup)
-            removeAllChildren();
+    {        
+        removeAllChildren();
     }
 
-    void setDeleteChildrenUponCleanup(bool bDelete) {m_bDeleteChildrenUponCleanup = bDelete;}
     CEditLock& getLock() {return m_lock;}
     CAffineTransformation& getTransform() {return m_transform;}
 
@@ -79,7 +77,7 @@ public:
     }
 
     bool isAllChildrenPrims();
-    bool isUnary() {return (getNodeType() >= bntOpInstance);}
+    bool isUnary() {return (getNodeType() >= bntOpCache);}
 
     //Remove all Children
     void removeAllChildren()
@@ -367,8 +365,7 @@ protected:
     int              m_id;
     BLOBNODECHILDREN m_children;
     COctree          m_octree;
-    CMaterial        m_material;
-    bool             m_bDeleteChildrenUponCleanup;
+    CMaterial        m_material;    
 
     CEditLock m_lock;
     CAffineTransformation m_transform;

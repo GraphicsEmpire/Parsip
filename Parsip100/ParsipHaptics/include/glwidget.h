@@ -108,6 +108,7 @@ public slots:
     void actAddPolygonPlane();
     void actAddCube();
     void actAddTriangle();
+    void actAddInstance();
 
     //Add Operators
     void actAddUnion();
@@ -122,7 +123,6 @@ public slots:
     void actAddWarpTaper();
     void actAddWarpBend();
     void actAddPCM();
-    void actAddInstance();
 
 
     //Animation

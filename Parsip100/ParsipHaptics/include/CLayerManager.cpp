@@ -61,8 +61,25 @@ CBlobNode* ConvertToBinaryTree::findConverted(CBlobNode* lpFrom)
     return NULL;
 }
 
+int ConvertToBinaryTree::updateAllInstances()
+{
+    int ctDone = 0;
+    for(U32 i=0; i<m_lstConverted.size(); i++)
+    {
+        CONVERTED cvt = m_lstConverted[i];
+        if(cvt.lpTo->getNodeType() == bntPrimInstance)
+        {
+            CInstance* lpFrom = reinterpret_cast<CInstance*>(cvt.lpFrom);
+            CInstance* lpTo = reinterpret_cast<CInstance*>(cvt.lpTo);
+            lpTo->setOriginalNode(findConverted(lpFrom->getOriginalNode()));
+            ctDone++;
+        }
+    }
+}
+
 int ConvertToBinaryTree::run()
 {
+    int ctConverted = 0;
     int ctErrors = CountErrors(m_lpLayer->getBlob(), m_bSplitAlways);
     if(ctErrors > 0)
     {
@@ -71,8 +88,10 @@ int ConvertToBinaryTree::run()
         //Create a clone of the node
         CBlobNode* root = m_lpLayer->getBlob();
         CBlobNode* replacement = this->cloneNode(root);
-        if(this->run(root, replacement) > 0)
+        ctConverted = this->run(root, replacement);
+        if(ctConverted > 0)
         {
+            this->updateAllInstances();
             SAFE_DELETE(root);
             m_lpLayer->setBlob(replacement);
         }
@@ -87,6 +106,8 @@ int ConvertToBinaryTree::run()
         m_lpLayer->queryBlobTree(true, false);
     }
 
+    this->cleanup();
+    return ctConverted;
 }
 
 int ConvertToBinaryTree::run(CBlobNode* node, CBlobNode* clonned)
@@ -106,21 +127,6 @@ int ConvertToBinaryTree::run(CBlobNode* node, CBlobNode* clonned)
     }
 
     bool bIsOp = node->isOperator();
-
-    //Process Instance node
-    if(node->getNodeType() == bntOpInstance)
-    {
-        assert(node->countChildren() == 1);
-        CBlobNode* lpFound = findConverted(node->getChild(0));
-        if(lpFound)
-            clonned->addChild(lpFound);
-        else
-        {
-            ReportError("Couldnot find the subTree for this instance object!");
-            FlushAllErrors();
-        }
-        return 1;
-    }
 
     //If it is not an instance node then process
     if(bIsOp)
@@ -197,7 +203,7 @@ int ConvertToBinaryTree::run(CBlobNode* node, CBlobNode* clonned)
                     clonned->addChild(clonnedChild);
 
                     //Recurse to child
-                    res += run (node->getChild(i), clonnedChild);
+                    res += run(node->getChild(i), clonnedChild);
                 }
                 else
                 {
@@ -510,7 +516,7 @@ bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobNode* root,
                 replacement->setID(root->getID());
 
                 //Replace now
-                root->setDeleteChildrenUponCleanup(false);
+                //root->setDeleteChildrenUponCleanup(false);
                 SAFE_DELETE(root);
 
                 this->setBlob(replacement);
@@ -574,7 +580,7 @@ bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobNode* root,
                     replacement->setID(kid->getID());
 
                     //Replace now
-                    kid->setDeleteChildrenUponCleanup(false);
+                    //kid->setDeleteChildrenUponCleanup(false);
                     root->removeChild(i);
                     root->addChild(replacement);
                     return true;

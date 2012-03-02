@@ -651,25 +651,25 @@ public:
 		return result;		
 	}
 	
-	Vector3d<Type> vectorMin(Vector3d<Type> a)
+        Vector3d<Type> vectorMin(Vector3d<Type> a) const
 	{
 		Vector3d<Type> c(min(a.x, x), min(a.y, y), min(a.z, z));
 		return c;
 	}
 
-	Vector3d<Type> vectorMin(Vector3d<Type> a, Vector3d<Type> b)
+        Vector3d<Type> vectorMin(Vector3d<Type> a, Vector3d<Type> b) const
 	{
 		Vector3d<Type> c(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
 		return c;
 	}
 
-	Vector3d vectorMax(const Vector3d<Type> a)
+        Vector3d vectorMax(const Vector3d<Type> a) const
 	{
 		Vector3d c(max(a.x, x), max(a.y, y), max(a.z, z));
 		return c;
 	}
 
-	Vector3d vectorMax(const Vector3d<Type> a, const Vector3d<Type> b)
+        Vector3d vectorMax(const Vector3d<Type> a, const Vector3d<Type> b) const
 	{
 		Vector3d c(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
 		return c;

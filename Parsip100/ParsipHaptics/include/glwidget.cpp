@@ -1176,11 +1176,26 @@ void GLWidget::drawLayerManager()
                     for (size_t i=0; i<ctItems; i++)
                     {
                         if(alayer->queryGetItem(i)->isOperator())
-                            continue;
-
-                        CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(alayer->queryGetItem(i));
-                        COctree primOctree = sprim->getOctree();
+                            continue;                        
+                        COctree primOctree = alayer->queryGetItem(i)->getOctree();
                         drawOctree(primOctree.lower, primOctree.upper, clBlue, false);
+
+                        //Draw Instance Transformed Point
+                        if(alayer->queryGetItem(i)->getNodeType() == bntPrimInstance)
+                        {
+                            CInstance* lpInst = reinterpret_cast<CInstance*>(alayer->queryGetItem(i));
+                            vec3f p = lpInst->getOctree().center();
+                            vec3f side = vec3f(0.3, 0.3, 0.3);
+
+                            //Transform to O(0,0,0)
+                            p = lpInst->getTransform().applyBackwardTransform(p);
+                            drawOctree(p - side, p + side, clBlack);
+
+                            //Transform to base
+                            p = lpInst->getOriginalNode()->getTransform().applyForwardTransform(p);
+                            drawOctree(p - side, p + side, clOrange);
+
+                        }
                     }
                     glPopAttrib();
                 }
@@ -1409,7 +1424,6 @@ void GLWidget::actMeshPolygonize(int idxLayer)
             //aLayer->convertToBinaryTree(false);
             //aLayer->getSimdPoly().linearizeBlobTree(aLayer->getBlob());
             //aLayer->getSimdPoly().run(aLayer->getCellSize());
-
             aLayer->setupCompactTree(aLayer->getBlob());
             aLayer->getPolygonizer()->setup(aLayer->getCompactBlobTree(),
                                             aLayer->getOctree(),
@@ -1448,7 +1462,7 @@ void GLWidget::setPrimitiveColorFromColorDlg()
     if(active->selCountItems() == 0) return;
     if(active->selGetItem(0)->isOperator()) return;
 
-    CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(active->selGetItem(0));
+    CBlobNode* sprim = active->selGetItem(0);
     if(sprim)
     {
         vec4f dif = sprim->getMaterial().diffused;
@@ -1459,8 +1473,7 @@ void GLWidget::setPrimitiveColorFromColorDlg()
 
         QColor clNew = QColorDialog::getColor(clPrev, this, "Select Material Color");
         if(clNew.isValid())
-        {
-            CMaterial m;
+        {            
             float invFactor = 1.0f / 255.0f;
             vec4f diffused = vec4f(static_cast<float>(clNew.red())*invFactor,
                                static_cast<float>(clNew.green())*invFactor,
@@ -2179,7 +2192,7 @@ void GLWidget::select_tblColorRibbon(const QModelIndex& topLeft)
     if(active->selCountItems() == 0) return;
     if(active->selGetItem(0)->getNodeType() != bntPrimSkeleton) return;
 
-    CSkeletonPrimitive* sprim = reinterpret_cast<CSkeletonPrimitive*>(active->selGetItem(0));
+    CBlobNode* sprim = active->selGetItem(0);
     if(sprim)
     {
         m_idxRibbonSelection = topLeft.column();
@@ -2334,6 +2347,13 @@ void GLWidget::actAddTriangle()
     m_uiMode = uimSketch;
 }
 
+void GLWidget::actAddInstance()
+{
+    m_sketchType = bntPrimInstance;
+    m_uiMode = uimSketch;
+}
+
+
 void GLWidget::actAddPolygonPlane()
 {
     m_lstSketchControlPoints.resize(0);
@@ -2364,11 +2384,6 @@ void GLWidget::actAddUnion()
 void GLWidget::actAddPCM()
 {
     addBlobOperator(bntOpPCM);
-}
-
-void GLWidget::actAddInstance()
-{
-    addBlobOperator(bntOpInstance);
 }
 
 void GLWidget::actAddGradientBlend()
@@ -2535,6 +2550,21 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
 {
     CLayer* aLayer = m_layerManager.getActiveLayer();
     if(aLayer == NULL) return NULL;
+    if(primitiveType == bntPrimInstance)
+    {
+        if(aLayer->getBlob() == NULL)
+        {
+            ReportError("Instanced Primitive cannot be added as a first primitive.");
+            FlushAllErrors();
+            return NULL;
+        }
+        else if(aLayer->selCountItems() == 0)
+        {
+            ReportError("Instanced Primitive require a selected sub-tree. [Select a Node]");
+            FlushAllErrors();
+            return NULL;
+        }
+    }
 
 
     //Capture Undo Level
@@ -2543,14 +2573,12 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
     CBlobNode* primitive = NULL;
     try{
         primitive = TheBlobNodeFactoryIndex::Instance().CreateObject(primitiveType);
-        CBlobNode* root = aLayer->getBlob();
-        if(root == NULL)
+        if(aLayer->getBlob() == NULL)
         {
             //Create a global union node first
             CBlobNode* globalUnion = TheBlobNodeFactoryIndex::Instance().CreateObject(bntOpUnion);
             globalUnion->setID(aLayer->getIDDispenser().bump());
-            aLayer->setBlob(globalUnion);
-            root = aLayer->getBlob();
+            aLayer->setBlob(globalUnion);            
         }
     }
     catch(exception e)
@@ -2559,6 +2587,9 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
     }
 
     //Create SkeletonPrimitive
+    //Set original node for instanced primitive
+    if(primitiveType == bntPrimInstance)
+        reinterpret_cast<CInstance*>(primitive)->setOriginalNode(aLayer->selGetItem(0));
     primitive->setMaterial(m_materials[m_idxRibbonSelection]);
     if(preferredID >= 0)
         primitive->setID(preferredID);
@@ -2590,21 +2621,17 @@ CBlobNode* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
     if(aLayer->getBlob() == NULL) return NULL;
     if(aLayer->selCountItems() == 0) return NULL;
 
-    bool bIsUnary = true;
-    //If not a unary operator then we need two selected nodes
-    if(operatorType >= bntOpInstance)
-    {
-        bIsUnary = false;
-        if(aLayer->selCountItems() < 2)
-        {
-            ReportError("Select two blobby nodes and then perform this operation.");
-            FlushAllErrors();
-            return NULL;
-        }
-    }
-
     //Create operator
     CBlobNode* op = TheBlobNodeFactoryIndex::Instance().CreateObject(operatorType);
+    bool bIsUnary = op->isUnary();
+
+    //If not a unary operator then we need two selected nodes
+    if((!bIsUnary) && (aLayer->selCountItems() < 2))
+    {
+        ReportError("Select two blobby nodes and then perform this operation.");
+        FlushAllErrors();
+        return NULL;
+    }
 
     //Assign and Increment ID
     if(preferredID >= 0)
@@ -3397,7 +3424,7 @@ void GLWidget::actFileModelPiza()
         tower->getTransform().setTranslate(vec3f(0.0f, -height, 0.0f));
         root->addChild(tower);
 
-        //Instance root multiple times
+        //Instance root multiple times        
         const int nTowers = 5;
         for(int i=0; i < nTowers; i++)
         {
@@ -3409,7 +3436,6 @@ void GLWidget::actFileModelPiza()
             inst->getTransform().setTranslate(vec3f(x, -height, z));
             root->addChild(inst);
         }
-
 
         m_layerManager.addLayer(root, "PIZA");
         m_layerManager.setActiveLayer(0);

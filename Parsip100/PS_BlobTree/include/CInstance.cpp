@@ -17,6 +17,6 @@ namespace {
     }
 
     const bool registered = TheBlobNodeFactoryName::Instance().Register("INSTANCE", CreateInstance) &&
-                            TheBlobNodeFactoryIndex::Instance().Register(bntOpInstance, CreateInstance) &&
+                            TheBlobNodeFactoryIndex::Instance().Register(bntPrimInstance, CreateInstance) &&
                             TheBlobNodeCloneFactory::Instance().Register(typeid(CInstance), CloneInstance);
 }
