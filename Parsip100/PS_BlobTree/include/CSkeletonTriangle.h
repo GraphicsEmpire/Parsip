@@ -323,26 +323,13 @@ public:
         return "TRIANGLE";
     }
 
-    bool getExtremes(vec3f& lower, vec3f& upper)
+    BBOX bound() const
     {
-        lower = m_triangle[0].vectorMin(m_triangle[1]);
-        lower = lower.vectorMin(m_triangle[2]);
-
-        upper = m_triangle[0].vectorMax(m_triangle[1]);
-        upper = upper.vectorMax(m_triangle[2]);
-        return true;
-    }
-
-    VOL::CVolume* getBoundingVolume(float range)
-    {
-        vec3f lower = m_triangle[0].vectorMin(m_triangle[1]);
-        lower = lower.vectorMin(m_triangle[2]);
-
-        vec3f upper = m_triangle[0].vectorMax(m_triangle[1]);
-        upper = upper.vectorMax(m_triangle[2]);
-
-        VOL::CVolumeBox * b = new VOL::CVolumeBox(lower, upper);
-        return b;
+        vec3f slo = m_triangle[0].vectorMin(m_triangle[1]).vectorMin(m_triangle[2]);
+        vec3f shi = m_triangle[0].vectorMax(m_triangle[1]).vectorMax(m_triangle[2]);
+        vec3f offset(ISO_VALUE);
+        BBOX box(slo - offset, shi + offset);
+        return box;
     }
 
     vec3f getPolySeedPoint()

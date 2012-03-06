@@ -56,17 +56,11 @@ public:
         return "POINT";
     }
 
-    bool getExtremes(vec3f& lower, vec3f& upper)
+    BBOX bound() const
     {
-        lower = m_position;
-        upper = m_position;
-        return false;
-    }
-
-    VOL::CVolume* getBoundingVolume(float range)
-    {
-        VOL::CVolumeSphere * s = new VOL::CVolumeSphere(m_position, range);
-        return s;
+        vec3f v(ISO_VALUE);
+        BBOX box(m_position - v, m_position + v);
+        return box;
     }
 
     vec3f getPolySeedPoint()

@@ -1421,9 +1421,6 @@ void GLWidget::actMeshPolygonize(int idxLayer)
 
         if(aLayer->isVisible())
         {
-            //aLayer->convertToBinaryTree(false);
-            //aLayer->getSimdPoly().linearizeBlobTree(aLayer->getBlob());
-            //aLayer->getSimdPoly().run(aLayer->getCellSize());
             aLayer->setupCompactTree(aLayer->getBlob());
             aLayer->getPolygonizer()->setup(aLayer->getCompactBlobTree(),
                                             aLayer->getOctree(),
@@ -1511,6 +1508,15 @@ QStandardItemModel* GLWidget::getModelPrimitiveProperty(CBlobNode* lpNode)
         lstRow.push_back(new QStandardItem(QString(propList[i].asString().ptr())));
         m_modelBlobNodeProperty->appendRow(lstRow);
     }
+
+    if(m_bProbing)
+    {
+        lstRow.clear();
+        lstRow.push_back(new QStandardItem(QString("Field Probe")));
+        lstRow.push_back(new QStandardItem(printToQStr("%.3f", m_probeValue)));
+        m_modelBlobNodeProperty->appendRow(lstRow);
+    }
+
 
     /*
         case(bntOpRicciBlend):
@@ -2215,7 +2221,7 @@ void GLWidget::selectBlobNode(int iLayer, CBlobNode* aNode, bool bMultiSelect)
         m_layerManager.selRemoveItems();
     m_layerManager[iLayer]->selAddItem(aNode);
 
-    //GOto Translate mode
+    //Goto Translate mode
     actEditTranslate();
 
     //Show Properties
@@ -2589,14 +2595,20 @@ CBlobNode* GLWidget::addBlobPrimitive(BlobNodeType primitiveType, const vec3f& p
     //Create SkeletonPrimitive
     //Set original node for instanced primitive
     if(primitiveType == bntPrimInstance)
+    {
         reinterpret_cast<CInstance*>(primitive)->setOriginalNode(aLayer->selGetItem(0));
+        primitive->getTransform().addTranslate(pos - aLayer->selGetItem(0)->getOctree().center());
+    }
+    else
+        primitive->getTransform().addTranslate(pos);
+
+
     primitive->setMaterial(m_materials[m_idxRibbonSelection]);
     if(preferredID >= 0)
         primitive->setID(preferredID);
     else
         primitive->setID(aLayer->getIDDispenser().bump());
     aLayer->getBlob()->addChild(primitive);
-    primitive->getTransform().addTranslate(pos);
 
     if(bSendToNet)
     {

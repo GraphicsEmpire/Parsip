@@ -109,7 +109,7 @@ bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig)
         lpSketchConfig->writeVec4f(strNodeName, "MtrlSpecular", m.specular);
         lpSketchConfig->writeFloat(strNodeName, "MtrlShininess", m.shininess);        
         //Write skeleton Name
-        lpSketchConfig->writeString(strNodeName, "SkeletonType", DAnsiStr(this->getName().c_str()));
+        lpSketchConfig->writeString(strNodeName, "PrimitiveType", DAnsiStr(this->getName().c_str()));
     }
 
     return true;
@@ -143,14 +143,6 @@ bool CBlobNode::loadGenericInfoScript(CSketchConfig *lpSketchConfig, int id)
 
 void CBlobNode::copyGenericInfo(const CBlobNode* rhs)
 {
-    /*
-    int              m_id;
-    COctree          m_octree;
-    CMaterial        m_material;
-    bool             m_bDeleteChildrenUponCleanup;
-
-    CAffineTransformation m_transform;
-    */
     this->m_id = rhs->m_id;
     this->m_octree = rhs->m_octree;
     this->m_material = rhs->m_material;    
@@ -160,20 +152,15 @@ void CBlobNode::copyGenericInfo(const CBlobNode* rhs)
 
 int CBlobNode::getGenericProperties(PropertyList& outProperties)
 {
-    if(!isOperator())
-    {
-        outProperties.resize(0);
-        outProperties.add(m_transform.getScale(), "scale");
-        outProperties.add(m_transform.getTranslate(), "translate");
+    outProperties.resize(0);
+    outProperties.add(m_transform.getScale(), "scale");
+    outProperties.add(m_transform.getTranslate(), "translate");
 
-        vec3f axis;
-        float angleDeg;
-        m_transform.getRotation().getAxisAngle(axis, angleDeg);
-        outProperties.add(vec4f(axis, angleDeg), "rotate");
-        return 3;
-    }
-    else
-        return 0;
+    vec3f axis;
+    float angleDeg;
+    m_transform.getRotation().getAxisAngle(axis, angleDeg);
+    outProperties.add(vec4f(axis, angleDeg), "rotate");
+    return 3;
 }
 
 int CBlobNode::setGenericProperties(const PropertyList& inProperties)

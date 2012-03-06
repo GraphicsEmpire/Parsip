@@ -100,40 +100,13 @@ public:
         return "CYLINDER";
     }
 
-    bool getExtremes(vec3f& lower, vec3f& upper)
+    BBOX bound() const
     {
-        lower = m_position - m_radius;
-        upper = m_position + (m_height + m_radius) * m_direction;
-        return true;
-    }
-
-    VOL::CVolume* getBoundingVolume(float range)
-    {
-        m_direction.normalize();
-        float r = sqrtf(m_radius * m_radius + 0.25f * m_height * m_height);
-        VOL::CVolumeSphere * s = new VOL::CVolumeSphere(vec3f(), r + range);
-
-        vec3f d  = (0.5f * m_height) * m_direction;
-        vec3f da = d.vectorAbs();
-        vec3f bv = da + vec3f(cos(m_direction.x) + range, cos(m_direction.y) + range, cos(m_direction.z) + range).vectorAbs();
-
-        vec3f p = m_position + da;
-        VOL::CVolumeBox * b = new VOL::CVolumeBox(p - bv, p + bv);
-        if (s->size() > b->size())
-        {
-            s->setCenter(m_position + d);
-            delete b;
-            b = NULL;
-
-            return s;
-        }
-        else
-        {
-            delete s;
-            s = NULL;
-            return b;
-        }
-
+        vec3f s0 = m_position;
+        vec3f s1 = m_position + m_height * m_direction;
+        vec3f expand = (ISO_VALUE + m_radius) * vec3f(1.0f, 1.0f, 1.0f) + 0.5f * ISO_VALUE * m_direction;
+        BBOX box(s0 - expand, s1 + expand);
+        return box;
     }
 
     vec3f getPolySeedPoint()

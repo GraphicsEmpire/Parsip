@@ -12,7 +12,8 @@ void CAnimObject::gotoStart()
 {
     if(!path->isValid()) return;
 
-    vec3f displace = path->position(0.0f) - model->getOctree().center();
+    vec3f c = model->getOctree().center();
+    vec3f displace = path->position(0.0f) - c;
     if(model->getLock().acquire())
     {
         model->getTransform().addTranslate(displace);

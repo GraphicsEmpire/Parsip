@@ -10,40 +10,28 @@ namespace PS{
 
 COctree::COctree()
 {
-    for(int i=0;i<8; i++)
-        children[i] = NULL;
-    m_bHasChildren = false;
-    lower.zero();
-    upper.zero();
+    init();
 }
 
-COctree::COctree(vec3f lbnCorner, vec3f rtfCorner)
+COctree::COctree(const vec3f& lo, const vec3f& hi)
 {
-    for(int i=0;i<8; i++)
-        children[i] = NULL;
-    m_bHasChildren = false;
-    lower = lbnCorner;
-    upper = rtfCorner;
-}
-
-COctree::COctree(float l, float b, float n, float r, float t, float f)
-{
-    for(int i=0;i<8; i++)
-        children[i] = NULL;
-    m_bHasChildren = false;
-    lower = vec3f(l,b,n);
-    upper = vec3f(r,t,f);
-}
-
-COctree::COctree(vec3f lstPoints[], int ctPoints)
-{	
-    m_bHasChildren = false;
-    set(lstPoints, ctPoints);
+    init();
+    this->lower = lo;
+    this->upper = hi;
 }
 
 COctree::~COctree()
 {	
     removeAllChildren();
+}
+
+void COctree::init()
+{
+    for(int i=0;i<8; i++)
+        children[i] = NULL;
+    m_bHasChildren = false;
+    lower = vec3f(FLT_MAX, FLT_MAX, FLT_MAX);
+    upper = vec3f(FLT_MIN, FLT_MIN, FLT_MIN);
 }
 
 void COctree::set(const std::vector<vec3f>& lstPoints)
@@ -90,7 +78,7 @@ void COctree::set(vec3f lstPoints[], int ctPoints)
     upper = vMax;
 }
 
-void COctree::set( vec3f lo, vec3f hi )
+void COctree::set(const vec3f& lo, const vec3f& hi )
 {
     this->lower = lo;
     this->upper = hi;
@@ -104,12 +92,12 @@ void COctree::removeAllChildren()
 }
 
 
-bool COctree::hasChildren()
+bool COctree::hasChildren() const
 {
     return m_bHasChildren;
 }
 
-vec3f COctree::center()
+vec3f COctree::center() const
 {
     vec3f c = (lower + upper) * 0.5f;
     return c;
@@ -235,24 +223,8 @@ void COctree::correct()
         upper.z = temp;
     }
 }
-/*
-void COctree::drawPolygon()
-{
- glPushAttrib(GL_ALL_ATTRIB_BITS);
 
- const float black[] = {0.0f, 0.0f, 0.0f, 1.0f};
- glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
- //glFrontFace(GL_CCW);
- glBegin(GL_QUADS);
-
-
- glEnd();
- glPopAttrib();
-
-}
-*/
-
-bool COctree::isInside(vec3f pt)
+bool COctree::isInside(const vec3f& pt) const
 {
     if((pt.x < lower.x)||(pt.x > upper.x))
         return false;
@@ -263,7 +235,7 @@ bool COctree::isInside(vec3f pt)
     return true;
 }
 
-bool COctree::intersect(vec3f lo, vec3f hi) const
+bool COctree::intersect(const vec3f& lo, const vec3f& hi) const
 {
     if ((lower.x >= hi.x) || (upper.x <= lo.x))
         return false;
@@ -312,96 +284,16 @@ bool COctree::intersect( const CRay& ray, float t0, float t1 ) const
     return ( (tmin < t1) && (tmax > t0) );
 
 }
-//Draw Octree
-void COctree::draw()
-{	
-    /*
- vec3f c = center();
- float l = lower.x; float r = upper.x;
- float b = lower.y; float t = upper.y;
- float n = lower.z; float f = upper.z;
- float lrov2 = (l+r)/2.0f;
- float btov2 = (b+t)/2.0f;
- float nfov2 = (n+f)/2.0f;
 
- GLfloat vertices [][3] = {{l, b, f}, {l, t, f}, {r, t, f},
-         {r, b, f}, {l, b, n}, {l, t, n},
-         {r, t, n}, {r, b, n}};
-
- //{{-1.0, -1.0, 1.0}, {-1.0, 1.0, 1.0}, {1.0, 1.0, 1.0},
- //{1.0, -1.0, 1.0}, {-1.0, -1.0, -1.0}, {-1.0, 1.0, -1.0},
- //{1.0, 1.0, -1.0}, {1.0, -1.0, -1.0}};
-
-
- glPushAttrib(GL_ALL_ATTRIB_BITS);
-
- const float black[] = {0.0f, 0.0f, 0.0f, 1.0f};
- glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
-
-
- glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
- //glFrontFace(GL_CCW);
- glBegin(GL_QUADS);
-  glVertex3fv(vertices[0]); glVertex3fv(vertices[3]); glVertex3fv(vertices[2]); glVertex3fv(vertices[1]);
-  glVertex3fv(vertices[4]); glVertex3fv(vertices[5]); glVertex3fv(vertices[6]); glVertex3fv(vertices[7]);
-  glVertex3fv(vertices[3]); glVertex3fv(vertices[0]); glVertex3fv(vertices[4]); glVertex3fv(vertices[7]);
-  glVertex3fv(vertices[1]); glVertex3fv(vertices[2]); glVertex3fv(vertices[6]); glVertex3fv(vertices[5]);
-  glVertex3fv(vertices[2]); glVertex3fv(vertices[3]); glVertex3fv(vertices[7]); glVertex3fv(vertices[6]);
-  glVertex3fv(vertices[5]); glVertex3fv(vertices[4]); glVertex3fv(vertices[0]); glVertex3fv(vertices[1]);
- glEnd();
- glPopAttrib();
-
- if(hasChildren())
- {
-  for (int i=0; i<8; i++)
-  {
-   COctree* child = children[i];
-   if(child)
-   {
-    child->draw();
-   }
-  }
- }
- */
-}
-
-vec3f COctree::getCorner(int index)
+vec3f COctree::getCorner(int index) const
 {
     vec3f mask(static_cast<float>((index & 4) >> 2),
                static_cast<float>((index & 2) >> 1),
                static_cast<float>(index & 1));
     return lower + upper*mask;
-
-    /*
- float l = lower.x; float r = upper.x;
- float b = lower.y; float t = upper.y;
- float n = lower.z; float f = upper.z;
-
- vec3f corner;
- switch(index)
- {
- case LBN: corner = vec3f(l,b,n);
-  break;
- case LBF: corner = vec3f(l,b,f);
-  break;
- case LTN: corner = vec3f(l,t,n);
-  break;
- case LTF: corner = vec3f(l,t,f);
-  break;
- case RBN: corner = vec3f(r,b,n);
-  break;
- case RBF: corner = vec3f(r,b,f);
-  break;
- case RTN: corner = vec3f(r,t,n);
-  break;
- case RTF: corner = vec3f(r,t,f);
-  break;
- }
- return corner;
- */
 }
 
-void COctree::expand( vec3f v )
+void COctree::expand(const vec3f& v )
 {
     upper += v;
     lower -= v;
@@ -428,22 +320,23 @@ void COctree::expand( float offset )
     lower -= vec3f(offset, offset, offset);
 }
 
-void COctree::translate( vec3f displacement )
+
+void COctree::scale(const vec3f& s)
 {
-    lower += displacement;
-    upper += displacement;
+    lower *= s;
+    upper *= s;
 }
 
-void COctree::scale( vec3f displacement )
+void COctree::rotate(const quat& r)
 {
-    lower *= displacement;
-    upper *= displacement;
+    lower = r.transform(lower);
+    upper = r.transform(upper);
 }
 
-void COctree::rotate(quat q)
+void COctree::translate(const vec3f& t)
 {
-    lower = q.transform(lower);
-    upper = q.transform(upper);
+    lower += t;
+    upper += t;
 }
 
 void COctree::transform(const CMatrix& m)
@@ -460,7 +353,7 @@ void COctree::csgUnion( const COctree& rhs )
     upper = upper.vectorMax(rhs.upper);
 }
 
-void COctree::csgUnion( vec3f rhsLo, vec3f rhsHi )
+void COctree::csgUnion(const vec3f& rhsLo, const vec3f& rhsHi)
 {
     lower = lower.vectorMin(rhsLo);
     upper = upper.vectorMax(rhsHi);

@@ -24,7 +24,7 @@ public:
     CMatrix(void)
     {
         identity();
-    };
+    }
 
     CMatrix(const float *mem)
     {
@@ -46,20 +46,20 @@ public:
 
     CMatrix(const float *quat,const float *pos); // init from a const float pointer to a quat and translation..
 
-    const float * getFloat(void) const { return &mElement[0][0]; };
+    const float * getFloat(void) const { return &mElement[0][0]; }
 
-    float * ptr(void) { return &mElement[0][0]; };
-    const float * cptr(void) const { return &mElement[0][0]; };
+    float * ptr(void) { return &mElement[0][0]; }
+    const float * cptr(void) const { return &mElement[0][0]; }
 
     float get(int i, int j) const
     {
         return mElement[i][j];
-    };
+    }
 
     void set(int i, int j, float v)
     {
         mElement[i][j] = v;
-    };
+    }
 
     void set(const char *foo);
 
@@ -91,7 +91,7 @@ public:
         mElement[0][3] = 0;
         mElement[1][3] = 0;
         mElement[2][3] = 0;
-    };
+    }
 
     void set(const vec3f& m0,const vec3f &m1,const vec3f &m2)
     {
@@ -270,7 +270,7 @@ public:
     void zeroMatrix(void)
     {
         memset(mElement,0,sizeof(float)*16);
-    };
+    }
 
 
     void getPositionFromViewMatrix(vec3f &pos) const
@@ -398,7 +398,7 @@ public:
         mElement[3][0] = - vFrom.dot(vRight);
         mElement[3][1] = - vFrom.dot(vUp);
         mElement[3][2] = - vFrom.dot(vView);
-    };
+    }
 
 
     void LookAtMatrix(const vec3f &from,const vec3f &to,const vec3f &up);
@@ -436,14 +436,14 @@ public:
     void setTranslate(const vec3f& p)
     {
         setTranslate(p.x, p.y, p.z);
-    };
+    }
 
     void setTranslate(float tx,float ty,float tz)
     {
         mElement[3][0] = tx;
         mElement[3][1] = ty;
         mElement[3][2] = tz;
-    };
+    }
 
     bool isIdentity() const
     {
@@ -465,7 +465,7 @@ public:
             }
         }
         return true;
-    };
+    }
 
     inline bool operator != (const CMatrix& t) const
     {
@@ -480,7 +480,7 @@ public:
             }
         }
         return false;
-    };
+    }
 
     inline vec3f operator *(const vec3f & v)
     {
@@ -518,7 +518,7 @@ public:
         mElement[3][1] = hold[1][3];
         mElement[3][2] = hold[2][3];
         mElement[3][3] = hold[3][3];
-    };
+    }
 
     void	GetTranspose(CMatrix &transpose) const
     {
@@ -530,7 +530,7 @@ public:
             }
             transpose.mElement[3][i] = -mElement[3][i];
         }
-    };
+    }
 
     void Get3x3Transpose(CMatrix &transpose) const
     {
@@ -663,14 +663,14 @@ public:
         tx = mElement[3][0];
         ty = mElement[3][1];
         tz = mElement[3][2];
-    };
+    }
 
     void GetTranslation(vec3f &t) const
     {
         t.x = mElement[3][0];
         t.y = mElement[3][1];
         t.z = mElement[3][2];
-    };
+    }
 
 
     // inverse rotate translate a point

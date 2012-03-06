@@ -172,17 +172,13 @@ public:
         return "CUBE";
     }
 
-    bool getExtremes(vec3f& lower, vec3f& upper)
+    BBOX bound() const
     {
-        lower = m_center - m_side;
-        upper = m_center + m_side;
-        return true;
-    }
-
-    VOL::CVolume* getBoundingVolume(float range)
-    {
-        VOL::CVolumeBox * b = new VOL::CVolumeBox(m_center - m_side - range, m_center + m_side + range);
-        return b;
+        vec3f ss(m_side + ISO_VALUE);
+        vec3f lo = m_center - ss;
+        vec3f hi = m_center + ss;
+        BBOX box(lo, hi);
+        return box;
     }
 
     vec3f getPolySeedPoint()

@@ -1,5 +1,7 @@
 #include "CSkeletonPrimitive.h"
 #include "BlobTreeBuilder.h"
+
+
 using namespace PS::BLOBTREE;
 namespace{
     CBlobNode* ClonePrimitive(const CBlobNode* b)
@@ -100,6 +102,14 @@ bool CSkeletonPrimitive::findSeedPoint(bool bFindHot, float iso_value, float sea
 
 COctree CSkeletonPrimitive::computeOctree()
 {
+    BBOX box = m_skeleton->bound();
+    //vec3f lo = m_transform.applyForwardTransform(box.lower);
+    //vec3f hi = m_transform.applyForwardTransform(box.upper);
+    //this->m_octree.set(lo.vectorMin(hi), lo.vectorMax(hi));
+    this->m_octree.set(box.lower, box.upper);
+    return m_octree;
+
+    /*
     static const float target_field = ISO_VALUE - ISO_VALUE_EPSILON;
     float init_step_width = 0.0001f;
 
@@ -254,6 +264,7 @@ COctree CSkeletonPrimitive::computeOctree()
 
     m_bOctreeValid = m_octree.isValid();
     return m_octree;
+    */
 }
 
 

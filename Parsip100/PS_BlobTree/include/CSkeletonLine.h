@@ -77,18 +77,11 @@ public:
         return "LINE";
     }
 
-    bool getExtremes(vec3f& lower, vec3f& upper)
+    BBOX bound() const
     {
-        lower = m_ptStart;
-        upper = m_ptEnd;
-        return true;
-    }
-
-    VOL::CVolume* getBoundingVolume(float range)
-    {
-        VOL::CVolumeBox * b = new VOL::CVolumeBox(m_ptStart.vectorMin(m_ptEnd).subtract(range),
-                                                  m_ptStart.vectorMax(m_ptEnd).add(range));
-        return b;
+        vec3f expand = vec3f(ISO_VALUE) + 3.0f * ISO_VALUE * (m_ptEnd - m_ptStart);
+        BBOX box(m_ptStart - expand, m_ptEnd + expand);
+        return box;
     }
 
     vec3f getPolySeedPoint()

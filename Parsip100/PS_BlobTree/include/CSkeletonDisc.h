@@ -90,23 +90,13 @@ public:
         return "DISC";
     }
 
-    bool getExtremes(vec3f& lower, vec3f& upper)
+    BBOX bound() const
     {
-        vec3f dir;
-        dir.x = cos(m_direction.x * PiOver2);
-        dir.y = cos(m_direction.y * PiOver2);
-        dir.z = cos(m_direction.z * PiOver2);
-
-        lower = m_center - m_radius * dir;
-        upper = m_center + m_radius * dir;
-        return true;
-    }
-
-    VOL::CVolume* getBoundingVolume(float range)
-    {
-        m_direction.normalize();
-        VOL::CVolumeSphere* s = new VOL::CVolumeSphere(m_center, m_radius + range);
-        return s;
+        float radius = m_radius + ISO_VALUE;
+        vec3f dirComp = vec3f(1.0f, 1.0f, 1.0f) - m_direction;
+        vec3f expand  = radius * dirComp + ISO_VALUE * m_direction;
+        BBOX box(m_center - expand, m_center + expand);
+        return box;
     }
 
     vec3f getPolySeedPoint()

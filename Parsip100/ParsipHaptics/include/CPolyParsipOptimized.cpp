@@ -156,19 +156,10 @@ bool CSIMDMPURunBody::doMarchingCubes(CSIMDMPU* aMPU) const
     //Check if we really need to find field-values for all splats in this grid
     float invCellSize = 1.0f / m_cellsize;
     vec3f origin = aMPU->getOrigin();
-    vec3f sides  = (m_modelUpperCorner - origin) * invCellSize;
-
-    //Bounds
-    vec3i bounds;
-    bounds.x = MATHMIN(GRID_DIM, static_cast<int>(ceil(sides[0])));
-    bounds.y = MATHMIN(GRID_DIM, static_cast<int>(ceil(sides[1])));
-    bounds.z = MATHMIN(GRID_DIM, static_cast<int>(ceil(sides[2])));
-    sides.set(m_cellsize * (bounds.x-1), m_cellsize * (bounds.y-1), m_cellsize * (bounds.z-1));
-    aMPU->setSides(sides);
 
     //Check if intersects?
     vec4f org4(origin.x, origin.y, origin.z);
-    vec4f side4(sides.x, sides.y, sides.z);
+    vec4f side4((GRID_DIM - 1) * m_cellsize);
     vec4f hi = org4 + side4;
     bool bIntersectsPrimOctree = false;
     int ctPrims = m_cptBlob->countPrimitives();
@@ -193,11 +184,11 @@ bool CSIMDMPURunBody::doMarchingCubes(CSIMDMPU* aMPU) const
 
 
     //Process all cubes
-    for(int i=0; i<bounds.x-1; i++)
+    for(int i=0; i<GRID_DIM-1; i++)
     {
-        for(int j=0; j<bounds.y-1; j++)
+        for(int j=0; j<GRID_DIM-1; j++)
         {
-            for(int k=0; k<bounds.z-1; k++)
+            for(int k=0; k<GRID_DIM-1; k++)
             {
                 cellCornerKey[0] = CELLID_FROM_IDX(i, j, k);
                 cellCornerIDX[0] = vec3i(i, j, k);

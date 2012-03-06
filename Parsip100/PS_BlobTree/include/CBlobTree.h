@@ -36,10 +36,10 @@ public:
         m_octree.lower.zero();
         m_octree.upper.zero();
         m_id = 0;
-
     }
 
-    ~CBlobNode()
+    //Destructor should be virtual for all the nodes that inherit from this interface
+    virtual ~CBlobNode()
     {        
         removeAllChildren();
     }
@@ -78,6 +78,7 @@ public:
 
     bool isAllChildrenPrims();
     bool isUnary() {return (getNodeType() >= bntOpCache);}
+    bool isSkeletal() {return ((getNodeType() >= bntPrimPoint)&&(getNodeType() <= bntPrimSkeleton));}
 
     //Remove all Children
     void removeAllChildren()

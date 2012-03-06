@@ -12,10 +12,10 @@
 #define DEFAULT_MOUSE_DRAG_SCALE 10
 #define MOUSE_WHEEL_COEFF   0.01f
 #define MOUSE_MOVE_COEFF    0.03f
-#define MAX_UNDO_LEVEL	   10
-#define MAX_NAME_LEN	   32
-#define MAX_DATETIME_LEN   26
-#define SCENE_FILE_VERSION 5
+#define MAX_UNDO_LEVEL	    10
+#define MAX_NAME_LEN	    32
+#define MAX_DATETIME_LEN    26
+#define SCENE_FILE_VERSION  6
 
 const std::string appname = "PARSIP";
 const std::string companyname = "POURYASHIRAZIAN";

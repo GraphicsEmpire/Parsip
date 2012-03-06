@@ -46,10 +46,9 @@ public:
         m_octree = m_lpOrigin->getOctree();
 
         //Return to local coordinate system
-        m_octree.transform(m_lpOrigin->getTransform().getBackwardMatrix());
+        //m_octree.transform(m_lpOrigin->getTransform().getBackwardMatrix());
 
-        //Transform to instanced space
-        m_octree.transform(this->getTransform().getForwardMatrix());
+        //Will be transformed to instanced space
         return m_octree;
     }
 
@@ -69,7 +68,7 @@ public:
     {
         //Write parameters for RicciBlend
         DAnsiStr strNodeName = printToAStr("BLOBNODE %d", id);
-        lpSketchScript->readInt(strNodeName, "OriginalNodeIndex");
+        int idxOrigin = lpSketchScript->readInt(strNodeName, "OriginalNodeIndex");
         return this->loadGenericInfoScript(lpSketchScript, id);
     }
 

@@ -7,7 +7,7 @@
 #include "PS_FrameWork/include/mathHelper.h"
 #include "PS_FrameWork/include/PS_Vector.h"
 #include "PS_FrameWork/include/PS_GeometryFuncs.h"
-#include "PS_FrameWork/include/PS_Octree.h"
+#include "PS_FrameWork/include/PS_BoundingBox.h"
 #include "PS_FrameWork/include/PS_SketchConfig.h"
 
 #include "CVolumeSphere.h"
@@ -45,8 +45,13 @@ public:
     }
 
     virtual void setParamFrom(CSkeleton* other) = 0;
-    virtual VOL::CVolume* getBoundingVolume(float range) = 0;
-    virtual bool getExtremes(vec3f& lower, vec3f& upper) = 0;
+
+    /*!
+     * Returns bounding box for this skeleton
+     * @param expand scalar value to expand the computed box
+     * @return the bounding box of the skeleton
+     */
+    virtual BBOX bound() const = 0;
 
 
     virtual float distance(vec3f p) = 0;

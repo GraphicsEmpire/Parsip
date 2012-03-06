@@ -14,12 +14,11 @@
 //Initialize all structures
 void COMPACTBLOBTREE::init()
 {
-    m_lpPrims = NULL;
-    m_lpOps = NULL;
-    m_szAllocatedPrims = 0;
-    m_szAllocatedOps = 0;
+    m_lpPrims.resize(0);
+    m_lpOps.resize(0);
     m_ctPrims = 0;
     m_ctOps = 0;
+    m_ctMtx = 0;
     m_ctPCMNodes = 0;
 }
 
@@ -37,24 +36,23 @@ int COMPACTBLOBTREE::convert( CBlobNode* root)
     m_lstConvertedIds.resize(0);
     int ctNeededOps = MATHMAX(root->recursive_CountOperators(), MIN_BLOB_NODES);
     int ctNeededPrims = MATHMAX(root->recursive_CountPrimitives(), MIN_BLOB_NODES);
+    int ctNeededMtx = ctNeededOps + ctNeededPrims + MIN_BLOB_NODES;
 
     //Upgrade Ops
     m_ctOps = 0;
-    if((m_szAllocatedOps < ctNeededOps)||(m_lpOps == NULL))
-    {
-        SAFE_DELETE(m_lpOps);
-        m_lpOps = new BlobOperator[ctNeededOps];
-        m_szAllocatedOps = ctNeededOps;
-    }
+    if(m_lpOps.size() < ctNeededOps)
+        m_lpOps.resize(ctNeededOps);
 
     //Update Prims
     m_ctPrims = 0;
-    if((m_szAllocatedPrims < ctNeededPrims)||(m_lpPrims == NULL))
-    {
-        SAFE_DELETE(m_lpPrims);
-        m_lpPrims = new BlobPrimitive[ctNeededPrims];
-        m_szAllocatedPrims = ctNeededPrims;
-    }
+    if(m_lpPrims.size() < ctNeededPrims)
+        m_lpPrims.resize(ctNeededPrims);
+
+    //Update Matrices
+    //First Matrix is identity matrix
+    m_ctMtx = 1;
+    if(m_lpMtx.size() < ctNeededMtx)
+        m_lpMtx.resize(ctNeededMtx);
 
     //Convert Recursively
     int res = convert(root, -1);
@@ -86,15 +84,6 @@ int COMPACTBLOBTREE::convert( CBlobNode* root)
         m_pcmCONTEXT.idPCM = pcmIDS[0];
         m_pcmCONTEXT.maxCompressionLeft = ISO_VALUE;
         m_pcmCONTEXT.maxCompressionRight = ISO_VALUE;
-        /*
-        m_lpPCMCONTEXT = new PCMCONTEXT[m_ctPCMNodes];
-        for(int i=0; i<m_ctPCMNodes; i++)
-        {
-            m_lpPCMCONTEXT[i].idPCM = pcmIDS[i];
-            m_lpPCMCONTEXT[i].maxCompressionLeft = ISO_VALUE;
-            m_lpPCMCONTEXT[i].maxCompressionRight = ISO_VALUE;
-        }
-        */
     }
 
     pcmIDS.resize(0);
@@ -106,10 +95,10 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
     int curID = -1;
     if(root->isOperator())
     {
-        if(m_ctOps >= m_szAllocatedOps)
+        if(m_ctOps >= m_lpOps.size())
         {
             DAnsiStr strError = printToAStr("Not enough memory for operators. Allocated=%d, Needed > %d",
-                                            m_szAllocatedOps,
+                                            m_lpOps.size(),
                                             m_ctOps);
             ReportError(strError.cptr());
             FlushAllErrors();
@@ -126,7 +115,24 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
         m_lpOps[curID].octLo = vec4f(root->getOctree().lower, 0.0f);
         m_lpOps[curID].octHi = vec4f(root->getOctree().upper, 0.0f);
 
-
+        if(root->getTransform().getBackwardMatrix().isIdentity())
+            m_lpOps[curID].idxMtx = 0;
+        else
+        {
+            int idxMtx = m_ctMtx;
+            m_ctMtx++;
+            float row[4];
+            CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
+            mtxBackward.getRow(row, 0);
+            m_lpMtx[idxMtx].mtxBackwardR0.set(row[0], row[1], row[2], row[3]);
+            mtxBackward.getRow(row, 1);
+            m_lpMtx[idxMtx].mtxBackwardR1.set(row[0], row[1], row[2], row[3]);
+            mtxBackward.getRow(row, 2);
+            m_lpMtx[idxMtx].mtxBackwardR2.set(row[0], row[1], row[2], row[3]);
+            mtxBackward.getRow(row, 3);
+            m_lpMtx[idxMtx].mtxBackwardR3.set(row[0], row[1], row[2], row[3]);
+            m_lpOps[curID].idxMtx = idxMtx;
+        }
 
         if(root->countChildren() > MAX_COMPACT_KIDS_COUNT)
         {
@@ -140,8 +146,6 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
 
         int kidID;
         m_lpOps[curID].ctKids = root->countChildren();
-        //m_lpOps[curID].kidIds.resize(root->countChildren());
-        //m_lpOps[curID].kidIsOp.resize(root->countChildren());
         for(size_t i=0;i<root->countChildren(); i++)
         {
             kidID = convert(root->getChild(i), curID );
@@ -237,10 +241,10 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
     }
     else
     {
-        if(m_ctPrims >= m_szAllocatedPrims)
+        if(m_ctPrims >= m_lpPrims.size())
         {
             DAnsiStr strError = printToAStr("Not enough memory for primitives. Allocated=%d, Needed > %d",
-                                            m_szAllocatedPrims,
+                                            m_lpPrims.size(),
                                             m_ctPrims);
             ReportError(strError.cptr());
             FlushAllErrors();
@@ -259,32 +263,26 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
         m_lpPrims[curID].octLo = vec4f(root->getOctree().lower, 0.0f);
         m_lpPrims[curID].octHi = vec4f(root->getOctree().upper, 0.0f);
 
-        //Transformation Matrix
-        /*
-        CMatrix mtxForward = root->getTransform().getForwardMatrix();
-        mtxForward.getRow(row, 0);
-        */
+        if(root->getTransform().getBackwardMatrix().isIdentity())
+            m_lpPrims[curID].idxMtx = 0;
+        else
+        {
+            int idxMtx = m_ctMtx;
+            m_ctMtx++;
+            float row[4];
+            CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
+            mtxBackward.getRow(row, 0);
+            m_lpMtx[idxMtx].mtxBackwardR0.set(row[0], row[1], row[2], row[3]);
+            mtxBackward.getRow(row, 1);
+            m_lpMtx[idxMtx].mtxBackwardR1.set(row[0], row[1], row[2], row[3]);
+            mtxBackward.getRow(row, 2);
+            m_lpMtx[idxMtx].mtxBackwardR2.set(row[0], row[1], row[2], row[3]);
+            mtxBackward.getRow(row, 3);
+            m_lpMtx[idxMtx].mtxBackwardR3.set(row[0], row[1], row[2], row[3]);
+            m_lpPrims[curID].idxMtx = idxMtx;
+        }
 
-        float row[4];        
-        CMatrix mtxForward = root->getTransform().getForwardMatrix();
-        mtxForward.getRow(row, 0);
-        m_lpPrims[curID].mtxForwardR0.set(row[0], row[1], row[2], row[3]);
-        mtxForward.getRow(row, 1);
-        m_lpPrims[curID].mtxForwardR1.set(row[0], row[1], row[2], row[3]);
-        mtxForward.getRow(row, 2);
-        m_lpPrims[curID].mtxForwardR2.set(row[0], row[1], row[2], row[3]);
-        mtxForward.getRow(row, 3);
-        m_lpPrims[curID].mtxForwardR3.set(row[0], row[1], row[2], row[3]);
 
-        CMatrix mtxBackward = root->getTransform().getBackwardMatrix();
-        mtxBackward.getRow(row, 0);
-        m_lpPrims[curID].mtxBackwardR0.set(row[0], row[1], row[2], row[3]);
-        mtxBackward.getRow(row, 1);
-        m_lpPrims[curID].mtxBackwardR1.set(row[0], row[1], row[2], row[3]);
-        mtxBackward.getRow(row, 2);
-        m_lpPrims[curID].mtxBackwardR2.set(row[0], row[1], row[2], row[3]);
-        mtxBackward.getRow(row, 3);
-        m_lpPrims[curID].mtxBackwardR3.set(row[0], row[1], row[2], row[3]);
 
         switch(root->getNodeType())
         {
@@ -385,7 +383,7 @@ int COMPACTBLOBTREE::convert(CBlobNode* root, int parentID)
         case(bntPrimInstance):
         {
             CInstance* lpInst = reinterpret_cast<CInstance*>(root);
-            m_lpPrims[curID].res1.x = 0;
+            m_lpPrims[curID].res1.x = -1;
             m_lpPrims[curID].res1.y = static_cast<float>(lpInst->getOriginalNode()->getID());
             m_lpPrims[curID].res1.z = static_cast<float>(lpInst->getOriginalNode()->isOperator());
             m_lpPrims[curID].res1.w = static_cast<float>(lpInst->getOriginalNode()->getNodeType());
@@ -414,7 +412,8 @@ int COMPACTBLOBTREE::updateInstanceNodes()
     int ctFixed = 0;
     for(U32 i=0; i<m_ctPrims; i++)
     {
-        if(m_lpPrims[i].type == bntPrimInstance)
+        if((m_lpPrims[i].type == bntPrimInstance)&&
+           (static_cast<int>(m_lpPrims[i].res1.x) == -1))
         {
             for(int j=0; j < m_lstConvertedIds.size(); j++)
             {
@@ -675,22 +674,38 @@ int   COMPACTBLOBTREE::getID(bool isOp, int treeOrgID)
     return -1;
 }
 //////////////////////////////////////////////////////////////////////////
-float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, float* lpStoreFVPrim)
+float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, float* lpStoreFVPrim, bool bIsInstance)
 {
     float lpKidsFV[MAX_COMPACT_KIDS_COUNT];
     float res  = 0.0f;
     int ctKids = m_lpOps[id].ctKids;
     int kidID  = 0;
     vec4f pWarped = p;
+
+    int idxMtx = m_lpOps[id].idxMtx;
+    //Apply Affine Matrix transformation    
+    if((!bIsInstance)&&(idxMtx != 0))
+    {
+        vec3f pt;
+        pt.x = m_lpMtx[idxMtx].mtxBackwardR0.dot(p);
+        pt.y = m_lpMtx[idxMtx].mtxBackwardR1.dot(p);
+        pt.z = m_lpMtx[idxMtx].mtxBackwardR2.dot(p);
+        pWarped = vec4f(pt, 1.0f);
+    }
+
+
     //////////////////////////////////////////////////////////////////////////
     if(lpStoreFVOp)
         lpStoreFVOp[id] = 0.0f;
+
+    /*
     vec4f lo = m_lpOps[id].octLo;
     vec4f hi = m_lpOps[id].octHi;
     if((p.x < lo.x)||(p.y < lo.y)||(p.z < lo.z))
         return 0.0f;
     if((p.x > hi.x)||(p.y > hi.y)||(p.z > hi.z))
         return 0.0f;
+        */
     //////////////////////////////////////////////////////////////////////////
     //Process Warp unary ops first since we need to warp the space before affine
     //transformations effect
@@ -700,7 +715,6 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
 
     if(bWarpNode)
     {
-
         //Warp the space
         switch(nodetype)
         {
@@ -736,9 +750,9 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
     {
         kidID = m_lpOps[id].kidIds[i];
         if(m_lpOps[id].kidIsOp[i])
-            lpKidsFV[i] = fieldvalueOp(pWarped, kidID, lpStoreFVOp, lpStoreFVPrim);
+            lpKidsFV[i] = fieldvalueOp(pWarped, kidID, lpStoreFVOp, lpStoreFVPrim, bIsInstance);
         else
-            lpKidsFV[i] = fieldvaluePrim(pWarped, kidID, lpStoreFVPrim);
+            lpKidsFV[i] = fieldvaluePrim(pWarped, kidID, lpStoreFVPrim, bIsInstance);
     }
 
     //Processing FieldValues
@@ -870,31 +884,25 @@ float COMPACTBLOBTREE::fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp, 
     }
 
     //Save fieldvalue here for reference
-    /*
- if(res > TREENODE_CACHE_STORETHRESHOLD)
- {
-  int pos = (ops[id].fvCache.ctFilled % MAX_TREENODE_FVCACHE);
-  ops[id].fvCache.xyzf[pos]	  = vec4f(p.x, p.y, p.z, res);
-  ops[id].fvCache.hashVal[pos]  = p.x + p.y + p.z;
-  ops[id].fvCache.ctFilled++;
- }
- */
     if(lpStoreFVOp)
         lpStoreFVOp[id] = res;
 
     return res;
 }
 
-float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPrim)
+float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPrim, bool bIsInstance)
 {	
-    vec4f pp = p;
-    pp.w = 1.0f;
-    //////////////////////////////////////////////////////////////////////////
-    vec3f pn;    
+    vec4f pp = vec4f(p.xyz(), 1.0f);
+    vec3f pn = p.xyz();
+    int idxMtx = m_lpPrims[id].idxMtx;
+
     //Apply Affine Matrix transformation
-    pn.x = m_lpPrims[id].mtxBackwardR0.dot(pp);
-    pn.y = m_lpPrims[id].mtxBackwardR1.dot(pp);
-    pn.z = m_lpPrims[id].mtxBackwardR2.dot(pp);
+    if((!bIsInstance)&&(idxMtx != 0))
+    {
+        pn.x = m_lpMtx[idxMtx].mtxBackwardR0.dot(pp);
+        pn.y = m_lpMtx[idxMtx].mtxBackwardR1.dot(pp);
+        pn.z = m_lpMtx[idxMtx].mtxBackwardR2.dot(pp);
+    }
 
     float fvRes;
     switch(m_lpPrims[id].type)
@@ -1064,14 +1072,9 @@ float COMPACTBLOBTREE::fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPr
         int idxOrigin = static_cast<int>(m_lpPrims[id].res1.x);
         vec4f myp = vec4f(pn, 1.0f);
         if(isOriginOp)
-            this->fieldvalueOp(myp, idxOrigin);
-        else
-        {
-            myp.x = m_lpPrims[idxOrigin].mtxForwardR0.dot(pp);
-            myp.y = m_lpPrims[idxOrigin].mtxForwardR1.dot(pp);
-            myp.z = m_lpPrims[idxOrigin].mtxForwardR2.dot(pp);
-            this->fieldvaluePrim(myp, idxOrigin);
-        }
+            fvRes = this->fieldvalueOp(myp, idxOrigin, NULL, NULL, false);
+        else        
+            fvRes = this->fieldvaluePrim(myp, idxOrigin, NULL, false);
     }
         break;
     default:
@@ -1102,6 +1105,22 @@ PS::MATH::vec4f COMPACTBLOBTREE::baseColor( const vec4f& p, float* lpStoreFVOp, 
     }
 }
 
+vec4f COMPACTBLOBTREE::baseColorPrim(const vec4f& p, int id, float* lpStoreFVOp, float* lpStoreFVPrim)
+{
+    if(m_lpPrims[id].type == bntPrimInstance)
+    {
+        int idxOrigin = static_cast<int>(m_lpPrims[id].res1.x);
+        int isOriginOp = static_cast<int>(m_lpPrims[id].res1.z);
+        if(isOriginOp)
+            return baseColorOp(p, idxOrigin, lpStoreFVOp, lpStoreFVPrim);
+        else
+            return baseColorPrim(p, idxOrigin, lpStoreFVOp, lpStoreFVPrim);
+    }
+    else
+        return m_lpPrims[id].color;
+
+}
+
 vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, float* lpStoreFVPrim )
 {
     float arrFV[MAX_COMPACT_KIDS_COUNT];
@@ -1127,7 +1146,7 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
             }
             else
             {
-                arrCL[i] = m_lpPrims[kidID].color;
+                arrCL[i] = baseColorPrim(p, kidID, lpStoreFVOp, lpStoreFVPrim);
                 arrFV[i] = lpStoreFVPrim[kidID];
             }
         }
@@ -1144,7 +1163,7 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
             }
             else
             {
-                arrCL[i] = m_lpPrims[kidID].color;
+                arrCL[i] = baseColorPrim(p, kidID, lpStoreFVOp, lpStoreFVPrim);
                 arrFV[i] = fieldvaluePrim(p, kidID, lpStoreFVPrim);
             }
         }
@@ -1298,60 +1317,20 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
 void COMPACTBLOBTREE::copyFrom( const COMPACTBLOBTREE& rhs )
 {
     //Ops
-    this->m_ctOps = rhs.m_ctOps;
-    this->m_szAllocatedOps = rhs.m_szAllocatedOps;
-    m_lpOps = new BlobOperator[rhs.m_ctOps];
-    memcpy(m_lpOps, rhs.m_lpOps, sizeof(BlobOperator) * rhs.m_ctOps);
+    this->m_ctOps = rhs.m_ctOps;    
+    m_lpOps.assign(rhs.m_lpOps.begin(), rhs.m_lpOps.end());
 
     //Prims
     this->m_ctPrims = rhs.m_ctPrims;
-    this->m_szAllocatedPrims = rhs.m_szAllocatedPrims;
-    m_lpPrims = new BlobPrimitive[rhs.m_ctPrims];
-    memcpy(m_lpPrims, rhs.m_lpPrims, sizeof(BlobPrimitive) * rhs.m_ctPrims);
+    m_lpPrims.assign(rhs.m_lpPrims.begin(), rhs.m_lpPrims.end());
+
+    //Matrices
+    this->m_ctMtx = rhs.m_ctMtx;
+    m_lpMtx.assign(rhs.m_lpMtx.begin(), rhs.m_lpMtx.end());
 
     //PCM
     this->m_ctPCMNodes = rhs.m_ctPCMNodes;
     memcpy(&this->m_pcmCONTEXT, &rhs.m_pcmCONTEXT, sizeof(m_pcmCONTEXT));
-
-    //Copy Ops
-    /*
-    for(int i=0;i<rhs.m_ctOps;i++)
-    {
-        this->m_lpOps[i].type  = rhs.m_lpOps[i].type;
-        this->m_lpOps[i].params = rhs.m_lpOps[i].params;
-        this->m_lpOps[i].orgID = rhs.m_lpOps[i].orgID;
-        this->m_lpOps[i].octLo = rhs.m_lpOps[i].octLo;
-        this->m_lpOps[i].octHi = rhs.m_lpOps[i].octHi;
-
-        this->m_lpOps[i].ctKids = rhs.m_lpOps[i].ctKids;
-        this->m_lpOps[i].kidIds.assign(rhs.m_lpOps[i].kidIds.begin(),
-                                   rhs.m_lpOps[i].kidIds.end());
-        this->m_lpOps[i].kidIsOp.assign(rhs.m_lpOps[i].kidIsOp.begin(),
-                                   rhs.m_lpOps[i].kidIsOp.end());
-    }
-    */
-
-    //Copy Prims
-    /*
-    for(int i=0;i<rhs.m_ctPrims;i++)
-    {
-        this->m_lpPrims[i].type = rhs.m_lpPrims[i].type;
-        this->m_lpPrims[i].orgID  = rhs.m_lpPrims[i].orgID;
-        this->m_lpPrims[i].color  = rhs.m_lpPrims[i].color;
-        this->m_lpPrims[i].pos    = rhs.m_lpPrims[i].pos;
-        this->m_lpPrims[i].dir    = rhs.m_lpPrims[i].dir;
-        this->m_lpPrims[i].res1   = rhs.m_lpPrims[i].res1;
-        this->m_lpPrims[i].res2   = rhs.m_lpPrims[i].res2;
-        this->m_lpPrims[i].octLo  = rhs.m_lpPrims[i].octLo;
-        this->m_lpPrims[i].octHi  = rhs.m_lpPrims[i].octHi;
-
-        this->m_lpPrims[i].mtxBackwardR0 = rhs.m_lpPrims[i].mtxBackwardR0;
-        this->m_lpPrims[i].mtxBackwardR1 = rhs.m_lpPrims[i].mtxBackwardR1;
-        this->m_lpPrims[i].mtxBackwardR2 = rhs.m_lpPrims[i].mtxBackwardR2;
-        this->m_lpPrims[i].mtxBackwardR3 = rhs.m_lpPrims[i].mtxBackwardR3;
-    }
-    */
-
 }
 
 PS::MATH::vec4f COMPACTBLOBTREE::warpBend( const vec4f& pin, float bendRate, float bendCenter, const CInterval& bendRegion)

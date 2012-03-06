@@ -325,7 +325,8 @@ int CLayer::queryHitOctree(const CRay& ray, float t0, float t1) const
         aOctree = m_lstQuery[i]->getOctree();
         if(aOctree.intersect(ray, t0, t1))
         {
-            d = ray.start.distance(aOctree.center());
+            vec3f c = aOctree.center();
+            d = ray.start.distance(c);
             if(d < min_dist)
             {
                 idxClosest = (int)i;
@@ -376,13 +377,12 @@ bool CLayer::selAddItem(CBlobNode* lpNode)
 {
     if(lpNode == NULL) return false;
 
-    CMeshVV* lpMesh = new CMeshVV();
-
+    //CMeshVV* lpMesh = new CMeshVV();
     //Run Polygonizer and export mesh for selection
-    bool bres = Run_PolygonizerExportMesh(lpNode, lpMesh, 0.2f, ISO_VALUE - 0.2f);
-    PAIR_NODEMESH entry(lpNode, lpMesh);
+    //bool bres = Run_PolygonizerExportMesh(lpNode, lpMesh, 0.2f, ISO_VALUE - 0.2f);
+    PAIR_NODEMESH entry(lpNode, NULL);
     m_lstSelected.push_back(entry);
-    return bres;
+    return true;
 }
 //==================================================================
 bool CLayer::hasMesh() const
@@ -627,25 +627,24 @@ void CLayer::recursive_FlattenTransformations(CBlobNode* node, const CAffineTran
 void CLayer::recursive_RecomputeAllOctrees(CBlobNode* node, const CMatrix& mtxBranch)
 {
     if(node == NULL) return;
+
+    CMatrix mtxCurrent = mtxBranch;
+    mtxCurrent.multiply(node->getTransform().getForwardMatrix());
     if(node->isOperator())
     {
-        CMatrix mtxOriginal = mtxBranch;
-        mtxOriginal.multiply(node->getTransform().getForwardMatrix());
-
-        for(size_t i=0; i<node->countChildren(); i++)
-        {
-            recursive_RecomputeAllOctrees(node->getChild(i), mtxOriginal);
-        }
-
+        for(size_t i=0; i<node->countChildren(); i++)        
+            recursive_RecomputeAllOctrees(node->getChild(i), mtxCurrent);
         node->computeOctree();
     }
     else
     {
+        //Compute Primitive BBOX and transform it
         COctree oct = node->computeOctree();
-        oct.transform(mtxBranch);
+        oct.transform(mtxCurrent);
         node->setOctree(oct.lower, oct.upper);
     }
 }
+
 
 int CLayer::recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobNode* node)
 {
@@ -714,6 +713,13 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
             return -1;
         }
 
+        //Set parent relationships
+        if(parent == NULL)
+            m_lpBlobTree = opNode;
+        else
+            parent->addChild(opNode);
+
+
         //Read Operator params
         opNode->loadScript(cfg, id);
         opNode->setID(id);
@@ -744,37 +750,50 @@ int CLayer::recursive_ReadBlobNode(CSketchConfig* cfg, CBlobNode* parent, int id
             arrayInt.clear();
         }
 
-        if(parent == NULL)
-            m_lpBlobTree = opNode;
-        else
-            parent->addChild(opNode);
         return res+1;
     }
     else
     {        
-        DAnsiStr strSkelet = cfg->readString(strNodeName, "SkeletonType");
-        CSkeletonPrimitive* primNode = NULL;
+        DAnsiStr strPrimitive = cfg->readString(strNodeName, "PrimitiveType");
+        CBlobNode* primNode = NULL;
 
         try{
-            primNode = reinterpret_cast<CSkeletonPrimitive*>(TheBlobNodeFactoryName::Instance().CreateObject(strSkelet.cptr()));
+            primNode = TheBlobNodeFactoryName::Instance().CreateObject(strPrimitive.cptr());
         }
         catch(exception e)
         {
-            DAnsiStr strMsg = printToAStr("[BlobTree Script] %s [%s]", e.what(), strSkelet.ptr());
+            DAnsiStr strMsg = printToAStr("[BlobTree Script] %s [%s]", e.what(), strPrimitive.ptr());
             ReportError(strMsg.ptr());
             FlushAllErrors();
 
             return 0;
         }
 
-        //Set Params
-        primNode->loadScript(cfg, id);
-        primNode->getSkeleton()->loadScript(cfg, id);
-        primNode->setID(id);
+        //Set parent relationship
         if(parent == NULL)
             m_lpBlobTree = primNode;
         else
             parent->addChild(primNode);
+
+
+        //Set Params
+        primNode->loadScript(cfg, id);
+        if(primNode->isSkeletal())
+            reinterpret_cast<CSkeletonPrimitive*>(primNode)->getSkeleton()->loadScript(cfg, id);
+        else if(primNode->getNodeType() == bntPrimInstance)
+        {
+            int idxOrigin = cfg->readInt(strNodeName, "OriginalNodeIndex");
+            CBlobNode* lpOrigin = this->findNodeByID(idxOrigin);
+            if(lpOrigin == NULL)
+            {
+                DAnsiStr strMsg = printToAStr("Reading Instance node id:%d. Unable to find Origin Node id:%d", id, idxOrigin);
+                ReportError(strMsg.ptr());
+                FlushAllErrors();
+            }
+            reinterpret_cast<CInstance*>(primNode)->setOriginalNode(lpOrigin);
+        }
+
+        primNode->setID(id);
         return 1;
     }
 
@@ -1254,61 +1273,6 @@ bool CLayerManager::saveAsVolumeData(const char* strDir, int w, int h, int d)
     }
     return true;
 }
-/*
-bool CLayerManager::save(QString strFileName)
-{
- QFile file(strFileName);
- if(!file.open(QIODevice::WriteOnly)) return false;
-
- QDataStream out(&file);
- out.setVersion(QDataStream::Qt_4_4);
- return save(out);
-}
-
-bool CLayerManager::save(QDataStream &out)
-{
- if(out.status() != QDataStream::Ok) return false;
- size_t savedLayers = 0;
- out << m_lstLayers.size();
- for(size_t i=0; i< m_lstLayers.size(); i++)
- {
-  if(m_lstLayers[i]->save(out))
-   savedLayers++;
- }
-
- return (savedLayers == m_lstLayers.size());
-}
-
-////////////////////////////////////////////////////////////////
-bool CLayerManager::load(QString strFileName)
-{
- QFile file(strFileName);
- if(!file.exists()) return false;
- if(!file.open(QIODevice::ReadOnly)) return false;
- QDataStream in(&file);
- in.setVersion(QDataStream::Qt_4_4);
- return load(in);
-}
-
-bool CLayerManager::load(QDataStream &in)
-{
- removeAllLayers();
- size_t ctExpected = 0;
- size_t ctLoaded = 0;
- in >> ctExpected;
-
- CLayer * aLayer;
- for(size_t i=0; i < ctExpected; i++)
- {
-  aLayer = new CLayer();
-  if(aLayer->load(in))
-   ctLoaded++;
-  addLayer(aLayer);
- }
-
- return(ctExpected == ctLoaded);
-}
-*/
 
 bool CLayerManager::setPolySeedPointAuto()
 {
@@ -1414,7 +1378,7 @@ int CLayerManager::hitLayerOctree( const CRay& ray, float t0, float t1 ) const
     return -1;
 }
 
-int	CLayerManager::computeAllPrimitiveOctrees()
+int CLayerManager::computeAllPrimitiveOctrees()
 {
     int res = 0;
     for(size_t i=0; i<m_lstLayers.size(); i++)

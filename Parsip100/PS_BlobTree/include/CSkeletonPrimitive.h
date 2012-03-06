@@ -40,9 +40,6 @@ private:
     float m_scale;
     float m_scale1;
     float m_scale2;
-
-    //Octree Set?
-    bool m_bOctreeValid;
 public:
     CSkeletonPrimitive()
     {
@@ -100,8 +97,7 @@ public:
 
         //Set Range and IsoDistance
         m_isoDistance = m_fieldFunction->inverse(ISO_VALUE) * m_scale;
-        m_range = m_fieldFunction->getRange() * m_scale;
-        m_bOctreeValid = false;
+        m_range = m_fieldFunction->getRange() * m_scale;        
     }
     //////////////////////////////////////////////////////////////////////////
     void setFieldFunction(const CFieldFunction * field)

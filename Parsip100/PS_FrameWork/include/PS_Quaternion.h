@@ -22,12 +22,12 @@ public:
     CQuaternion()
     {
         identity();
-    };
+    }
 
     CQuaternion(float _x, float _y,float _z,float _w)
     {
         set(_x, _y, _z, _w);
-    };
+    }
 
     CQuaternion(vec4f input)
     {
@@ -53,7 +53,7 @@ public:
     {
         q.set(x, y, z);
         w = _w;
-    };
+    }
 
     void set(const float *quat)
     {
@@ -61,7 +61,7 @@ public:
         q.y = quat[1];
         q.z = quat[2];
         w   = quat[3];
-    };
+    }
 
 
     void get(float *dest) const
@@ -70,7 +70,7 @@ public:
         dest[1] = q.y;
         dest[2] = q.z;
         dest[3] = w;
-    };
+    }
 
     vec4f getAsVec4f() const
     {
@@ -78,7 +78,7 @@ public:
         return res;
     }
 
-    vec3f transform(vec3f p)
+    vec3f transform(vec3f p) const
     {
         CQuaternion input(p, 0.0f);
         CQuaternion inv = inverse();
@@ -99,12 +99,12 @@ public:
     void setRotationAxis(float x, float y, float z)
     {
         q.set(x,y,z);
-    };
+    }
 
     void setRotationAngle(float a)
     {
         w = a;
-    };
+    }
 
     void identity(void)
     {
@@ -132,7 +132,7 @@ public:
     void fromEuler(const vec3f &v)
     {
         fromEuler(v.x, v.y, v.z);
-    };
+    }
 
     // Convert angle/axis into quaternion, and return rotation matrix.
     void fromAngleAxis(float radians,const vec3f &axis)
@@ -145,7 +145,7 @@ public:
         q.y = axis.y*sinHalfTheta;
         q.z = axis.z*sinHalfTheta;
         w   = cosHalfTheta;
-    };
+    }
 
     CQuaternion inverse() const
     {
@@ -165,7 +165,7 @@ public:
         w-=a.w;
         Normalize();
         return *this;
-    };
+    }
 
     CQuaternion& operator+=(const CQuaternion &a) // += operator.
     {
@@ -174,7 +174,7 @@ public:
         q.z+=a.q.z;
         w+=a.w;
         return *this;
-    };
+    }
 
     // Multiplying two quaternions adds their rotations.
     CQuaternion& operator*=(const CQuaternion &a)
@@ -189,7 +189,7 @@ public:
         this->q = r.q;
         this->w = r.w;
         return *this;
-    };
+    }
 
     CQuaternion operator*(const CQuaternion &a)
     {
@@ -200,25 +200,25 @@ public:
         r.w   = w * a.w   - q.x * a.q.x - q.y * a.q.y - q.z * a.q.z;
         r.Normalize();
         return r;
-    };
+    }
 
 
     bool operator==(const CQuaternion &rhs) const
     {
         return ( rhs.q.x == q.x && rhs.q.y == q.y && rhs.q.z == q.z && rhs.w == w );
-    };
+    }
 
     bool operator!=(const CQuaternion &rhs) const
     {
         return ( rhs.q.x != q.x || rhs.q.y != q.y || rhs.q.z != q.z || rhs.w != w );
-    };
+    }
 
     CQuaternion& operator = (const CQuaternion& rhs)          // ASSIGNMENT (=)
     {
         q = rhs.q;
         w = rhs.w;
         return(*this);
-    };
+    }
 
     // Taking the reciprocal of a quaternion makes its rotation go the other way
     void  reciprocal( void )
@@ -332,17 +332,17 @@ public:
         q.y *= dist;
         q.z *= dist;
         w *= dist;
-    };
+    }
 
     const float * GetFloat(void) const
     {
         return &q.x;
-    };
+    }
 
     float * ptr(void)
     {
         return &q.x;
-    };
+    }
 
     void RotationArc(const vec3f& v0, const vec3f& v1)
     {

@@ -104,41 +104,17 @@ public:
         return "RING";
     }
 
-    bool getExtremes(vec3f& lower, vec3f& upper)
+    BBOX bound() const
     {
-        vec3f dir = vec3f(cos(m_direction.x * PiOver2),
-                          cos(m_direction.y * PiOver2),
-                          cos(m_direction.z * PiOver2));
-        lower = m_center - m_radius * dir;
-        upper = m_center + m_radius * dir;
-        return true;
-    }
-
-    VOL::CVolume* getBoundingVolume(float range)
-    {
-        m_direction.normalize();
-        VOL::CVolumeSphere* s = new VOL::CVolumeSphere(m_center, m_radius + range);
-        vec3f bv(cos(m_direction.x) * m_radius + range,
-                 cos(m_direction.y) * m_radius + range,
-                 cos(m_direction.z) * m_radius + range);
-
-        VOL::CVolumeBox* b = new VOL::CVolumeBox(m_center - bv, m_center +  bv);
-        if (s->size() > b->size())
-        {
-            delete b; b = NULL;
-            return s;
-        }
-        else
-        {
-            delete s; s = NULL;
-            return b;
-        }
+        vec3f dirComp = vec3f(1.0f, 1.0f, 1.0f) - m_direction;
+        float radius = m_radius + ISO_VALUE;
+        vec3f expand = radius * dirComp + ISO_VALUE * m_direction;
+        BBOX box(m_center - expand, m_center + expand);
+        return box;
     }
 
     vec3f getPolySeedPoint()
     {
-        //vec3f perp = m_direction.findArbitaryNormal();
-        //return m_center + m_radius*perp;
         return m_center;
     }
 

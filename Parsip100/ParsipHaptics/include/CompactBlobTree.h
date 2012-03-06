@@ -25,8 +25,8 @@ struct TreeNodeCache
 //Compact Structure for all primitives
 struct BlobPrimitive
 {
-    int orgID;
     BlobNodeType type;
+    int orgID;
     vec4f color;
     vec4f pos;
     vec4f dir;
@@ -34,15 +34,7 @@ struct BlobPrimitive
     vec4f res2;
     vec4f octLo;
     vec4f octHi;
-    vec4f mtxBackwardR0;
-    vec4f mtxBackwardR1;
-    vec4f mtxBackwardR2;
-    vec4f mtxBackwardR3;    
-
-    vec4f mtxForwardR0;
-    vec4f mtxForwardR1;
-    vec4f mtxForwardR2;
-    vec4f mtxForwardR3;
+    U32 idxMtx;
 };
 
 //Compact Structure for all operators
@@ -56,6 +48,16 @@ struct BlobOperator
     vec4f params;
     vec4f octLo;
     vec4f octHi;    
+    U32 idxMtx;
+};
+
+//Matrices
+struct BlobNodeMatrix
+{
+    vec4f mtxBackwardR0;
+    vec4f mtxBackwardR1;
+    vec4f mtxBackwardR2;
+    vec4f mtxBackwardR3;
 };
 
 struct PCMCONTEXT
@@ -73,13 +75,14 @@ struct PCMCONTEXT
 class COMPACTBLOBTREE
 {
 private:
-    int m_ctPrims;
-    int m_szAllocatedPrims;
-    BlobPrimitive* m_lpPrims;
+    int m_ctPrims;    
+    std::vector<BlobPrimitive> m_lpPrims;
 
-    int m_ctOps;
-    int m_szAllocatedOps;
-    BlobOperator* m_lpOps;
+    int m_ctOps;    
+    std::vector<BlobOperator> m_lpOps;
+
+    int m_ctMtx;
+    std::vector<BlobNodeMatrix> m_lpMtx;
 
     int m_ctPCMNodes;
     PCMCONTEXT m_pcmCONTEXT;
@@ -100,7 +103,7 @@ public:
     }
 
     COMPACTBLOBTREE(CBlobNode* root)
-    {
+    {        
         init();
         convert(root);
     }
@@ -108,8 +111,9 @@ public:
     ~COMPACTBLOBTREE()
     {
         m_lstConvertedIds.resize(0);
-        SAFE_DELETE(m_lpPrims);
-        SAFE_DELETE(m_lpOps);
+        m_lpPrims.resize(0);
+        m_lpOps.resize(0);
+        m_lpMtx.resize(0);
     }
 
     //Count
@@ -120,12 +124,11 @@ public:
 
     //FieldValue
     float fieldvalue(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
-    float fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPrim = NULL);
-    float fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
+    float fieldvaluePrim(const vec4f& p, int id, float* lpStoreFVPrim = NULL, bool bIsInstance = false);
+    float fieldvalueOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL, bool bIsInstance = false);
     vec4f gradientAtNode(bool isOp, int id, const vec4f& p, float fp, float delta );
     float fieldAtNode(bool isOp, int id, const vec4f& p);
     int   getID(bool isOp, int treeOrgID);
-    //float fieldValueAndGradientAtNodecopyFrom(int id, const vec4f& p, vec4f& grad, float delta );
 
     float computePCM(const vec4f& p,
                      const vec4f& pcmParam,
@@ -138,13 +141,14 @@ public:
                      U8 isOpChild1, U8 isOpChild2,
                      float fp1, float fp2);
 
-    vec3f marchTowardNode(bool isOp, int id, const vec3f& p, const vec3f& grad, float& fp);
-    //vec3f marchTowardNode(bool isOp, int id, vec3f& p, float& fp);
+    vec3f marchTowardNode(bool isOp, int id, const vec3f& p, const vec3f& grad, float& fp);    
     float computePropagationDeformation(float dist, float k, float a0, float w);
 
     //Base Color
     vec4f baseColor(const vec4f& p, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
+    vec4f baseColorPrim(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
     vec4f baseColorOp(const vec4f& p, int id, float* lpStoreFVOp = NULL, float* lpStoreFVPrim = NULL);
+
 
     //Output normal vector
     vec4f normal(const vec4f& p, float inFieldValue, float delta);
