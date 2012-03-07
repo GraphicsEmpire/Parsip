@@ -3437,7 +3437,7 @@ void GLWidget::actFileModelPiza()
         root->addChild(tower);
 
         //Instance root multiple times        
-        const int nTowers = 5;
+        const int nTowers = 4;
         for(int i=0; i < nTowers; i++)
         {
             float x = 3 * radius * cosf(static_cast<float>(i * TwoPi)/nTowers);
@@ -3445,7 +3445,7 @@ void GLWidget::actFileModelPiza()
 
             //Instance
             CInstance* inst = new CInstance(tower);
-            inst->getTransform().setTranslate(vec3f(x, -height, z));
+            inst->getTransform().setTranslate(vec3f(x, 0, z));
             root->addChild(inst);
         }
 

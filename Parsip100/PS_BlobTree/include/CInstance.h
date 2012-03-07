@@ -61,6 +61,8 @@ public:
         //Write parameters for RicciBlend
         DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
         lpSketchScript->writeInt(strNodeName, "OriginalNodeIndex", m_lpOrigin->getID());
+        lpSketchScript->writeInt(strNodeName, "OriginalNodeIsOp", m_lpOrigin->isOperator());
+        lpSketchScript->writeString(strNodeName, "OriginalNodeType", DAnsiStr(m_lpOrigin->getName().c_str()));
         return this->saveGenericInfoScript(lpSketchScript);
     }
 
