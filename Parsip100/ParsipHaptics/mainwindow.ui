@@ -1287,6 +1287,7 @@
     <addaction name="actEditField"/>
     <addaction name="actEditConvert"/>
     <addaction name="actEditAssignIDs"/>
+    <addaction name="actEditMakeRoot"/>
     <addaction name="separator"/>
     <addaction name="actEditFieldProbe"/>
     <addaction name="actEditBlobTreeStats"/>
@@ -1973,6 +1974,14 @@
    </property>
    <property name="toolTip">
     <string>Use it for Instancing </string>
+   </property>
+  </action>
+  <action name="actEditMakeRoot">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Make Root</string>
    </property>
   </action>
  </widget>

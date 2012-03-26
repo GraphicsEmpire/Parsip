@@ -111,7 +111,7 @@ private:
     int recursive_QueryBlobTree(bool bIncludePrim, bool bIncludeOps, CBlobNode* node);
 
     int recursive_GetBlobTreeSeedPoints(CBlobNode* node, stack<CBlobNode*> &stkOperators);
-    int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);        
+    int recursive_TranslateSkeleton(CBlobNode*node, vec3f d);
     int recursive_ReassignIDs(CBlobNode* node);
 
     void init(CBlobNode* root);
@@ -137,10 +137,16 @@ public:
 
     void cleanup();
 
-    CBlobNode* findNodeByID(int id);    
+    CBlobNode* findNodeByID(int id);
     CBlobNode* recursive_FindNodeByID(int id, CBlobNode* root);
     int recursive_MaxNodeID(int maxID, CBlobNode* root);
+
     bool recursive_ExecuteCmdBlobtreeNode(CBlobNode* root, CBlobNode* lpQueryNode, cmdBlobTree command, CmdBlobTreeParams* lpParam = NULL);
+
+    /*!
+      * Find parent
+      */
+    bool actBlobFindParent(CBlobNode* lpQueryNode, CBlobNode*& lpParent);
 
     /*!
       * Recursively reads a BlobTree from Disk
@@ -169,31 +175,30 @@ public:
     bool reassignBlobNodeIDs();
 
     //Octree for whole model
-    bool	hasOctree() const {return m_octree.isValid();}
+    bool    hasOctree() const {return m_octree.isValid();}
     COctree getOctree() const {return m_octree;}
-    void	setOctree(vec3f lower, vec3f upper);
-    void	setOctreeFromMesh();
-    void	setOctreeFromBlobTree();
+    void    setOctree(vec3f lower, vec3f upper);
+    void    setOctreeFromMesh();
+    void    setOctreeFromBlobTree();
 
     //Post multiply all branch transformations and apply them to leaf nodes
     //Other nodes with have identity matrices
-    void	flattenTransformations();
+    void    flattenTransformations();
 
     //Query BlobTree, this will fill query list with prims or ops or both
     int	 queryBlobTree(bool bIncludePrims, bool bIncludeOps);
     size_t queryCountItems() const { return m_lstQuery.size();}
+    int queryGetAllOctrees(vector<vec3f>& los, vector<vec3f>& his) const;
+    int queryHitOctree(const CRay& ray, float t0, float t1) const;
 
     //Actions For All Nodes in the Query List
-    CBlobNode* queryGetItem(int index) const
+    CBlobNode* queryGetItem(int idxQuery) const
     {
-        if(index >= 0 && index < m_lstQuery.size())
-            return m_lstQuery[index];
+        if(idxQuery >= 0 && idxQuery < m_lstQuery.size())
+            return m_lstQuery[idxQuery];
         else
             return NULL;
     }
-
-    int queryGetAllOctrees(vector<vec3f>& los, vector<vec3f>& his) const;
-    int queryHitOctree(const CRay& ray, float t0, float t1) const;
 
     //Selection
     CBlobNode* selGetItem(int index = 0) const;
@@ -281,7 +286,7 @@ private:
         //U32 idTo;
     };
 
- private:
+private:
     std::vector<CONVERTED> m_lstConverted;
     bool m_bPadWithNULL;
     bool m_bSplitAlways;
@@ -317,9 +322,9 @@ public:
     bool	 hasActiveLayer() const {return isLayerIndex(m_idxActiveLayer);}
 
     CLayer*  getActiveLayer() const;
-    bool	 hasActiveSelOctree() const;
+    bool     hasActiveSelOctree() const;
     COctree  getActiveSelOctree() const;
-    void	 setActiveLayer(int idxLayer);
+    void     setActiveLayer(int idxLayer);
     CLayer*  getLast() const;
 
     void setAllVisible(bool bVisible);
@@ -332,7 +337,6 @@ public:
     void setOctreesFromMeshes();
     int  hitLayerOctree(const CRay& ray, float t0, float t1) const;
 
-    int	 computeAllPrimitiveOctrees();
     bool queryHitOctree(const CRay& ray, float t0, float t1, int& idxLayer, int& idxPrimitive);
     void selRemoveItems();
 
@@ -362,7 +366,7 @@ public:
 
     bool saveAsVolumeData(const char* strDir, int w, int h, int d);
 
-    //Serialization    
+    //Serialization
     bool saveScript(const DAnsiStr& strFN);
     bool saveScript(int idxLayer, CSketchConfig* lpSketchConfig);
 

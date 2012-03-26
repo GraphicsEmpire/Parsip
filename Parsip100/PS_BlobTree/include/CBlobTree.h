@@ -89,14 +89,28 @@ public:
         m_children.resize(0);
     }
 
-    //Detach Child by its index
-    //Detach won't free the object
-    void detachChild(int index)
+    /*!
+      * Detach all children from the list of children. The child is not destroyed.
+      */
+    void detachAll()
     {
-        if(isChildIndex(index))
+        m_children.erase(m_children.begin(), m_children.end());
+    }
+
+    /*!
+      * Detach a child
+      */
+    bool detachChild(const CBlobNode* lpChild)
+    {
+        for(U32 i=0; i<m_children.size(); i++)
         {
-            m_children.erase(m_children.begin() + index);
+            if(m_children[i] == lpChild)
+            {
+                m_children.erase(m_children.begin() + i);
+                return true;
+            }
         }
+        return false;
     }
 
     int getChildIndex(CBlobNode* kid) const
@@ -187,10 +201,10 @@ public:
 
     std::vector<CBlobNode*>& getChildren() {return m_children;}
 
-    void addChild(CBlobNode * child)
+    void addChild(CBlobNode* lpChild)
     {
-        if(child == NULL) return;
-        m_children.push_back(child);
+        if(lpChild == NULL) return;
+        m_children.push_back(lpChild);
     }
 
     void addChild(const BLOBNODECHILDREN& children)

@@ -163,6 +163,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actEditFieldProbe, SIGNAL(triggered(bool)), m_glWidget, SLOT(actEditProbe(bool)));
     connect(ui->actEditBlobTreeStats, SIGNAL(triggered()), m_glWidget, SLOT(actEditBlobTreeStats()));
     connect(ui->actEditAssignIDs, SIGNAL(triggered()), m_glWidget, SLOT(actEditAssignIDs()));
+    connect(ui->actEditMakeRoot, SIGNAL(triggered()), m_glWidget, SLOT(actEditMakeRoot()));
 
 
 

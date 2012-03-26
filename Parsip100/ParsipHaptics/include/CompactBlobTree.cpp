@@ -1173,40 +1173,19 @@ vec4f COMPACTBLOBTREE::baseColorOp(const vec4f& p, int id, float* lpStoreFVOp, f
 
     switch(m_lpOps[id].type)
     {
-    case(bntOpBlend):
+    case(bntOpBlend):case(bntOpRicciBlend):
     {
         for(int i=0; i<ctKids; i++)
         {
             temp = arrFV[i];
-            if(temp > 0.0f)
-            {
-                resCL += arrCL[i] * vec4f(temp);
-                resFV += arrFV[i];
-            }
+            resCL += arrCL[i] * temp;
+            resFV += temp;
         }
 
         if(resFV == 0.0f)
             resCL = arrCL[0];
         else
-            resCL = resCL * vec4f(1.0f / resFV);
-    }
-        break;
-    case(bntOpRicciBlend):
-    {
-        for(int i=0; i<ctKids; i++)
-        {
-            temp = arrFV[i];
-            if(temp > 0.0f)
-            {
-                resCL += arrCL[i] * vec4f(temp);
-                resFV += arrFV[i];
-            }
-        }
-
-        if(resFV == 0.0f)
-            resCL = arrCL[0];
-        else
-            resCL = resCL * vec4f(1.0 / resFV);
+            resCL = resCL * (1.0f / resFV);
     }
         break;
     case(bntOpPCM):

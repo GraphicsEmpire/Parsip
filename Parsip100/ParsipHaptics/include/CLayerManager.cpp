@@ -491,6 +491,28 @@ int CLayer::recursive_MaxNodeID(int maxID, CBlobNode* root)
     return maxID;
 }
 
+bool CLayer::actBlobFindParent(CBlobNode* lpQueryNode, CBlobNode*& lpParent)
+{
+    lpParent = NULL;
+
+    //Init Structure for recursion
+    CmdBlobTreeParams param;
+    param.lpOutParent = NULL;
+    param.depth     = 0;
+    param.idxChild  = -1;
+
+    if(this->recursive_ExecuteCmdBlobtreeNode(this->getBlob(),
+                                              lpQueryNode,
+                                              cbtFindParent,
+                                              &param))
+    {
+        lpParent = param.lpOutParent;
+        return true;
+    }
+
+    return false;
+}
+
 bool CLayer::recursive_ExecuteCmdBlobtreeNode(CBlobNode* root,
                                               CBlobNode* lpQueryNode,
                                               cmdBlobTree command,
@@ -1070,9 +1092,11 @@ int CLayer::convertToBinaryTree(bool bPadWithNull, bool bAlwaysSplit)
 
 int CLayer::queryGetAllOctrees( vector<vec3f>& los, vector<vec3f>& his ) const
 {	
-    COctree oct;
-
     size_t ctOctrees = m_lstQuery.size();
+    if(ctOctrees == 0)
+        return 0;
+
+    COctree oct;
     //Resize once for better performance
     los.resize(ctOctrees);
     his.resize(ctOctrees);
@@ -1378,23 +1402,15 @@ int CLayerManager::hitLayerOctree( const CRay& ray, float t0, float t1 ) const
     return -1;
 }
 
-int CLayerManager::computeAllPrimitiveOctrees()
-{
-    int res = 0;
-    for(size_t i=0; i<m_lstLayers.size(); i++)
-        res += getLayer(i)->queryBlobTree(true, false);
-    return res;
-}
-
 //First hit a layer then if successful hit a primitive within that layer
-bool CLayerManager::queryHitOctree(const CRay& ray, float t0, float t1, int& idxLayer, int& idxPrimitive)
+bool CLayerManager::queryHitOctree(const CRay& ray, float t0, float t1, int& idxLayer, int& idxFound)
 {
-    idxPrimitive = -1;
+    idxFound = -1;
     idxLayer = hitLayerOctree(ray, t0, t1);
     if(isLayerIndex(idxLayer))
     {
-        idxPrimitive = getLayer(idxLayer)->queryHitOctree(ray, t0, t1);
-        if(idxPrimitive >= 0)
+        idxFound = getLayer(idxLayer)->queryHitOctree(ray, t0, t1);
+        if(idxFound >= 0)
             return true;
     }
     return false;

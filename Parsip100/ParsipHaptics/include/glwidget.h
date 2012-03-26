@@ -67,14 +67,14 @@ public slots:
     void setDisplayMtrlMeshWires(int index);
 
     void setAnimationSpeed(int speed);
-
-
     void setPrimitiveColorFromColorDlg();
 
+    //Select a Layer
     void selectLayer(int iLayer);
     void selectLayer(QModelIndex idx);
 
-    void selectBlobNode(int iLayer, CBlobNode* aNode, bool bMultiSelect = false);
+    //Select a BlobNode
+    void selectBlobNode(int iLayer, CBlobNode* aNode, bool bMultiSelect);
     void selectBlobNode(QModelIndex idx);
 
     void actFileModelPiza();
@@ -162,6 +162,8 @@ public slots:
     void actEditProbe(bool bEnable);
     void actEditBlobTreeStats();
     void actEditAssignIDs();
+    void actEditMakeRoot();
+
 
     void actTestStart();
     void actTestSetRuns(int value);

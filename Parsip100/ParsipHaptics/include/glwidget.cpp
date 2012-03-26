@@ -448,7 +448,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     int x = event->x();
     int y = event->y();
 
-    int idxLayer, idxPrimitive = -1;
+    int idxLayer, idxQuery = -1;
     vec3f posNear(x, m_scrDim.y - y, 0.0f);
     vec3f posFar(x, m_scrDim.y - y, 1.0f);
     vec3f posTransNear;
@@ -474,8 +474,8 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         {
             vec3f c(0.0f, 0.0f, 0.0f);
 
-            if(m_layerManager.queryHitOctree(ray, Z_NEAR, Z_FAR, idxLayer, idxPrimitive))
-                c = m_layerManager[idxLayer]->queryGetItem(idxPrimitive)->getOctree().center();
+            if(m_layerManager.queryHitOctree(ray, Z_NEAR, Z_FAR, idxLayer, idxQuery))
+                c = m_layerManager[idxLayer]->queryGetItem(idxQuery)->getOctree().center();
 
             vec3f ptInSpace = posTransNear + posTransNear.distance(c) * ray.direction;
             if(m_uiMode == uimSketch)
@@ -506,7 +506,18 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     else if(event->buttons() & Qt::RightButton)
     {
         m_mouseButton = PS::CArcBallCamera::mbRight;
-        if(m_layerManager.queryHitOctree(ray, Z_NEAR, Z_FAR, idxLayer, idxPrimitive))
+
+        //Select Operators with shift
+        CLayer* lpActive = m_layerManager.getActiveLayer();
+        if(lpActive)
+        {
+            if(QApplication::keyboardModifiers() == Qt::ShiftModifier)
+                lpActive->queryBlobTree(false, true);
+            else
+                lpActive->queryBlobTree(true, false);
+        }
+
+        if(m_layerManager.queryHitOctree(ray, Z_NEAR, Z_FAR, idxLayer, idxQuery))
         {
             bool bMultiSelect = false;
             if(QApplication::keyboardModifiers() == Qt::ControlModifier)
@@ -517,7 +528,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
             //Select the primitive and show its properties
             selectBlobNode(idxLayer,
-                           m_layerManager[idxLayer]->queryGetItem(idxPrimitive),
+                           m_layerManager[idxLayer]->queryGetItem(idxQuery),
                            bMultiSelect);
         }
         else
@@ -1416,9 +1427,7 @@ void GLWidget::actMeshPolygonize(int idxLayer)
     {
         aLayer->getTracker().reset();        
         aLayer->setOctreeFromBlobTree();
-        aLayer->flattenTransformations();
-        aLayer->queryBlobTree(true, false);
-
+        aLayer->flattenTransformations();        
         if(aLayer->isVisible())
         {
             aLayer->setupCompactTree(aLayer->getBlob());
@@ -2236,11 +2245,15 @@ void GLWidget::selectBlobNode(QModelIndex idx)
     QStandardItem* item = m_modelBlobTree->itemFromIndex(idx);
     if(item == NULL) return;
 
-    //Fetch node pointer from its QStandardItem
-    QVariant v = item->data();
-    CBlobNode* lpNode = (CBlobNode*)(v.toInt());
+    bool bMultiSelect = false;
+    if(QApplication::keyboardModifiers() == Qt::ControlModifier)
+        bMultiSelect = true;
+
+
+    //Fetch node pointer from its QStandardItem    
+    CBlobNode* lpNode = (CBlobNode*)(item->data().toInt());
     if(lpNode != NULL)
-        selectBlobNode(m_layerManager.getActiveLayerIndex(), lpNode);
+        selectBlobNode(m_layerManager.getActiveLayerIndex(), lpNode, bMultiSelect);
 
     //Goto transform mode
     actEditTranslate();
@@ -2655,19 +2668,12 @@ CBlobNode* GLWidget::addBlobOperator(BlobNodeType operatorType, int preferredID,
     CBlobNode* dstParent = NULL;
     for(size_t i=0; i<aLayer->selCountItems(); i++)
     {
-        CmdBlobTreeParams FindParent;
-        FindParent.depth = 0;
-        FindParent.idxChild = -1;
-        FindParent.lpOutParent = NULL;
-
-        if(aLayer->recursive_ExecuteCmdBlobtreeNode(aLayer->getBlob(),
-                                                    aLayer->selGetItem(i),
-                                                    cbtFindParent,
-                                                    &FindParent))
+        CBlobNode* lpOutParent = NULL;
+        if(aLayer->actBlobFindParent(aLayer->selGetItem(i), lpOutParent))
         {
-            FindParent.lpOutParent->detachChild(FindParent.idxChild);
+            lpOutParent->detachChild(aLayer->selGetItem(i));
             if(i == 0)
-                dstParent = FindParent.lpOutParent;
+                dstParent = lpOutParent;
         }
         else
         {
@@ -3437,16 +3443,20 @@ void GLWidget::actFileModelPiza()
         root->addChild(tower);
 
         //Instance root multiple times        
-        const int nTowers = 4;
+        const int nTowers = 8;
         for(int i=0; i < nTowers; i++)
+            for(int j=0; j < nTowers; j++)
         {
-            float x = 3 * radius * cosf(static_cast<float>(i * TwoPi)/nTowers);
-            float z = 3 * radius * sinf(static_cast<float>(i * TwoPi)/nTowers);
+            if(!(i==0 && j==0))
+            {
+                float x = 3 * radius * i;
+                float z = 3 * radius * j;
 
-            //Instance
-            CInstance* inst = new CInstance(tower);
-            inst->getTransform().setTranslate(vec3f(x, 0, z));
-            root->addChild(inst);
+                //Instance
+                CInstance* inst = new CInstance(tower);
+                inst->getTransform().setTranslate(vec3f(x, 0, z));
+                root->addChild(inst);
+            }
         }
 
         m_layerManager.addLayer(root, "PIZA");
@@ -3987,10 +3997,33 @@ void GLWidget::actEditAssignIDs()
     {
         active->reassignBlobNodeIDs();
 
-        //Re-polygonize
+        //Repolygonize and show
         active->getTracker().bump();
         emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
     }
+}
+
+void GLWidget::actEditMakeRoot()
+{
+    CLayer* active = m_layerManager.getActiveLayer();
+    if(active && active->getBlob() && (active->selCountItems() > 0))
+    {
+        CBlobNode* lpParent = NULL;
+        CBlobNode* lpQuery = active->selGetItem(0);
+        if(active->actBlobFindParent(lpQuery, lpParent))
+        {
+            lpParent->detachChild(lpQuery);
+            SAFE_DELETE(lpParent);
+            active->setBlob(lpQuery);
+
+            //Repolygonize and show
+            active->getTracker().bump();            
+            emit sig_showBlobTree(getModelBlobTree(m_layerManager.getActiveLayerIndex()));
+
+            //actMeshPolygonize();
+        }
+    }
+
 }
 
 void GLWidget::updateProbe()
