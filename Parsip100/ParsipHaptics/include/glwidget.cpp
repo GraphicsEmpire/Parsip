@@ -3427,12 +3427,15 @@ void GLWidget::actFileModelPiza()
     DlgPizaModelBuilder* lpDlgPiza = new DlgPizaModelBuilder(this);
     lpDlgPiza->setModal(true);
     lpDlgPiza->setValues(4, 8, 6.0f, 6.0f);
-    connect(lpDlgPiza, SIGNAL(sig_preview(int,int,float,float)), this, SLOT(actFileModelPiza(int, int, float, float)));
+    connect(lpDlgPiza, SIGNAL(sig_preview(int,int,int,int, float,float)), this, SLOT(actFileModelPiza(int, int, int, int, float, float)));
     if(lpDlgPiza->exec() == QDialog::Accepted)
     {
         int levels, pillars;
+        int xTowers, yTowers;
         float radius, height;
-        lpDlgPiza->getValues(levels, pillars, radius, height);
+        lpDlgPiza->getValues(levels, pillars,
+                             xTowers, yTowers,
+                             radius, height);
 
         //Global Union
         CUnion* root = new CUnion();
@@ -3442,10 +3445,9 @@ void GLWidget::actFileModelPiza()
         tower->getTransform().setTranslate(vec3f(0.0f, -height, 0.0f));
         root->addChild(tower);
 
-        //Instance root multiple times        
-        const int nTowers = 8;
-        for(int i=0; i < nTowers; i++)
-            for(int j=0; j < nTowers; j++)
+        //Instance root multiple times           
+        for(int i=0; i < xTowers; i++)
+            for(int j=0; j < yTowers; j++)
         {
             if(!(i==0 && j==0))
             {

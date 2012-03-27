@@ -3,6 +3,10 @@
 #include "CSkeletonPrimitive.h"
 #include "BlobTreeBuilder.h"
 #include "PS_ErrorManager.h"
+#include <iostream>
+#include <fstream>
+
+using namespace std;
 
 namespace PS{
 namespace BLOBTREE {
@@ -38,6 +42,7 @@ bool CBlobNode::saveGenericInfoScript(CSketchConfig *lpSketchConfig)
     //First write current operator
     //Use the same id passed in as parameter for writing the operator
     DAnsiStr strNodeName = printToAStr("BLOBNODE %d", this->getID());
+    cerr << "Writing node " << this->getID() << " type is op = " << this->isOperator() <<endl;
 
     //Type
     lpSketchConfig->writeBool(strNodeName, "IsOperator", this->isOperator());

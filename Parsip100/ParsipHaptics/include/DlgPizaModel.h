@@ -16,12 +16,16 @@ public:
     ~DlgPizaModelBuilder();
 
     void setValues(int levels, int pillars, float radius, float height);
-    void getValues(int& levels, int& pillars, float& radius, float& height);
+    void getValues(int& levels, int& pillars,
+                   int& xTowers, int& yTowers,
+                   float& radius, float& height);
 
 public slots:
     void preview();
 signals:
-    void sig_preview(int levels, int pillars, float radius, float height);
+    void sig_preview(int levels, int pillars,
+                     int xTowers, int yTowers,
+                     float radius, float height);
 private:
     Ui::DlgPizaModelBuilder *ui;
 };

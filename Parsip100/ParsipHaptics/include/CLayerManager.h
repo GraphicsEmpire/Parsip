@@ -35,7 +35,6 @@ namespace PS{
 namespace BLOBTREE{
 
 typedef pair<CBlobNode*, vec3f> PAIR_NODESEED;
-typedef pair<CBlobNode*, CMeshVV*> PAIR_NODEMESH;
 enum cmdBlobTree{cbtDelete, cbtFindParent, cbtFindDepth, cbtTransformOperator};
 
 struct CmdBlobTreeParams
@@ -75,7 +74,7 @@ private:
     vector<PAIR_NODESEED> m_lstSeeds;
 
     //Selected pairs of BlobTree Nodes and their corresponding meshes
-    vector<PAIR_NODEMESH> m_lstSelected;
+    vector<CBlobNode*> m_lstSelected;
 
     //Keeping a list of nodes
     vector<CBlobNode*> m_lstQuery;
@@ -202,7 +201,6 @@ public:
 
     //Selection
     CBlobNode* selGetItem(int index = 0) const;
-    CMeshVV* selGetMesh(int index = 0) const;
     size_t selCountItems() const {return m_lstSelected.size();}
     void selRemoveItem(int index = -1);
     bool selAddItem(CBlobNode* lpNode);

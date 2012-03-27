@@ -32,12 +32,12 @@ void CBlobActionManager::redo()
 
 bool CBlobActionManager::save(const std::string& strFilePath) const
 {
-
+    return false;
 }
 
 bool CBlobActionManager::load(const std::string& strFilePath)
 {
-
+    return false;
 }
 
 

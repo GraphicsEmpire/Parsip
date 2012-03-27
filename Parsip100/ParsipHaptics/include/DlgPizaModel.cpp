@@ -24,15 +24,21 @@ void DlgPizaModelBuilder::setValues(int levels, int pillars, float radius, float
     ui->sbHeight->setValue(height);
 }
 
-void DlgPizaModelBuilder::getValues(int& levels, int& pillars, float& radius, float& height)
+void DlgPizaModelBuilder::getValues(int& levels, int& pillars,
+                                    int& xTowers, int& yTowers,
+                                    float& radius, float& height)
 {
     levels = ui->sbLevels->value();
     pillars = ui->sbPillars->value();
+    xTowers = ui->sbHTowers->value();
+    yTowers = ui->sbVTowers->value();
     radius = ui->sbRadius->value();
     height = ui->sbHeight->value();
 }
 
 void DlgPizaModelBuilder::preview()
 {
-    emit sig_preview(ui->sbLevels->value(), ui->sbPillars->value(), ui->sbRadius->value(), ui->sbHeight->value());
+    emit sig_preview(ui->sbLevels->value(), ui->sbPillars->value(),
+                     ui->sbHTowers->value(), ui->sbVTowers->value(),
+                     ui->sbRadius->value(), ui->sbHeight->value());
 }

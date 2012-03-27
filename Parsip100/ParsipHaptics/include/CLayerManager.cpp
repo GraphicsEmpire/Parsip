@@ -75,6 +75,7 @@ int ConvertToBinaryTree::updateAllInstances()
             ctDone++;
         }
     }
+    return ctDone;
 }
 
 int ConvertToBinaryTree::run()
@@ -341,15 +342,7 @@ int CLayer::queryHitOctree(const CRay& ray, float t0, float t1) const
 CBlobNode* CLayer::selGetItem(int index) const
 {
     if(index >= 0 && index < m_lstSelected.size())
-        return static_cast<CBlobNode*>(m_lstSelected[index].first);
-    else
-        return NULL;
-}
-//==================================================================
-CMeshVV* CLayer::selGetMesh(int index) const
-{
-    if(index >= 0 && index < m_lstSelected.size())
-        return static_cast<CMeshVV*>(m_lstSelected[index].second);
+        return static_cast<CBlobNode*>(m_lstSelected[index]);
     else
         return NULL;
 }
@@ -357,31 +350,15 @@ CMeshVV* CLayer::selGetMesh(int index) const
 void CLayer::selRemoveItem(int index)
 {
     if(index == -1)
-    {
-        for(size_t i=0; i<m_lstSelected.size(); i++)
-        {
-            CMeshVV* lpMesh = m_lstSelected[i].second;
-            SAFE_DELETE(lpMesh);
-        }
-        m_lstSelected.clear();
-    }
+        m_lstSelected.clear();    
     else if(index >= 0 && index < m_lstSelected.size())
-    {
-        CMeshVV* lpMesh  =  m_lstSelected[index].second;
-        SAFE_DELETE(lpMesh);
         m_lstSelected.erase(m_lstSelected.begin() + index);
-    }
 }
 //==================================================================
 bool CLayer::selAddItem(CBlobNode* lpNode)
 {
     if(lpNode == NULL) return false;
-
-    //CMeshVV* lpMesh = new CMeshVV();
-    //Run Polygonizer and export mesh for selection
-    //bool bres = Run_PolygonizerExportMesh(lpNode, lpMesh, 0.2f, ISO_VALUE - 0.2f);
-    PAIR_NODEMESH entry(lpNode, NULL);
-    m_lstSelected.push_back(entry);
+    m_lstSelected.push_back(lpNode);
     return true;
 }
 //==================================================================
