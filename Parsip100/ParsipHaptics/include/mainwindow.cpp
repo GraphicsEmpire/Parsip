@@ -576,7 +576,7 @@ void MainWindow::actNetSaveSettings()
     for(int i=0; i<m_setSketchNet.ips.size(); i++)
     {
         strMember = printToAStr("member%d", i);
-        strValue = DAnsiStr(m_setSketchNet.ips[i].toAscii().data());
+        strValue = DAnsiStr(m_setSketchNet.ips[i].toLatin1().data());
         cfg->writeString("sketchnet", strMember, strValue);
     }
 

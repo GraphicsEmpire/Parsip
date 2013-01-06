@@ -2,8 +2,9 @@
 #include "ui_DlgFieldFunction.h"
 #include <QFileDialog>
 #include <QFile>
-#include <qtextstream.h>
+#include <QTextStream>
 #include "PS_FrameWork/include/_dataTypes.h"
+#include "GL/glu.h"
 
 GLFieldEditor::GLFieldEditor(QWidget* parent):QGLWidget(parent)
 {

@@ -251,23 +251,22 @@ CONFIG(release, debug|release) {
 #     else: TARGET = $$join(TARGET,,,d)
 # }
 
-win32:CONFIG(release, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb.lib \
-                                              D:\Projects\Dependencies\LOKI\lib\loki.lib
-else:win32:CONFIG(debug, debug|release): LIBS += D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb_debug.lib \
-                                                 D:\Projects\Dependencies\LOKI\lib\loki_D.lib
-
-win32: LIBS +=  D:\Projects\Dependencies\OPENCL\common\lib\Win32\OpenCL.lib \
+#Library Path
+win32: LIBS +=  D:\Projects\Dependencies\TBB\lib\ia32\vc10\tbb.lib \
+                D:\Projects\Dependencies\LOKI\lib\loki.lib \
+                D:\Projects\Dependencies\OPENCL\common\lib\Win32\OpenCL.lib \
                 D:\Projects\Dependencies\GLEW\lib\glew32.lib \
                 $$PWD/lib/ParsipMultiCoreRenderingLib.lib
 
 
-else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/ -ltbb \
+else:unix:!symbian: LIBS += -L$$PWD/../Dependencies/TBB/build/linux_intel64_gcc_cc4.6_libc2.15_kernel3.2.0_release/ -ltbb \
                             -L$$PWD/../Dependencies/LOKI/lib/ -lloki \
-                            -lGLEW \
+                            -L$$PWD/../Dependencies/GLEW/lib/ -lGLEW \
+                            -lGLU \
                             -lOpenCL
 
 
-#Add all special libraries used in the project
+#Include Path
 win32:INCLUDEPATH += D:\Projects\Dependencies\TBB\include \
                      D:\Projects\Dependencies\LOKI\include \
                      D:\Projects\Dependencies\GLEW\include \
@@ -275,9 +274,10 @@ win32:INCLUDEPATH += D:\Projects\Dependencies\TBB\include \
                      C:\Program Files\Microsoft DirectX SDK (June 2010)\Include
 
 else:unix:INCLUDEPATH += $$PWD/../Dependencies/TBB/include \
+                         $$PWD/../Dependencies/GLEW/include \
                          /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                          /home/pourya/Desktop/Projects/Dependencies/LOKI/include
-
+#Depend Path
 win32:DEPENDPATH += D:\Projects\Dependencies\TBB\include \
                     D:\Projects\Dependencies\LOKI\include \
                     D:\Projects\Dependencies\GLEW\include \
@@ -285,6 +285,7 @@ win32:DEPENDPATH += D:\Projects\Dependencies\TBB\include \
                     C:\Program Files\Microsoft DirectX SDK (June 2010)\Include
 
 else:unix:DEPENDPATH += $$PWD/../Dependencies/TBB/include \
+                        $$PWD/../Dependencies/GLEW/include \
                         /home/pourya/Desktop/Projects/Dependencies/OPENCL/common/inc \
                         /home/pourya/Desktop/Projects/Dependencies/LOKI/include
 

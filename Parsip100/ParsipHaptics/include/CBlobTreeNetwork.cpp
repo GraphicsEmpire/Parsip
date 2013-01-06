@@ -114,7 +114,7 @@ void CMember::actNetDisplayError(QAbstractSocket::SocketError socketError)
 
     if (socketError != QTcpSocket::RemoteHostClosedError)
     {
-        DAnsiStr strError = printToAStr("Network Error: %s", m_socket.errorString().toAscii().data());
+        DAnsiStr strError = printToAStr("Network Error: %s", m_socket.errorString().toLatin1().data());
         ReportError(strError.ptr());
         FlushAllErrors();
     }
@@ -329,7 +329,7 @@ void CDesignNet::actNetServerReadData()
 void CDesignNet::actNetServerDisplayError( QAbstractSocket::SocketError socketError )
 {
     if(m_tcpServerConnection == NULL) return;
-    DAnsiStr strError = printToAStr("Network Error: %s", m_tcpServerConnection->errorString().toAscii().data());
+    DAnsiStr strError = printToAStr("Network Error: %s", m_tcpServerConnection->errorString().toLatin1().data());
     ReportError(strError.ptr());
     FlushAllErrors();
 }
@@ -610,7 +610,7 @@ CSketchNetCommandTranslator::CSketchNetCommandTranslator()
 
 bool CSketchNetCommandTranslator::translateStrToPacket( const QString& strInputCmd, SKETCHCMDPACKET& output )
 {
-    DAnsiStr strCmd(strInputCmd.toAscii().data());
+    DAnsiStr strCmd(strInputCmd.toLatin1().data());
     DAnsiStr temp;
     size_t trans;
     vec4f param;

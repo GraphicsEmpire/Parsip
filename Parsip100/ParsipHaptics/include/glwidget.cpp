@@ -31,7 +31,7 @@
 #include "GalinMedusaGenerator.h"
 #include "SampleShapes.h"
 #include "DlgPizaModel.h"
-
+#include "GL/glu.h"
 
 using namespace PS::FILESTRINGUTILS;
 using namespace PS::BLOBTREEANIMATION;
@@ -234,7 +234,7 @@ void GLWidget::initializeGL()
     if(!m_glShaderNormalMesh->link())
     {
         QString strError = "Unable to link shader file. " + m_glShaderNormalMesh->log();
-        ReportError(strError.toAscii());
+        ReportError(strError.toLatin1());
         FlushAllErrors();
     }
 
@@ -249,7 +249,7 @@ void GLWidget::initializeGL()
     if(!m_glShaderSelection->link())
     {
         QString strError = "Unable to link shader file. " + m_glShaderSelection->log();
-        ReportError(strError.toAscii());
+        ReportError(strError.toLatin1());
         FlushAllErrors();
     }
 
@@ -1268,7 +1268,7 @@ void GLWidget::actFileOpen()
 
 void GLWidget::actFileOpen(QString strFile)
 {
-    DAnsiStr strFilePath(strFile.toAscii().data());
+    DAnsiStr strFilePath(strFile.toLatin1().data());
     DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
     DAnsiStr strFileExt		 = PS::FILESTRINGUTILS::ExtractFileExt(strFilePath);
     //TheAppSettings::Instance().setParsip.strLastScene = PS::FILESTRINGUTILS::ExtractFilePath(strFilePath);
@@ -1337,7 +1337,7 @@ void GLWidget::actFileSave()
 {
     DAnsiStr strAppPath = PS::FILESTRINGUTILS::ExtractFilePath(PS::FILESTRINGUTILS::GetExePath());
     QString qstrFileName = QFileDialog::getSaveFileName(this, tr("Save Scene"), strAppPath.ptr(), tr("Blobtree Scene(*.scene)"));
-    DAnsiStr strFilePath(qstrFileName.toAscii().data());
+    DAnsiStr strFilePath(qstrFileName.toLatin1().data());
     strFilePath = PS::FILESTRINGUTILS::ChangeFileExt(strFilePath, DAnsiStr(".scene"));
     m_layerManager.saveScript(strFilePath);
 }
@@ -1364,7 +1364,7 @@ void GLWidget::actMeshInsert()
                                                        GetExePath().ptr(),
                                                        tr("Obj Mesh(*.obj)"));
 
-    DAnsiStr strFilePath(strFileName.toAscii().data());
+    DAnsiStr strFilePath(strFileName.toLatin1().data());
     if(PS::FILESTRINGUTILS::FileExists(strFilePath.ptr()))
     {
         DAnsiStr strFileTitle	 = PS::FILESTRINGUTILS::ExtractFileName(strFilePath);
@@ -1708,8 +1708,8 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
 
     PropertyList lstProps;
     //Val, Name
-    lstProps.add(DAnsiStr(m_modelBlobNodeProperty->item(row, 1)->text().toAscii()),
-                 m_modelBlobNodeProperty->item(row, 0)->text().toAscii());
+    lstProps.add(DAnsiStr(m_modelBlobNodeProperty->item(row, 1)->text().toLatin1()),
+                 m_modelBlobNodeProperty->item(row, 0)->text().toLatin1());
     if(m_layerManager.getActiveLayer()->selCountItems() > 0)
     {
         m_layerManager.getActiveLayer()->selGetItem(0)->setProperties(lstProps);
@@ -1726,13 +1726,13 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
         {
             CPcm* lpPCM = reinterpret_cast<CPcm*>(m_lpSelectedBlobNode);
             if(row == 0)
-                lpPCM->setPropagateLeft(atof(strValue.toAscii()));
+                lpPCM->setPropagateLeft(atof(strValue.toLatin1()));
             else if(row == 1)
-                lpPCM->setPropagateRight(atof(strValue.toAscii()));
+                lpPCM->setPropagateRight(atof(strValue.toLatin1()));
             else if(row == 2)
-                lpPCM->setAlphaLeft(atof(strValue.toAscii()));
+                lpPCM->setAlphaLeft(atof(strValue.toLatin1()));
             else if(row == 3)
-                lpPCM->setAlphaRight(atof(strValue.toAscii()));
+                lpPCM->setAlphaRight(atof(strValue.toLatin1()));
 
 
             break;
@@ -1740,7 +1740,7 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
         case(bntOpRicciBlend):
         {
             CRicciBlend* ricci = reinterpret_cast<CRicciBlend*>(m_lpSelectedBlobNode);
-            float n = atof(strValue.toAscii());
+            float n = atof(strValue.toLatin1());
             ricci->setN(n);
             break;
         }
@@ -1749,12 +1749,12 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             CWarpTwist* twist = reinterpret_cast<CWarpTwist*>(m_lpSelectedBlobNode);
             if(row == 0)
             {
-                float n = atof(strValue.toAscii());
+                float n = atof(strValue.toLatin1());
                 twist->setWarpFactor(n);
             }
             else
             {
-                MajorAxices axis = StringToAxis(DAnsiStr(strValue.toAscii()));
+                MajorAxices axis = StringToAxis(DAnsiStr(strValue.toLatin1()));
                 twist->setMajorAxis(axis);
             }
             break;
@@ -1764,17 +1764,17 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             CWarpTaper* taper = reinterpret_cast<CWarpTaper*>(m_lpSelectedBlobNode);
             if(row == 0)
             {
-                float n = atof(strValue.toAscii());
+                float n = atof(strValue.toLatin1());
                 taper->setWarpFactor(n);
             }
             else if(row == 1)
             {
-                MajorAxices axisAlong = StringToAxis(DAnsiStr(strValue.toAscii()));
+                MajorAxices axisAlong = StringToAxis(DAnsiStr(strValue.toLatin1()));
                 taper->setAxisAlong(axisAlong);
             }
             else if(row == 2)
             {
-                MajorAxices axisTaper = StringToAxis(DAnsiStr(strValue.toAscii()));
+                MajorAxices axisTaper = StringToAxis(DAnsiStr(strValue.toLatin1()));
                 taper->setAxisTaper(axisTaper);
             }
             break;
@@ -1785,24 +1785,24 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             CWarpBend* bend = reinterpret_cast<CWarpBend*>(m_lpSelectedBlobNode);
             if(row == 0)
             {
-                float r = atof(strValue.toAscii());
+                float r = atof(strValue.toLatin1());
                 bend->setBendRate(r);
             }
             else if(row == 1)
             {
-                float c = atof(strValue.toAscii());
+                float c = atof(strValue.toLatin1());
                 bend->setBendCenter(c);
             }
             else if(row == 2)
             {
                 //Bend Left
-                float left = atof(strValue.toAscii());
+                float left = atof(strValue.toLatin1());
                 bend->setBendRegionLeft(left);
             }
             else if(row == 3)
             {
                 //Bend Left
-                float right = atof(strValue.toAscii());
+                float right = atof(strValue.toLatin1());
                 bend->setBendRegionRight(right);
             }
             break;
@@ -1819,12 +1819,12 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             //Scale
             if(row == 0)
             {
-                vec3f scale = StringToVec3(DAnsiStr(strValue.toAscii()));
+                vec3f scale = StringToVec3(DAnsiStr(strValue.toLatin1()));
                 sprim->getTransform().setScale(scale);
             }
             else if(row == 1)
             {
-                vec4f rot = StringToVec4(DAnsiStr(strValue.toAscii()));
+                vec4f rot = StringToVec4(DAnsiStr(strValue.toLatin1()));
                 quat q;
                 q.fromAngleAxis(DEGTORAD(rot.x), vec3f(rot.y, rot.z, rot.w));
                 sprim->getTransform().setRotation(q);
@@ -1832,7 +1832,7 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             }
             else if(row == 2)
             {
-                vec3f translate = StringToVec3(DAnsiStr(strValue.toAscii()));
+                vec3f translate = StringToVec3(DAnsiStr(strValue.toLatin1()));
                 sprim->getTransform().setTranslate(translate);
             }
         }
@@ -1844,14 +1844,14 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             case(sktRing):
             {
                 CSkeletonRing* ring = reinterpret_cast<CSkeletonRing*>(sprim->getSkeleton());
-                float r = atof(strValue.toAscii());
+                float r = atof(strValue.toLatin1());
                 ring->setRadius(r);
                 break;
             }
             case(sktDisc):
             {
                 CSkeletonDisc* disc = reinterpret_cast<CSkeletonDisc*>(sprim->getSkeleton());
-                float r = atof(strValue.toAscii());
+                float r = atof(strValue.toLatin1());
                 disc->setRadius(r);
                 break;
             }
@@ -1861,13 +1861,13 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
                 if(row == 3)
                 {
                     //Radius
-                    float r = atof(strValue.toAscii());
+                    float r = atof(strValue.toLatin1());
                     cyl->setRadius(r);
                 }
                 else if(row == 4)
                 {
                     //Height
-                    float h = atof(strValue.toAscii());
+                    float h = atof(strValue.toLatin1());
                     cyl->setHeight(h);
                 }
                 break;
@@ -1875,7 +1875,7 @@ void GLWidget::dataChanged_tblBlobProperty(const QModelIndex& topLeft, const QMo
             case(sktCube):
             {
                 CSkeletonCube* cube = reinterpret_cast<CSkeletonCube*>(sprim->getSkeleton());
-                float r = atof(strValue.toAscii());
+                float r = atof(strValue.toLatin1());
                 cube->setSide(r);
                 break;
             }
@@ -2027,7 +2027,7 @@ void GLWidget::dataChanged_tblLayers( const QModelIndex& topLeft, const QModelIn
     if(col == 0)
     {
         QString str = m_modelLayerManager->itemFromIndex(topLeft)->text();
-        m_layerManager[row]->setGroupName(DAnsiStr(str.toAscii()));
+        m_layerManager[row]->setGroupName(DAnsiStr(str.toLatin1()));
     }
     else if(col == 2)
     {
@@ -3708,7 +3708,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             CBlobNode* child1 = active->findNodeByID(rxMsg.blobnodeID);
             if(child1)
             {
-                if(!child1->getLock().acquire(DAnsiStr(peer->m_strAddress.toAscii().data())))
+                if(!child1->getLock().acquire(DAnsiStr(peer->m_strAddress.toLatin1().data())))
                     result = ackIDLocked;
             }
         }
@@ -3720,7 +3720,7 @@ bool GLWidget::actNetRecvCommand( int idxMember, QString strMsg )
             if(child1)
             {
                 if((child1->getLock().isLocked())&&
-                        (child1->getLock().getOwner() == DAnsiStr(peer->m_strAddress.toAscii().data())))
+                        (child1->getLock().getOwner() == DAnsiStr(peer->m_strAddress.toLatin1().data())))
                     child1->getLock().release();
                 else
                     result = ackIDNotLocked;
@@ -3865,7 +3865,7 @@ void GLWidget::actFileExportMesh()
     //lstActions
     QString strActionsFN = strFileName + QString(".acts");
     CBlobTreeToActions* toActions = new CBlobTreeToActions(m_layerManager[0]);
-    if(toActions->convert(strActionsFN.toAscii().data()))
+    if(toActions->convert(strActionsFN.toLatin1().data()))
     {
         selectLayer(0);
     }
@@ -3874,7 +3874,7 @@ void GLWidget::actFileExportMesh()
     //Export mesh
     CMeshVV output;
     bool bres = m_layerManager[0]->getPolygonizer()->exportMesh(&output);
-    bres &= output.saveOBJ(DAnsiStr(strFileName.toAscii().data()));
+    bres &= output.saveOBJ(DAnsiStr(strFileName.toLatin1().data()));
 
     //Save Mesh
     if(!bres)
